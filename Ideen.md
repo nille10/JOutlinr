@@ -1,6 +1,8 @@
 # Ideen
 
 ## Tree Struktur
+- JTree
+- JTree.DropLocation für drag and drop
 
 ## Keyboard Steuerung-
 - STRG-S Speichern
@@ -15,6 +17,10 @@
 - (STRG-1-9 Root Node 1-9)
 
 ## Undo Redo Funktion
+- Undo/Redo Stack
+- Bei Undo die Einträge vom Stack nehmen und auf den Redo Stack legen
+- Bei neuen Eingaben den Redo Stack leeren
+- Texteingaben sollten zusammengefasst werden
 
 ## Columns
 
