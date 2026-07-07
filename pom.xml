@@ -21,7 +21,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>ui.MainWindow</mainClass>
+              <mainClass>ui.Main</mainClass>
             </manifest>
           </archive>
         </configuration>
