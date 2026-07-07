@@ -126,13 +126,10 @@ public class OutlinePanel extends JPanel {
   public void deleteSelected() {
     OutlineNode selected = getSelectedNode();
     if (selected == null) return;
-    int confirm = JOptionPane.showConfirmDialog(this,
-        "\"" + selected.getTitle() + "\" wirklich löschen?",
-        "Löschen bestätigen", JOptionPane.YES_NO_OPTION);
-    if (confirm == JOptionPane.YES_OPTION) {
-      treeModel.removeNodeFromParent(selected);
-      if (textWindow != null) textWindow.loadNode(null);
-    }
+
+    treeModel.removeNodeFromParent(selected);
+    if (textWindow != null) textWindow.loadNode(null);
+
   }
 
   /** Knotenebene nach oben verschieben (Elterntausch). */
