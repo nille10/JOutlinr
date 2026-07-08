@@ -1,4 +1,6 @@
-package ui;
+package view;
+
+import model.OutlineNode;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -81,9 +83,5 @@ public class TextWindow extends JPanel {
     if (currentNode != null) {
       currentNode.setContent(textArea.getText());
     }
-  }
-
-  public JTextArea getTextArea() {
-    return textArea;
   }
 }
