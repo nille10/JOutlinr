@@ -10,9 +10,10 @@ import action.manager.UndoManager;
 import controller.*;
 
 import javax.swing.*;
-import javax.swing.text.DefaultEditorKit;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import javax.imageio.ImageIO;
+import java.io.IOException;
 
 /**
  * MainWindow – Hauptfenster des Outliners.
@@ -37,6 +38,7 @@ public class MainWindow extends JFrame {
         super("JOutlinr");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(900, 640);
+        setIconImage(loadLogo());
         setMinimumSize(new Dimension(600, 400));
         setLocationRelativeTo(null);
 
@@ -115,5 +117,18 @@ public class MainWindow extends JFrame {
             "pasteNode");
 
         actionMap.put("pasteNode", new InsertAction(editController));
+    }
+
+    private Image loadLogo() {
+
+        try {
+            return ImageIO.read(
+                getClass().getResource("/images/joutliner_logo.png")
+            );
+
+        } catch (IOException | IllegalArgumentException e) {
+            System.err.println("Logo konnte nicht geladen werden");
+            return null;
+        }
     }
 }
