@@ -38,4 +38,18 @@ public class OutlineNode extends DefaultMutableTreeNode {
   public String toString() {
     return title;
   }
+
+  //für Kopie mit Kindknoten
+  public OutlineNode deepCopy() {
+
+    OutlineNode copy = new OutlineNode(title);
+    copy.setContent(content);
+
+    for (int i = 0; i < getChildCount(); i++) {
+      OutlineNode child = (OutlineNode) getChildAt(i);
+      copy.add(child.deepCopy());
+    }
+
+    return copy;
+  }
 }

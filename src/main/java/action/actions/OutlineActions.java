@@ -1,5 +1,6 @@
 package action.actions;
 
+import action.manager.UndoManager;
 import action.outline.*;
 import controller.OutlineController;
 
@@ -17,13 +18,14 @@ public class OutlineActions {
     public final Action collapseAllAction;
     public final Action deleteEntryAction;
 
-    public OutlineActions(OutlineController outlineController) {
+    public OutlineActions(OutlineController outlineController, UndoManager undoManager) {
         newEntryAction = new NewEntryAction(outlineController);
         newChildEntryAction = new NewChildEntryAction(outlineController);
         promoteEntryAction =  new PromoteEntryAction(outlineController);
         demoteEntryAction = new DemoteEntryAction(outlineController);
         expandAllAction = new ExpandAllAction(outlineController);
         collapseAllAction = new CollapseAllAction(outlineController);
-        deleteEntryAction = new DeleteEntryAction(outlineController);
+        deleteEntryAction = new DeleteEntryAction(outlineController, undoManager);
+
     }
 }

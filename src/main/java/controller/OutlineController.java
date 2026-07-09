@@ -1,5 +1,6 @@
 package controller;
 
+import action.edit.CutAction;
 import model.OutlineNode;
 import view.TextWindow;
 import view.OutlinePanel;
@@ -7,6 +8,7 @@ import view.OutlinePanel;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import java.awt.event.KeyEvent;
 
 
 public class OutlineController {
@@ -212,7 +214,7 @@ public class OutlineController {
         }
     }
 
-    private OutlineNode getSelectedNode() {
+    public OutlineNode getSelectedNode() {
 
         TreePath path = tree.getSelectionPath();
 
@@ -238,6 +240,51 @@ public class OutlineController {
         tree.setSelectionPath(path);
 
         SwingUtilities.invokeLater(() -> tree.startEditingAtPath(path));
+    }
+
+    public void deleteNode(OutlineNode node) {
+
+        treeModel.removeNodeFromParent(node);
+
+        textWindow.loadNode(null);
+    }
+
+    public void insertNode(OutlineNode parent,
+                           OutlineNode node,
+                           int index) {
+
+        treeModel.insertNodeInto(node, parent, index);
+        selectNode(node);
+    }
+
+    //Hilfsmethode: expanded ein Node
+    public void expandNode(OutlineNode node) {
+
+        if (node == null) {
+            return;
+        }
+
+        TreePath path = new TreePath(treeModel.getPathToRoot(node));
+        tree.expandPath(path);
+    }
+
+    //Hilfsmethode: expanded einen Knoten und nur deren Kinder
+    public void expandSubtree(OutlineNode node) {
+
+        if (node == null) {
+            return;
+        }
+
+        TreePath path = new TreePath(treeModel.getPathToRoot(node));
+        tree.expandPath(path);
+
+        for (int i = 0; i < node.getChildCount(); i++) {
+            expandSubtree((OutlineNode) node.getChildAt(i));
+        }
+    }
+
+    public OutlineNode getRootNode() {
+        return rootNode;
     }
 
 
