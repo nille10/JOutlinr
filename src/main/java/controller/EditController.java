@@ -1,6 +1,9 @@
 package controller;
 
+import action.commands.DeleteEntryCommand;
+import action.commands.PasteCommand;
 import action.manager.UndoManager;
+import model.OutlineNode;
 
 import javax.swing.*;
 
@@ -8,10 +11,12 @@ public class EditController {
 
     private final JFrame jFrame;
     private final UndoManager undoManager;
+    private final OutlineController outlineController;
 
-    public EditController(JFrame jFrame, UndoManager undoManager) {
+    public EditController(JFrame jFrame, UndoManager undoManager, OutlineController outlineController) {
         this.jFrame = jFrame;
         this.undoManager = undoManager;
+        this.outlineController = outlineController;
     }
 
     public void undo() {
@@ -22,9 +27,29 @@ public class EditController {
         undoManager.redo();
     }
 
-    public void cut() { }
+    public void cut() {
+        copy();
+        undoManager.execute(new DeleteEntryCommand(outlineController));
+    }
 
-    public void copy() { }
+    private OutlineNode clipboard;
 
-    public void insert() { }
+    public void copy() {
+        OutlineNode selected = outlineController.getSelectedNode();
+
+        if (selected != null) {
+            clipboard = selected.deepCopy();
+        }
+    }
+
+    public void insert() {
+
+        if (clipboard == null) {
+            return;
+        }
+
+        undoManager.execute(
+            new PasteCommand(outlineController,
+                clipboard.deepCopy()));
+    }
 }

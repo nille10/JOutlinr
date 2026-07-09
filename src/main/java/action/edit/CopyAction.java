@@ -20,6 +20,7 @@ public class CopyAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        System.out.println("copy action");
         editController.copy();
     }
 }

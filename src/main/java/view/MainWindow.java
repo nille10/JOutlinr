@@ -3,11 +3,16 @@ package view;
 import action.actions.EditActions;
 import action.actions.FileActions;
 import action.actions.OutlineActions;
+import action.edit.CopyAction;
+import action.edit.CutAction;
+import action.edit.InsertAction;
 import action.manager.UndoManager;
 import controller.*;
 
 import javax.swing.*;
+import javax.swing.text.DefaultEditorKit;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 /**
  * MainWindow – Hauptfenster des Outliners.
@@ -41,10 +46,13 @@ public class MainWindow extends JFrame {
         UndoManager undoManager = new UndoManager();
 
         // Controller
-        EditController editController = new EditController(this, undoManager); // Das this wird in dem Controller nur für die Platzhalter benötigt
         FileController fileController = new FileController(this); // Das this wird in dem Controller nur für die Platzhalter benötigt
         OutlineController outlineController = new OutlineController(outlinePanel, textWindow);
+        EditController editController = new EditController(this, undoManager, outlineController); // Das this wird in dem Controller nur für die Platzhalter benötigt
 
+        // KeyBindings für den Tree registrieren
+        //Wichtig, da sonst andere JavaSwing Elemente KeyBindings schlucken
+        registerOutlineKeyBindings(outlinePanel.getTree(), editController);
 
         // Actions
         EditActions editActions = new EditActions(editController);
@@ -83,5 +91,29 @@ public class MainWindow extends JFrame {
                 BorderFactory.createEmptyBorder(2, 8, 2, 8)
         ));
         getContentPane().add(statusBar, BorderLayout.SOUTH);
+    }
+
+    private void registerOutlineKeyBindings(JTree tree, EditController editController) {
+
+        InputMap inputMap = tree.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap actionMap = tree.getActionMap();
+
+        inputMap.put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK),
+            "cutNode");
+
+        actionMap.put("cutNode", new CutAction(editController));
+
+        inputMap.put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK),
+            "copyNode");
+
+        actionMap.put("copyNode", new CopyAction(editController));
+
+        inputMap.put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK),
+            "pasteNode");
+
+        actionMap.put("pasteNode", new InsertAction(editController));
     }
 }

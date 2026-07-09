@@ -1,5 +1,6 @@
 package controller;
 
+import action.edit.CutAction;
 import model.OutlineNode;
 import view.TextWindow;
 import view.OutlinePanel;
@@ -7,6 +8,7 @@ import view.OutlinePanel;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import java.awt.event.KeyEvent;
 
 
 public class OutlineController {
@@ -279,6 +281,10 @@ public class OutlineController {
         for (int i = 0; i < node.getChildCount(); i++) {
             expandSubtree((OutlineNode) node.getChildAt(i));
         }
+    }
+
+    public OutlineNode getRootNode() {
+        return rootNode;
     }
 
 

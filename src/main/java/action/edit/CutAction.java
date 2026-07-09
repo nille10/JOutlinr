@@ -4,6 +4,7 @@ import controller.EditController;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class CutAction extends AbstractAction {
 
@@ -15,7 +16,10 @@ public class CutAction extends AbstractAction {
 
         // TODO
         putValue(SHORT_DESCRIPTION, "");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl X"));
+        putValue(
+            ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK)
+        );
     }
 
     @Override
