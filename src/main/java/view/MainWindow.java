@@ -3,6 +3,7 @@ package view;
 import action.actions.EditActions;
 import action.actions.FileActions;
 import action.actions.OutlineActions;
+import action.manager.UndoManager;
 import controller.*;
 
 import javax.swing.*;
@@ -36,17 +37,19 @@ public class MainWindow extends JFrame {
 
         outlinePanel = new OutlinePanel();
         textWindow = new TextWindow();
-
+        //Global UndoManager
+        UndoManager undoManager = new UndoManager();
 
         // Controller
-        EditController editController = new EditController(this); // Das this wird in dem Controller nur für die Platzhalter benötigt
+        EditController editController = new EditController(this, undoManager); // Das this wird in dem Controller nur für die Platzhalter benötigt
         FileController fileController = new FileController(this); // Das this wird in dem Controller nur für die Platzhalter benötigt
         OutlineController outlineController = new OutlineController(outlinePanel, textWindow);
+
 
         // Actions
         EditActions editActions = new EditActions(editController);
         FileActions fileActions = new FileActions(fileController);
-        OutlineActions outlineActions = new OutlineActions(outlineController);
+        OutlineActions outlineActions = new OutlineActions(outlineController, undoManager);
 
         // Menüleiste
         Menubar menubar = new Menubar(fileActions, outlineActions, editActions, this);
