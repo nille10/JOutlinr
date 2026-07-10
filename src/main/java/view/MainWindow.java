@@ -40,7 +40,7 @@ public class MainWindow extends JFrame {
 
         // Controller
         EditController editController = new EditController(this); // Das this wird in dem Controller nur für die Platzhalter benötigt
-        FileController fileController = new FileController(this); // Das this wird in dem Controller nur für die Platzhalter benötigt
+        FileController fileController = new FileController(outlinePanel.getTreeModel(), this); // Das this wird in dem Controller nur für die Platzhalter benötigt
         OutlineController outlineController = new OutlineController(outlinePanel, textWindow);
 
         // Actions

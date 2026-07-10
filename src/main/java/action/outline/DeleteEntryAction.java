@@ -15,7 +15,7 @@ public class DeleteEntryAction extends AbstractAction {
         this.outlineController = outlineController;
 
         putValue(SHORT_DESCRIPTION, "Lösche einen Eintrag aus dem Outliner");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, KeyEvent.CTRL_DOWN_MASK));
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE , 0));
     }
 
     @Override

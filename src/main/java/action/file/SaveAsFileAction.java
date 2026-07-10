@@ -19,6 +19,10 @@ public class SaveAsFileAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        fileController.saveDocumentAs();
+        try {
+            fileController.saveDocumentAs();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }
