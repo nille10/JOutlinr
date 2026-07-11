@@ -1,13 +1,11 @@
 package controller;
 
-import action.file.SaveFileAction;
 import com.fasterxml.jackson.databind.JsonNode;
 import model.OutlineNode;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -99,7 +97,7 @@ public class FileController {
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonRoot);
     }
 
-    private void _import() throws IOException {
+    private void _import() {
         try {
             JsonNode rootJson = new ObjectMapper().readTree(saveLocation);
             OutlineNode rootNode = fromJson(rootJson);
@@ -140,7 +138,7 @@ public class FileController {
 
         if (children != null) {
             for (JsonNode child : children) {
-                node.add((MutableTreeNode) fromJson(child));
+                node.add(fromJson(child));
             }
         }
 
