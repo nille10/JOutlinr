@@ -21,7 +21,7 @@ public class SaveFileAction extends AbstractAction {
         try {
             fileController.saveDocument();
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new RuntimeException(ex); // Die Exception sollte hier nicht entstehen, da sie vorher schon behandelt wird
         }
     }
 }
