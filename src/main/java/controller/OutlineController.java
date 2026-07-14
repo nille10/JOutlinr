@@ -19,9 +19,7 @@ public class OutlineController {
     private final DefaultTreeModel treeModel;
     private final OutlineNode rootNode;
 
-    public OutlineController(
-            OutlinePanel view,
-            TextWindow textWindow) {
+    public OutlineController(OutlinePanel view, TextWindow textWindow) {
 
         this.textWindow = textWindow;
 
@@ -29,7 +27,7 @@ public class OutlineController {
         this.treeModel = view.getTreeModel();
         this.rootNode = view.getRootNode();
 
-        createExampleData();
+        //createExampleData();
         registerListeners();
         expandAll();
     }

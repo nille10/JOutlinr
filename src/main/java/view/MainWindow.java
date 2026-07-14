@@ -48,9 +48,9 @@ public class MainWindow extends JFrame {
         UndoManager undoManager = new UndoManager();
 
         // Controller
-        FileController fileController = new FileController(this); // Das this wird in dem Controller nur für die Platzhalter benötigt
+        FileController fileController = new FileController(outlinePanel.getTreeModel(), this);
         OutlineController outlineController = new OutlineController(outlinePanel, textWindow);
-        EditController editController = new EditController(this, undoManager, outlineController); // Das this wird in dem Controller nur für die Platzhalter benötigt
+        EditController editController = new EditController(this, undoManager, outlineController);
 
         // KeyBindings für den Tree registrieren
         //Wichtig, da sonst andere JavaSwing Elemente KeyBindings schlucken

@@ -19,6 +19,6 @@ public class CloseAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        // TODO: close the Application
+        fileController.close();
     }
 }

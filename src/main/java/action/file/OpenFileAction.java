@@ -4,6 +4,7 @@ import controller.FileController;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 public class OpenFileAction extends AbstractAction {
 
@@ -19,6 +20,11 @@ public class OpenFileAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        fileController.openDocument();
+        try {
+            fileController.openDocument();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex); // Die Exception sollte hier nicht entstehen, da sie vorher schon behandelt wird
+
+        }
     }
 }
