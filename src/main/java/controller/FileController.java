@@ -29,8 +29,8 @@ public class FileController {
     public void newDocument()    { JOptionPane.showMessageDialog(jFrame, "Neu – noch nicht implementiert.");            }
 
     public void openDocument() throws IOException {
-        openDialog();
-        _import();
+        if (openDialog())
+            _import();
     }
 
     public void saveDocument() throws Exception {
@@ -55,23 +55,24 @@ public class FileController {
     private void saveDialog(String jsonString) throws IOException {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Datei Speichern");
+        fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JSON-Datein (*.json", "json"));
 
         int result = fileChooser.showSaveDialog(jFrame);
         if (result == JFileChooser.APPROVE_OPTION) {
-            saveLocation = fileChooser.getSelectedFile();
-            if (!saveLocation.getName().toLowerCase().endsWith(".json")) {
+            if (saveLocation != null && !saveLocation.getName().toLowerCase().endsWith(".json")) {
                 saveLocation = new File(saveLocation.getAbsolutePath() + ".json");
                 Files.writeString(saveLocation.toPath(), jsonString);
             } else {
-                JOptionPane.showMessageDialog(jFrame, "Bitte eine gültige Datei auswählen.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(jFrame, "Bitte einen gültigen Pfad angeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
             }
         } else if (result != JFileChooser.CANCEL_OPTION) {
             JOptionPane.showMessageDialog(jFrame, "Fehler beim Speichern der Datei", "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void openDialog() {
+
+    private boolean openDialog() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Datei Öffnen");
         fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("JSON-Datein (*.json", "json"));
@@ -83,9 +84,12 @@ public class FileController {
             if (!saveLocation.getName().toLowerCase().endsWith(".json")) {
                 saveLocation = new File(saveLocation.getAbsolutePath());
             }
+            return true;
         } else if (result != JFileChooser.CANCEL_OPTION) {
             JOptionPane.showMessageDialog(jFrame, "Fehler beim Öffnen der Datei", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return false;
         }
+        return false;
     }
 
     private String export(OutlineNode root) throws Exception {
