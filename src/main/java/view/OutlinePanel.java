@@ -16,6 +16,8 @@ public class OutlinePanel extends JPanel {
     private final DefaultTreeModel treeModel;
     private final OutlineNode rootNode;
 
+    //new column panel
+
     public OutlinePanel() {
 
         setLayout(new BorderLayout());
