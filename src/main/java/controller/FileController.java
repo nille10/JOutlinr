@@ -60,9 +60,9 @@ public class FileController {
 
         int result = fileChooser.showSaveDialog(jFrame);
         if (result == JFileChooser.APPROVE_OPTION) {
-            saveLocation = fileChooser.getSelectedFile();
-            if (saveLocation != null && !saveLocation.getName().toLowerCase().endsWith(".json")) {
-                saveLocation = new File(saveLocation.getAbsolutePath() + ".json");
+            File temp = fileChooser.getSelectedFile();
+            if (temp != null && !temp.getName().toLowerCase().endsWith(".json")) {
+                saveLocation = new File(temp.getAbsolutePath() + ".json");
                 Files.writeString(saveLocation.toPath(), jsonString);
             } else {
                 JOptionPane.showMessageDialog(jFrame, "Bitte einen gültigen Pfad angeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
@@ -81,9 +81,11 @@ public class FileController {
         int result = fileChooser.showOpenDialog(jFrame);
 
         if (result == JFileChooser.APPROVE_OPTION) {
-            saveLocation = fileChooser.getSelectedFile();
-            if (!saveLocation.getName().toLowerCase().endsWith(".json")) {
-                saveLocation = new File(saveLocation.getAbsolutePath());
+            File temp = fileChooser.getSelectedFile();
+            if (!temp.getName().toLowerCase().endsWith(".json")) {
+                saveLocation = new File(temp.getAbsolutePath());
+            } else {
+                saveLocation = temp;
             }
             return true;
         } else if (result != JFileChooser.CANCEL_OPTION) {
