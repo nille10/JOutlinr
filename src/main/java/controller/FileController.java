@@ -60,6 +60,7 @@ public class FileController {
 
         int result = fileChooser.showSaveDialog(jFrame);
         if (result == JFileChooser.APPROVE_OPTION) {
+            saveLocation = fileChooser.getSelectedFile();
             if (saveLocation != null && !saveLocation.getName().toLowerCase().endsWith(".json")) {
                 saveLocation = new File(saveLocation.getAbsolutePath() + ".json");
                 Files.writeString(saveLocation.toPath(), jsonString);
