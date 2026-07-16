@@ -7,8 +7,7 @@ package view.columns;
 public enum ColumnType {
 
   CHECKBOX("Checkbox", "Einfaches Häkchen pro Knoten"),
-  TEXTFIELD("Textfeld", "Kurze Notiz / einzeiligen Text pro Knoten"),
-  LABEL("Label", "Nur-Lese-Text (z. B. berechnete Werte)");
+  TEXTFIELD("Textfeld", "Kurze Notiz / einzeiligen Text pro Knoten");
 
   private final String displayName;
   private final String description;
