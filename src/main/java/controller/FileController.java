@@ -5,6 +5,7 @@ import model.OutlineNode;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -34,7 +35,7 @@ public class FileController {
     }
 
     public void saveDocument() throws Exception {
-        String jsonString = export((OutlineNode) treeModel.getRoot());
+        String jsonString = toJsonNode(treeModel);
 
         if (saveLocation != null) {
             Files.writeString(saveLocation.toPath(), jsonString);
@@ -44,7 +45,8 @@ public class FileController {
     }
 
     public void saveDocumentAs() throws Exception {
-        String jsonString = export((OutlineNode) treeModel.getRoot());
+        //String jsonString = export((OutlineNode) treeModel.getRoot());
+        String jsonString = toJsonNode(treeModel);
         saveDialog(jsonString);
     }
 
@@ -133,6 +135,49 @@ public class FileController {
         node.set("children", children);
 
         return node;
+    }
+
+    private static String toJsonNode(DefaultTreeModel treeModel) {
+        StringBuilder json = new StringBuilder("{\n");
+        OutlineNode root = (OutlineNode) treeModel.getRoot();
+
+        json.append(JsonChild(0, root));
+        json.append("\n}");
+
+        return json.toString();
+    }
+
+    private static StringBuilder JsonChild(int amountParents, OutlineNode node) {
+        StringBuilder sb = new StringBuilder();
+
+        // Spaces
+        StringBuilder spaces = new StringBuilder("  ");
+        spaces.repeat("  ", Math.max(0, amountParents));
+
+        sb.append(spaces).append("\"title\" : \"").append(node.getTitle()).append("\",\n");
+        sb.append(spaces).append("\"content\" : \"").append(node.getContent()).append("\",\n");
+        sb.append(spaces).append("\"children\" : ").append("[ ");
+        if (node.getChildCount() == 0) {
+            sb.append("]");
+            return sb;
+        } else if (node.getChildCount() == 1) {
+            sb.append("{\n");
+            sb.append(JsonChild(++amountParents,(OutlineNode) node.getChildAt(0)));
+            sb.append("\n").append(spaces).append("} ]");
+        } else {
+            amountParents++;
+            for (int i = 0; i < node.getChildCount(); i++) {
+                sb.append("{\n");
+                if (node.getChildCount() -1 == i) {
+                    sb.append(JsonChild(amountParents, (OutlineNode) node.getChildAt(i)));
+                    sb.append("\n").append(spaces).append("} ]");
+                } else {
+                    sb.append(JsonChild(amountParents, (OutlineNode) node.getChildAt(i)));
+                    sb.append("\n").append(spaces).append("}, ");
+                }
+            }
+        }
+        return sb;
     }
 
     private static OutlineNode fromJson(JsonNode json) {
