@@ -22,9 +22,8 @@ public class OpenFileAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         try {
             fileController.openDocument();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex); // Die Exception sollte hier nicht entstehen, da sie vorher schon behandelt wird
-
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 }
