@@ -1,6 +1,6 @@
 package controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import model.JSONParser;
 import model.OutlineNode;
 
 import javax.swing.*;
@@ -12,9 +12,6 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -42,7 +39,7 @@ public class FileController {
     public void openDocument() throws Exception {
         int result = openDialog();
         if (result == 1) {
-            importJson();
+            fromJson();
         } else if (result == 2) {
             importXML();
         }
@@ -120,46 +117,6 @@ public class FileController {
         return -1;
     }
 
-    private String export(OutlineNode root) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-
-        ObjectNode jsonRoot = toJsonNode(root, mapper);
-
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonRoot);
-    }
-
-    private void importJson() {
-        try {
-            JsonNode rootJson = new ObjectMapper().readTree(saveLocation);
-            OutlineNode rootNode = fromJson(rootJson);
-
-            treeModel.setRoot(rootNode);
-            treeModel.reload();
-        }catch (Exception ex) {
-            JOptionPane.showMessageDialog(jFrame, "Fehler beim Laden:\n" + ex.getMessage(), "Fehler", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private static ObjectNode toJsonNode(OutlineNode treeNode, ObjectMapper mapper) {
-
-        ObjectNode node = mapper.createObjectNode();
-
-        node.put("title", treeNode.getTitle());
-        node.put("content", treeNode.getContent());
-
-        ArrayNode children = mapper.createArrayNode();
-
-        for (int i = 0; i < treeNode.getChildCount(); i++) {
-            OutlineNode child = (OutlineNode) treeNode.getChildAt(i);
-
-            children.add(toJsonNode(child, mapper));
-        }
-
-        node.set("children", children);
-
-        return node;
-    }
-
     private static String toJsonString(DefaultTreeModel treeModel) {
         StringBuilder json = new StringBuilder("{\n");
         OutlineNode root = (OutlineNode) treeModel.getRoot();
@@ -203,28 +160,14 @@ public class FileController {
         return sb;
     }
 
-    private static OutlineNode fromJson(JsonNode json) {
-        OutlineNode node = new OutlineNode(json.get("title").asText());
+    private void fromJson() throws IOException {
+        JSONParser jsonParser = new JSONParser(getJson());
 
-        node.setContent(json.get("content").asText());
-
-        JsonNode children = json.get("children");
-
-        if (children != null) {
-            for (JsonNode child : children) {
-                node.add(fromJson(child));
-            }
-        }
-
-        return node;
+        treeModel.setRoot(jsonParser.parse());
+        treeModel.reload();
     }
 
-    private OutlineNode fromJson(File saveLocation) throws IOException {
-        StringBuilder json = new StringBuilder(getJson(saveLocation));
-        return new OutlineNode("");
-    }
-
-    private StringBuilder getJson(File saveLocation) throws IOException {
+    private String getJson() throws IOException {
         StringBuilder json = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new FileReader(saveLocation))) {
             String line = br.readLine();
@@ -235,8 +178,7 @@ public class FileController {
                 line = br.readLine();
             }
         }
-        System.out.println(json.toString());
-        return json;
+        return json.toString();
     }
 
     public String toXMLString(DefaultTreeModel treeModel) throws Exception {
@@ -308,9 +250,7 @@ public class FileController {
             }
 
             switch (element.getTagName()) {
-                case "content" -> {
-                    node.setContent(element.getTextContent());
-                }
+                case "content" -> node.setContent(element.getTextContent());
 
                 case "node" -> {
                     OutlineNode childNode = parseNode(element);
