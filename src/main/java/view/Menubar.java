@@ -27,6 +27,9 @@ public class Menubar extends JMenuBar {
         JMenuItem saveAs = menuItem(fileActions.saveAsFileAction);
         datei.add(saveAs);
 
+        JMenuItem exportAsLatex = menuItem(fileActions.exportAsLatexAction);
+        datei.add(exportAsLatex);
+
         datei.addSeparator();
         JMenuItem close = menuItem(fileActions.closeAction);
         datei.add(close);
@@ -45,9 +48,6 @@ public class Menubar extends JMenuBar {
 
         bearbeiten.addSeparator();
 
-        //TODO
-        // Cut copy und Paste ist hart unnötig, weil Betriebssystem funktionen
-        // Sollte man die für die Information der shortcuts drin lassen?
         JMenuItem cut = menuItem(editActions.cutAction);
         bearbeiten.add(cut);
 

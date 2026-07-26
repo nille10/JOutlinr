@@ -66,22 +66,42 @@ public class FileController {
         jFrame.dispatchEvent(new WindowEvent(jFrame, WindowEvent.WINDOW_CLOSING));
     }
 
-    private void saveDialog() throws Exception {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Datei Speichern");
-        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"));
-        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml"));
-        fileChooser.setAcceptAllFileFilterUsed(false);
+    public void exportAsLatex() throws IOException {
+        File saveLocation = exportAsLatexDialog();
+        if (saveLocation != null)
+            //Files.writeString(saveLocation.toPath(), toLatexString((OutlineNode) treeModel.getRoot()));
+            System.out.println(toLatexString((OutlineNode) treeModel.getRoot()));
+    }
 
-        int result = fileChooser.showSaveDialog(jFrame);
+    // Helper Methods
+
+    private File exportAsLatexDialog() {
+        CFileChooser fileChooser = new CFileChooser("Export als Latex",
+                new FileNameExtensionFilter("Latex_Dateien (*.tex", "tex")
+        );
+
+        int result = fileChooser.getResult(jFrame);
         if (result == JFileChooser.APPROVE_OPTION) {
-            File temp = fileChooser.getSelectedFile();
-            if (temp != null) {
-                if (!temp.getName().toLowerCase().endsWith(".json") && fileChooser.getFileFilter().getDescription().contains("JSON")) {
-                    saveLocation = new File(temp.getAbsolutePath() + ".json");
+            return new File(fileChooser.getFile().getAbsolutePath());
+
+        }
+        return null;
+    }
+
+    private void saveDialog() throws Exception {
+        CFileChooser fileChooser = new CFileChooser("Datei Speichern",
+                new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"),
+                new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml")
+        );
+
+        int result = fileChooser.getResult(jFrame);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            if (fileChooser.getFile() != null) {
+                if (!fileChooser.getFile().getName().toLowerCase().endsWith(".json") && fileChooser.getFileFilter().getDescription().contains("JSON")) {
+                    saveLocation = new File(fileChooser.getFile().getAbsolutePath() + ".json");
                     Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
-                } else if (!temp.getName().toLowerCase().endsWith(".xml") && fileChooser.getFileFilter().getDescription().contains("XML")) {
-                    saveLocation = new File(temp.getAbsolutePath() + ".xml");
+                } else if (!fileChooser.getFile().getName().toLowerCase().endsWith(".xml") && fileChooser.getFileFilter().getDescription().contains("XML")) {
+                    saveLocation = new File(fileChooser.getFile().getAbsolutePath() + ".xml");
                     Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
                 } else{
                     JOptionPane.showMessageDialog(jFrame, "Bitte einen gültigen Pfad angeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
@@ -93,21 +113,20 @@ public class FileController {
     }
 
     private int openDialog() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Datei Öffnen");
-        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"));
-        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml"));
-        fileChooser.setAcceptAllFileFilterUsed(false);
 
-        int result = fileChooser.showOpenDialog(jFrame);
+        CFileChooser fileChooser = new CFileChooser("Datei Öffnen",
+                new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"),
+                new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml")
+                );
+
+        int result = fileChooser.getResult(jFrame);
 
         if (result == JFileChooser.APPROVE_OPTION) {
-            File temp = fileChooser.getSelectedFile();
-            if (temp.getName().toLowerCase().endsWith(".json")) {
-                saveLocation = new File(temp.getAbsolutePath());
+            if (fileChooser.getFile().getName().toLowerCase().endsWith(".json")) {
+                saveLocation = new File(fileChooser.getFile().getAbsolutePath());
                 return 1;
-            } else if (temp.getName().toLowerCase().endsWith(".xml")) {
-                saveLocation = new File(temp.getAbsolutePath());
+            } else if (fileChooser.getFile().getName().toLowerCase().endsWith(".xml")) {
+                saveLocation = new File(fileChooser.getFile().getAbsolutePath());
                 return 2;
             }
         } else if (result != JFileChooser.CANCEL_OPTION) {
@@ -262,6 +281,50 @@ public class FileController {
         return node;
     }
 
+    private String toLatexString(OutlineNode node) {
+        StringBuilder latexStr = new StringBuilder();
+        for (int i = 0; i < node.getChildCount(); i++) {
+            latexStr.append(getNodes((OutlineNode) node.getChildAt(i)));
+        }
+        return latexStr.toString();
+    }
+
+    private String getNodes(OutlineNode node) {
+        StringBuilder sb = new StringBuilder();
+        if (node.getLevel() == 1)
+            sb.append("\\section{").append(node.getTitle()).append("}\n");
+        else if (node.getLevel() == 2)
+            sb.append("\\subsection{").append(node.getTitle()).append("}\n");
+        else
+            sb.append("\\subsubsection{").append(node.getTitle()).append("}\n");
+
+        if (!node.getContent().isEmpty() && !node.getContent().isBlank())
+            sb.append(node.getContent()).append("\n");
+        sb.append("\n");
+
+        for (int i = 0; i < node.getChildCount(); i++) {
+            sb.append(getNodes((OutlineNode) node.getChildAt(i)));
+        }
+        return sb.toString();
+    }
+}
+
+class CFileChooser extends JFileChooser {
+
+    CFileChooser(String dialogTitle, FileNameExtensionFilter... filters) {
+        this.setDialogTitle(dialogTitle);
+        for (FileNameExtensionFilter filter : filters)
+            this.addChoosableFileFilter(filter);
+        this.setAcceptAllFileFilterUsed(false);
+    }
+
+    public int getResult(JFrame mainFrame) {
+        return this.showSaveDialog(mainFrame);
+    }
+
+    public File getFile(){
+        return this.getSelectedFile();
+    }
 }
 
 
