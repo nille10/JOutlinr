@@ -47,9 +47,9 @@ public class FileController {
 
     public void saveDocument() throws Exception {
         if (saveLocation != null) {
-            if (saveLocation.toPath().endsWith(".json")) {
+            if (saveLocation.getName().toLowerCase().endsWith(".json")) {
                 Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
-            } else if (saveLocation.toPath().endsWith(".xml")) {
+            } else if (saveLocation.getName().toLowerCase().endsWith("xml")) {
                 Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
             }
         } else {
