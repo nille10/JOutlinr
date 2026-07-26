@@ -69,8 +69,7 @@ public class FileController {
     public void exportAsLatex() throws IOException {
         File saveLocation = exportAsLatexDialog();
         if (saveLocation != null)
-            //Files.writeString(saveLocation.toPath(), toLatexString((OutlineNode) treeModel.getRoot()));
-            System.out.println(toLatexString((OutlineNode) treeModel.getRoot()));
+            Files.writeString(saveLocation.toPath(), toLatexString((OutlineNode) treeModel.getRoot()));
     }
 
     // Helper Methods
