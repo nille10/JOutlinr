@@ -111,7 +111,6 @@ public class FileController {
     }
 
     private int openDialog() {
-
         CFileChooser fileChooser = new CFileChooser("Datei Öffnen",
                 new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"),
                 new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml")
