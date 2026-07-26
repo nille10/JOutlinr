@@ -80,7 +80,7 @@ public class FileController {
 
         int result = fileChooser.getResult(jFrame);
         if (result == JFileChooser.APPROVE_OPTION) {
-            return new File(fileChooser.getFile().getAbsolutePath());
+            return new File(fileChooser.getFile().getAbsolutePath() + ".tex");
 
         }
         return null;
