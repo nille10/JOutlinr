@@ -33,6 +33,8 @@ public class MainWindow extends JFrame {
 
     private final OutlinePanel outlinePanel;
     private final TextWindow textWindow;
+    private final JLabel statusBar;
+
 
     public MainWindow() {
         super("JOutlinr");
@@ -85,7 +87,7 @@ public class MainWindow extends JFrame {
         getContentPane().add(splitPane, BorderLayout.CENTER);
 
         // Status-Leiste
-        JLabel statusBar = new JLabel(" Bereit");
+        statusBar = new JLabel(" Bereit");
         statusBar.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         statusBar.setForeground(new Color(100, 100, 120));
         statusBar.setBorder(BorderFactory.createCompoundBorder(
@@ -131,4 +133,6 @@ public class MainWindow extends JFrame {
             return null;
         }
     }
+
+    public JLabel getStatusBar() {return statusBar; }
 }

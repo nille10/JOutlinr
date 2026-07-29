@@ -16,19 +16,25 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import view.MainWindow;
 
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 
 public class FileController {
 
-    private final JFrame jFrame;
+    private final MainWindow jFrame;
     private final DefaultTreeModel treeModel;
     private File saveLocation;
+    private FileTime lastSavedTime;
 
-    public FileController(DefaultTreeModel treeModel, JFrame jFrame) {
+    public FileController(DefaultTreeModel treeModel, MainWindow jFrame) {
         this.jFrame = jFrame;
         this.treeModel = treeModel;
     }
@@ -39,26 +45,28 @@ public class FileController {
     public void openDocument() throws Exception {
         int result = openDialog();
         if (result == 1) {
-            fromJson();
-        } else if (result == 2) {
             importXML();
+        } else if (result == 2) {
+            fromJson();
         }
     }
 
     public void saveDocument() throws Exception {
         if (saveLocation != null) {
-            if (saveLocation.getName().toLowerCase().endsWith(".json")) {
-                Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
-            } else if (saveLocation.getName().toLowerCase().endsWith("xml")) {
+            if (saveLocation.getName().toLowerCase().endsWith("xml")) {
                 Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
+            } else if (saveLocation.getName().toLowerCase().endsWith(".json")) {
+                Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
             }
         } else {
             saveDialog();
         }
+        updateLastSavedTime();
     }
 
     public void saveDocumentAs() throws Exception {
         saveDialog();
+        updateLastSavedTime();
     }
 
     public void close() {
@@ -78,7 +86,7 @@ public class FileController {
                 new FileNameExtensionFilter("Latex_Dateien (*.tex", "tex")
         );
 
-        int result = fileChooser.getResult(jFrame);
+        int result = fileChooser.getSaveResult(jFrame);
         if (result == JFileChooser.APPROVE_OPTION) {
             return new File(fileChooser.getFile().getAbsolutePath() + ".tex");
 
@@ -88,11 +96,11 @@ public class FileController {
 
     private void saveDialog() throws Exception {
         CFileChooser fileChooser = new CFileChooser("Datei Speichern",
-                new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"),
-                new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml")
+                new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml"),
+                new FileNameExtensionFilter("JSON-Dateien (*.json)", "json")
         );
 
-        int result = fileChooser.getResult(jFrame);
+        int result = fileChooser.getSaveResult(jFrame);
         if (result == JFileChooser.APPROVE_OPTION) {
             if (fileChooser.getFile() != null) {
                 if (!fileChooser.getFile().getName().toLowerCase().endsWith(".json") && fileChooser.getFileFilter().getDescription().contains("JSON")) {
@@ -112,17 +120,17 @@ public class FileController {
 
     private int openDialog() {
         CFileChooser fileChooser = new CFileChooser("Datei Öffnen",
-                new FileNameExtensionFilter("JSON-Dateien (*.json)", "json"),
-                new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml")
+                new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml"),
+                new FileNameExtensionFilter("JSON-Dateien (*.json)", "json")
                 );
 
-        int result = fileChooser.getResult(jFrame);
+        int result = fileChooser.getOpenResult(jFrame);
 
         if (result == JFileChooser.APPROVE_OPTION) {
-            if (fileChooser.getFile().getName().toLowerCase().endsWith(".json")) {
+            if (fileChooser.getFile().getName().toLowerCase().endsWith(".xml")) {
                 saveLocation = new File(fileChooser.getFile().getAbsolutePath());
                 return 1;
-            } else if (fileChooser.getFile().getName().toLowerCase().endsWith(".xml")) {
+            } else if (fileChooser.getFile().getName().toLowerCase().endsWith(".json")) {
                 saveLocation = new File(fileChooser.getFile().getAbsolutePath());
                 return 2;
             }
@@ -304,6 +312,14 @@ public class FileController {
         }
         return sb.toString();
     }
+
+    private void updateLastSavedTime() throws IOException {
+        lastSavedTime = Files.getLastModifiedTime(saveLocation.toPath());
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(lastSavedTime.toInstant(), ZoneId.systemDefault());
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+
+        jFrame.getStatusBar().setText("Last Saved: " + localDateTime.format(dateTimeFormatter));
+    }
 }
 
 class CFileChooser extends JFileChooser {
@@ -315,9 +331,11 @@ class CFileChooser extends JFileChooser {
         this.setAcceptAllFileFilterUsed(false);
     }
 
-    public int getResult(JFrame mainFrame) {
+    public int getSaveResult(JFrame mainFrame) {
         return this.showSaveDialog(mainFrame);
     }
+
+    public int getOpenResult(JFrame mainFrame) {return this.showOpenDialog(mainFrame); }
 
     public File getFile(){
         return this.getSelectedFile();
