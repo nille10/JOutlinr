@@ -1,25 +1,26 @@
-package action.edit;
+package action.actions.edit;
 
 import controller.EditController;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class InsertAction extends AbstractAction {
+public class CopyAction extends AbstractAction {
 
     private final EditController editController;
 
-    public InsertAction(EditController editController) {
-        super("Einfügen");
+    public CopyAction(EditController editController) {
+        super("Kopieren");
         this.editController = editController;
 
         // TODO
         putValue(SHORT_DESCRIPTION, "");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl V"));
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl C"));
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        editController.insert();
+        System.out.println("copy action");
+        editController.copy();
     }
 }

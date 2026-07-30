@@ -1,6 +1,6 @@
 package action.outline;
 
-import action.commands.DeleteEntryCommand;
+import action.actions.commands.DeleteEntryCommand;
 import action.manager.UndoManager;
 import controller.OutlineController;
 

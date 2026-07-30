@@ -3,9 +3,9 @@ package view;
 import action.actions.EditActions;
 import action.actions.FileActions;
 import action.actions.OutlineActions;
-import action.edit.CopyAction;
-import action.edit.CutAction;
-import action.edit.InsertAction;
+import action.actions.edit.CopyAction;
+import action.actions.edit.CutAction;
+import action.actions.edit.InsertAction;
 import action.manager.UndoManager;
 import controller.*;
 
@@ -13,6 +13,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import javax.imageio.ImageIO;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 /**
@@ -34,11 +36,12 @@ public class MainWindow extends JFrame {
     private final OutlinePanel outlinePanel;
     private final TextWindow textWindow;
     private final JLabel statusBar;
+    private static final String title = "JOutlinr";
 
 
     public MainWindow() {
-        super("JOutlinr");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        super(title);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setSize(900, 640);
         setIconImage(loadLogo());
         setMinimumSize(new Dimension(600, 400));
@@ -50,8 +53,8 @@ public class MainWindow extends JFrame {
         UndoManager undoManager = new UndoManager();
 
         // Controller
-        FileController fileController = new FileController(outlinePanel.getTreeModel(), this);
-        OutlineController outlineController = new OutlineController(outlinePanel, textWindow);
+        OutlineController outlineController = new OutlineController(outlinePanel, textWindow, this);
+        FileController fileController = new FileController(outlineController, this);
         EditController editController = new EditController(this, undoManager, outlineController);
 
         // KeyBindings für den Tree registrieren
@@ -95,6 +98,15 @@ public class MainWindow extends JFrame {
                 BorderFactory.createEmptyBorder(2, 8, 2, 8)
         ));
         getContentPane().add(statusBar, BorderLayout.SOUTH);
+
+        //Fenster schließen
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                fileController.checkSavedStatus();
+                dispose();
+            }
+        });
     }
 
     private void registerOutlineKeyBindings(JTree tree, EditController editController) {
@@ -135,4 +147,6 @@ public class MainWindow extends JFrame {
     }
 
     public JLabel getStatusBar() {return statusBar; }
+    @Override
+    public String getTitle() {return title; }
 }

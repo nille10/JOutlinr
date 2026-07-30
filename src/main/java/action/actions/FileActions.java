@@ -1,6 +1,6 @@
 package action.actions;
 
-import action.file.*;
+import action.actions.file.*;
 import controller.FileController;
 
 import javax.swing.*;

@@ -1,10 +1,9 @@
-package action.file;
+package action.actions.file;
 
 import controller.FileController;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 
 public class OpenFileAction extends AbstractAction {
 

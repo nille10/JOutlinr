@@ -29,26 +29,30 @@ import java.time.format.DateTimeFormatter;
 
 public class FileController {
 
-    private final MainWindow jFrame;
+    private final MainWindow mainWindow;
     private final DefaultTreeModel treeModel;
+    private final OutlineController outlineController;
     private File saveLocation;
     private FileTime lastSavedTime;
 
-    public FileController(DefaultTreeModel treeModel, MainWindow jFrame) {
-        this.jFrame = jFrame;
-        this.treeModel = treeModel;
+    public FileController(OutlineController outlineController, MainWindow mainWindow) {
+        this.mainWindow = mainWindow;
+        this.treeModel = outlineController.getTreeModel();
+        this.outlineController = outlineController;
     }
 
     // Platzhalter
-    public void newDocument()    { JOptionPane.showMessageDialog(jFrame, "Neu – noch nicht implementiert.");            }
+    public void newDocument()    { JOptionPane.showMessageDialog(mainWindow, "Neu – noch nicht implementiert.");            }
 
     public void openDocument() throws Exception {
+        checkSavedStatus();
         int result = openDialog();
         if (result == 1) {
             importXML();
         } else if (result == 2) {
             fromJson();
         }
+        outlineController.saved();
     }
 
     public void saveDocument() throws Exception {
@@ -61,16 +65,22 @@ public class FileController {
         } else {
             saveDialog();
         }
+
         updateLastSavedTime();
+        outlineController.saved();
     }
 
     public void saveDocumentAs() throws Exception {
         saveDialog();
         updateLastSavedTime();
+        outlineController.saved();
     }
 
     public void close() {
-        jFrame.dispatchEvent(new WindowEvent(jFrame, WindowEvent.WINDOW_CLOSING));
+        try {
+            checkSavedStatus();
+        } catch (Exception ignore) {}
+        mainWindow.dispatchEvent(new WindowEvent(mainWindow, WindowEvent.WINDOW_CLOSING));
     }
 
     public void exportAsLatex() throws IOException {
@@ -86,7 +96,7 @@ public class FileController {
                 new FileNameExtensionFilter("Latex_Dateien (*.tex", "tex")
         );
 
-        int result = fileChooser.getSaveResult(jFrame);
+        int result = fileChooser.getSaveResult(mainWindow);
         if (result == JFileChooser.APPROVE_OPTION) {
             return new File(fileChooser.getFile().getAbsolutePath() + ".tex");
 
@@ -100,7 +110,7 @@ public class FileController {
                 new FileNameExtensionFilter("JSON-Dateien (*.json)", "json")
         );
 
-        int result = fileChooser.getSaveResult(jFrame);
+        int result = fileChooser.getSaveResult(mainWindow);
         if (result == JFileChooser.APPROVE_OPTION) {
             if (fileChooser.getFile() != null) {
                 if (!fileChooser.getFile().getName().toLowerCase().endsWith(".json") && fileChooser.getFileFilter().getDescription().contains("JSON")) {
@@ -110,11 +120,11 @@ public class FileController {
                     saveLocation = new File(fileChooser.getFile().getAbsolutePath() + ".xml");
                     Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
                 } else{
-                    JOptionPane.showMessageDialog(jFrame, "Bitte einen gültigen Pfad angeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(mainWindow, "Bitte einen gültigen Pfad angeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
                 }
             }
         } else if (result != JFileChooser.CANCEL_OPTION) {
-            JOptionPane.showMessageDialog(jFrame, "Fehler beim Speichern der Datei", "Fehler", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(mainWindow, "Fehler beim Speichern der Datei", "Fehler", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -124,7 +134,7 @@ public class FileController {
                 new FileNameExtensionFilter("JSON-Dateien (*.json)", "json")
                 );
 
-        int result = fileChooser.getOpenResult(jFrame);
+        int result = fileChooser.getOpenResult(mainWindow);
 
         if (result == JFileChooser.APPROVE_OPTION) {
             if (fileChooser.getFile().getName().toLowerCase().endsWith(".xml")) {
@@ -135,7 +145,7 @@ public class FileController {
                 return 2;
             }
         } else if (result != JFileChooser.CANCEL_OPTION) {
-            JOptionPane.showMessageDialog(jFrame, "Fehler beim Öffnen der Datei", "Fehler", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(mainWindow, "Fehler beim Öffnen der Datei", "Fehler", JOptionPane.ERROR_MESSAGE);
             return -1;
         }
         return -1;
@@ -318,7 +328,23 @@ public class FileController {
         LocalDateTime localDateTime = LocalDateTime.ofInstant(lastSavedTime.toInstant(), ZoneId.systemDefault());
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
-        jFrame.getStatusBar().setText("Last Saved: " + localDateTime.format(dateTimeFormatter));
+        mainWindow.getStatusBar().setText("Last Saved: " + localDateTime.format(dateTimeFormatter));
+    }
+
+    public void checkSavedStatus() {
+        if (outlineController.isDirty()) {
+            int result = JOptionPane.showConfirmDialog(
+                    mainWindow,
+                    "Änderungen speichern?",
+                    "Ungespeicherte Änderungen",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (result == JOptionPane.YES_OPTION) {
+                try {
+                    saveDocument();
+                } catch (Exception ignored) {}
+            }
+        }
     }
 }
 
