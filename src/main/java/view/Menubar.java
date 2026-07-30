@@ -3,14 +3,16 @@ package view;
 import action.actions.EditActions;
 import action.actions.FileActions;
 import action.actions.OutlineActions;
+import view.columns.ColumnType;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 public class Menubar extends JMenuBar {
 
-    public Menubar(FileActions fileActions, OutlineActions outlineActions, EditActions editActions, JFrame mainJFrame) {
+    public Menubar(FileActions fileActions, OutlineActions outlineActions, EditActions editActions, JFrame mainJFrame, OutlinePanel outlinePanel) {
         // Datei-Menü
         JMenu datei = new JMenu("Datei");
         datei.setMnemonic(KeyEvent.VK_D);
@@ -45,6 +47,71 @@ public class Menubar extends JMenuBar {
 
         JMenuItem redo = menuItem(editActions.redoAction);
         bearbeiten.add(redo);
+
+        bearbeiten.addSeparator();
+
+        JMenuItem addColumnItem =
+            new JMenuItem("Spalte hinzufügen");
+
+        addColumnItem.setAccelerator(
+            KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK)
+        );
+
+
+        addColumnItem.addActionListener(e -> {
+
+            JPanel panel = new JPanel(new GridLayout(2,2,5,5));
+
+
+            JTextField titleField =
+                new JTextField("Neue Spalte");
+
+
+            JComboBox<ColumnType> typeBox =
+                new JComboBox<>(ColumnType.values());
+
+
+            panel.add(new JLabel("Titel:"));
+            panel.add(titleField);
+
+            panel.add(new JLabel("Typ:"));
+            panel.add(typeBox);
+
+
+
+            int result = JOptionPane.showConfirmDialog(
+                this,
+                panel,
+                "Neue Spalte",
+                JOptionPane.OK_CANCEL_OPTION);
+
+
+            if(result == JOptionPane.OK_OPTION) {
+
+
+                String title =
+                    titleField.getText().trim();
+
+
+                if(title.isEmpty()) {
+                    title = "Spalte";
+                }
+
+
+                ColumnType type =
+                    (ColumnType) typeBox.getSelectedItem();
+
+
+
+                outlinePanel.addColumn(
+                    title,
+                    type);
+            }
+
+        });
+
+
+        bearbeiten.add(addColumnItem);
 
         bearbeiten.addSeparator();
 
