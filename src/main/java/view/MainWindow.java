@@ -7,6 +7,8 @@ import action.actions.edit.CopyAction;
 import action.actions.edit.CutAction;
 import action.actions.edit.InsertAction;
 import action.manager.UndoManager;
+import action.outline.DemoteEntryAction;
+import action.outline.PromoteEntryAction;
 import controller.*;
 
 import javax.swing.*;
@@ -34,6 +36,7 @@ import java.io.IOException;
 public class MainWindow extends JFrame {
 
     private final OutlinePanel outlinePanel;
+    private final OutlineController outlineController;
     private final TextWindow textWindow;
     private final JLabel statusBar;
     private static final String title = "JOutlinr";
@@ -53,7 +56,7 @@ public class MainWindow extends JFrame {
         UndoManager undoManager = new UndoManager();
 
         // Controller
-        OutlineController outlineController = new OutlineController(outlinePanel, textWindow, this);
+        outlineController = new OutlineController(outlinePanel, textWindow, this);
         FileController fileController = new FileController(outlineController, this);
         EditController editController = new EditController(this, undoManager, outlineController);
 
@@ -113,6 +116,18 @@ public class MainWindow extends JFrame {
 
         InputMap inputMap = tree.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap actionMap = tree.getActionMap();
+
+        inputMap.put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK),
+            "promoteNode");
+
+        actionMap.put("promoteNode", new PromoteEntryAction(outlineController));
+
+        inputMap.put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK),
+            "demoteNode");
+
+        actionMap.put("demoteNode", new DemoteEntryAction(outlineController));
 
         inputMap.put(
             KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK),

@@ -16,6 +16,9 @@ public class NewChildEntryAction extends AbstractAction {
 
         putValue(SHORT_DESCRIPTION, "Neuer Untereintrag (Kind)");
         putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK));
+
+        outlineController.addUpdateListener(
+            () -> setEnabled(outlineController.canAddChildToSelected()));
     }
 
     @Override

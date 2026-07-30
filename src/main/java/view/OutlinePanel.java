@@ -21,6 +21,9 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.IOException;
 
 
 /**
@@ -83,19 +86,54 @@ public class OutlinePanel extends JPanel {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         tree.setEditable(true);
+        tree.setInvokesStopCellEditing(true);
 
         tree.setBackground(new Color(248, 248, 252));
         tree.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tree.setRowHeight(24);
         tree.setBorder(new EmptyBorder(4, 4, 4, 4));
+        //Nur wenn Looks und Feel aus ist
+        tree.putClientProperty("JTree.lineStyle", "None");
 
+        Icon rightArrow = loadIcon("/icons/right.png", 12);
+        Icon downArrow  = loadIcon("/icons/down.png", 12);
+
+        tree.setUI(new javax.swing.plaf.basic.BasicTreeUI() {
+
+            @Override
+            protected void installDefaults() {
+                super.installDefaults();
+                setExpandedIcon(downArrow);
+                setCollapsedIcon(rightArrow);
+            }
+
+            @Override
+            protected void paintHorizontalLine(Graphics g, JComponent c, int y, int left, int right) {
+                // absichtlich leer – keine horizontalen Linien
+            }
+
+            @Override
+            protected void paintVerticalLine(Graphics g, JComponent c, int x, int top, int bottom) {
+                // absichtlich leer – keine vertikalen Linien
+            }
+        });
+
+        //renderer setzen
+        hoverManager = new RowHoverManager();
+
+        // Eigener Renderer für den Tree
+        HoverTreeCellRenderer renderer = new HoverTreeCellRenderer(hoverManager);
+        tree.setCellRenderer(renderer);
+
+        //dann editor bauen
         tree.setCellEditor(
-            new DefaultTreeCellEditor(
-                tree,
-                (DefaultTreeCellRenderer) tree.getCellRenderer()) {
+            new DefaultTreeCellEditor(tree, renderer) {
 
                 @Override
                 public boolean isCellEditable(EventObject e) {
+                    if (e == null) {
+                        return true;
+                    }
                     if (e instanceof MouseEvent me) {
                         return me.getClickCount() >= 2;
                     }
@@ -123,11 +161,6 @@ public class OutlinePanel extends JPanel {
         // --------------------------------
         // Hover-System initialisieren
         // --------------------------------
-
-        hoverManager = new RowHoverManager();
-
-        // Eigener Renderer für den Tree
-        tree.setCellRenderer(new HoverTreeCellRenderer(hoverManager));
 
         // Hover-Manager an ColumnPanel weitergeben (gilt für alle Spalten)
         columnPanel.setHoverManager(hoverManager);
@@ -313,5 +346,21 @@ public class OutlinePanel extends JPanel {
 
     public ColumnPanel getColumnPanel() {
         return columnPanel;
+    }
+
+    private Icon loadIcon(String path, int size) {
+        try {
+            var stream = getClass().getResourceAsStream(path);
+            if (stream == null) {
+                System.err.println("Icon nicht gefunden: " + path);
+                return null;
+            }
+            BufferedImage img = ImageIO.read(stream);
+            Image scaled = img.getScaledInstance(size, size, Image.SCALE_SMOOTH);
+            return new ImageIcon(scaled);
+        } catch (IOException e) {
+            System.err.println("Icon konnte nicht geladen werden: " + path);
+            return null;
+        }
     }
 }

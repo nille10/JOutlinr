@@ -4,6 +4,7 @@ import controller.OutlineController;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class CollapseAllAction extends AbstractAction {
 
@@ -14,7 +15,7 @@ public class CollapseAllAction extends AbstractAction {
         this.outlineController = outlineController;
 
         putValue(SHORT_DESCRIPTION, "Collapse all Entrys in the Outliner");
-        //putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke());
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0));
     }
 
     @Override

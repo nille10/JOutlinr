@@ -7,6 +7,8 @@ import view.OutlinePanel;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class OutlineController {
@@ -18,6 +20,10 @@ public class OutlineController {
     private final OutlineNode rootNode;
     private final JFrame mainWindow;
     private boolean dirty;
+
+    public static final int MAX_LEVEL = 4; //Root = 0
+
+    private final List<Runnable> updateListeners = new ArrayList<>();
 
     public OutlineController(OutlinePanel view, TextWindow textWindow, JFrame mainWindow) {
 
@@ -38,6 +44,7 @@ public class OutlineController {
         tree.addTreeSelectionListener(e -> {
             OutlineNode selected = getSelectedNode();
             textWindow.loadNode(selected);
+            fireUpdate();
         });
 
         treeModel.addTreeModelListener(
@@ -115,22 +122,59 @@ public class OutlineController {
         markDirty();
     }
 
-    public void addChild() {
+    public void addRootEntry() {
+        OutlineNode node = new OutlineNode("Neuer Eintrag");
 
-        OutlineNode selected = getSelectedNode();
-
-        OutlineNode parent = selected != null ? selected : rootNode;
-
-        OutlineNode node = new OutlineNode("Neuer Unterknoten");
-
-        treeModel.insertNodeInto(
-                node,
-                parent,
-                parent.getChildCount());
+        treeModel.insertNodeInto(node, rootNode, rootNode.getChildCount());
 
         startEditing(node);
 
         markDirty();
+    }
+
+    public void addChild() {
+
+        OutlineNode selected = getSelectedNode();
+        OutlineNode parent = selected != null ? selected : rootNode;
+
+        if (!canAddChildTo(parent)) {
+            return;
+        }
+
+        OutlineNode node = new OutlineNode("Neuer Unterknoten");
+
+        treeModel.insertNodeInto(
+            node,
+            parent,
+            parent.getChildCount());
+
+        startEditing(node);
+
+        markDirty();
+    }
+
+    public boolean canAddChildTo(OutlineNode parent) {
+        if (parent == null) {
+            return true;
+        }
+        return parent.getLevel() < MAX_LEVEL;
+    }
+
+    public boolean canAddChildToSelected() {
+        OutlineNode selected = getSelectedNode();
+        OutlineNode parent = selected != null ? selected : rootNode;
+        return canAddChildTo(parent);
+    }
+
+    public void addUpdateListener(Runnable listener) {
+        updateListeners.add(listener);
+        listener.run(); // initialer Zustand direkt setzen
+    }
+
+    private void fireUpdate() {
+        for (Runnable r : updateListeners) {
+            r.run();
+        }
     }
 
     public void deleteSelected() {
@@ -169,13 +213,26 @@ public class OutlineController {
         treeModel.removeNodeFromParent(selected);
 
         treeModel.insertNodeInto(
-                selected,
-                grandParent,
-                index);
+            selected,
+            grandParent,
+            index);
 
         selectNode(selected);
 
         markDirty();
+    }
+
+    public boolean canPromoteSelected() {
+
+        OutlineNode selected = getSelectedNode();
+
+        if (selected == null) {
+            return false;
+        }
+
+        OutlineNode parent = (OutlineNode) selected.getParent();
+
+        return parent != null && parent != rootNode;
     }
 
     public void demoteSelected() {
@@ -187,7 +244,7 @@ public class OutlineController {
         }
 
         OutlineNode parent =
-                (OutlineNode) selected.getParent();
+            (OutlineNode) selected.getParent();
 
         int index = parent.getIndex(selected);
 
@@ -200,13 +257,59 @@ public class OutlineController {
         treeModel.removeNodeFromParent(selected);
 
         treeModel.insertNodeInto(
-                selected,
-                previous,
-                previous.getChildCount());
+            selected,
+            previous,
+            previous.getChildCount());
 
         selectNode(selected);
 
         markDirty();
+    }
+
+    public boolean canDemoteSelected() {
+
+        OutlineNode selected = getSelectedNode();
+
+        if (selected == null) {
+            return false;
+        }
+
+        OutlineNode parent = (OutlineNode) selected.getParent();
+
+        if (parent == null) {
+            return false; // Root selbst
+        }
+
+        int index = parent.getIndex(selected);
+
+        if (index == 0) {
+            return false; // kein vorheriger Geschwisterknoten zum "Andocken"
+        }
+
+        // Tiefster Level im gesamten Teilbaum (inkl. aller Kinder/Enkel etc.)
+        int deepestLevelInSubtree = getMaxLevelInSubtree(selected);
+
+        // Nach dem Demote rückt der GESAMTE Teilbaum eine Ebene tiefer
+        return deepestLevelInSubtree < MAX_LEVEL;
+    }
+
+    /**
+     * Ermittelt die tiefste Verschachtelungsebene innerhalb eines Teilbaums
+     * (inklusive des Knotens selbst).
+     */
+    private int getMaxLevelInSubtree(OutlineNode node) {
+
+        int max = node.getLevel();
+
+        for (int i = 0; i < node.getChildCount(); i++) {
+            OutlineNode child = (OutlineNode) node.getChildAt(i);
+            int childMax = getMaxLevelInSubtree(child);
+            if (childMax > max) {
+                max = childMax;
+            }
+        }
+
+        return max;
     }
 
     public void expandAll() {
@@ -308,6 +411,7 @@ public class OutlineController {
     private void markDirty() {
         dirty = true;
         updateTitle();
+        fireUpdate();
     }
 
     public boolean isDirty() {

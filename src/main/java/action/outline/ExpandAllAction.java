@@ -4,6 +4,7 @@ import controller.OutlineController;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class ExpandAllAction extends AbstractAction {
 
@@ -14,7 +15,7 @@ public class ExpandAllAction extends AbstractAction {
         this.outlineController = outlineController;
 
         putValue(SHORT_DESCRIPTION, "Expand all Entry's in the Outliner");
-        //putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke());
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
     }
 
     @Override
