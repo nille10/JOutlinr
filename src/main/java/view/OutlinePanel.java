@@ -83,6 +83,7 @@ public class OutlinePanel extends JPanel {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         tree.setEditable(true);
+        tree.setInvokesStopCellEditing(true);
 
         tree.setBackground(new Color(248, 248, 252));
         tree.setFont(new Font("Segoe UI", Font.PLAIN, 13));
