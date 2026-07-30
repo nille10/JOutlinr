@@ -50,6 +50,10 @@ public class Menubar extends JMenuBar {
         JMenuItem addColumnItem =
             new JMenuItem("Spalte hinzufügen");
 
+        addColumnItem.setAccelerator(
+            KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK)
+        );
+
 
         addColumnItem.addActionListener(e -> {
 

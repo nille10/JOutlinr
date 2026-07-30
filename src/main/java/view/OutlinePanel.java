@@ -4,12 +4,19 @@ import model.OutlineNode;
 import view.columns.ColumnPanel;
 import view.columns.ColumnType;
 import view.columns.OutlineColumn;
+import view.columns.RowHoverManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
@@ -19,15 +26,20 @@ import java.util.EventObject;
  *
  * Aufbau:
  *
- * HeaderPanel
- * -----------------
+ * HeaderPanel  (nicht scrollend, passt Breite dynamisch an)
+ * ---------------------------------------------------------
  *
  * JScrollPane
  *      |
- *      BodyPanel
- *          |
- *          JTree + ColumnPanel
+ *      BodyPanel  (BorderLayout)
+ *          WEST   = treeContainer  (wächst mit dem Tree)
+ *          CENTER = columnPanel    (bekommt restlichen Platz)
  *
+ * Synchronisation:
+ * - TreeModelListener     → Knoten hinzugefügt / entfernt / geändert
+ * - TreeExpansionListener → auf- / zugeklappt (ändert sichtbare Rows)
+ * - ComponentListener     → treeContainer-Breite geändert
+ *                           → HeaderPanel anpassen
  */
 public class OutlinePanel extends JPanel {
 
@@ -39,7 +51,6 @@ public class OutlinePanel extends JPanel {
     private final OutlineNode rootNode;
 
 
-
     private final HeaderPanel headerPanel;
 
     private final ColumnPanel columnPanel;
@@ -47,296 +58,258 @@ public class OutlinePanel extends JPanel {
     private final BodyPanel bodyPanel;
 
 
-
     private final JScrollPane scrollPane;
 
+    private final RowHoverManager hoverManager;
 
 
 
     public OutlinePanel() {
 
-
-        setLayout(
-            new BorderLayout());
-
+        setLayout(new BorderLayout());
 
 
         // --------------------------------
         // Tree erstellen
         // --------------------------------
 
+        rootNode  = new OutlineNode("Outliner");
+        treeModel = new DefaultTreeModel(rootNode);
 
-        rootNode =
-            new OutlineNode("Outliner");
-
-
-        treeModel =
-            new DefaultTreeModel(rootNode);
-
-
-
-        tree =
-            new JTree(treeModel);
-
-
+        tree = new JTree(treeModel);
 
         tree.setRootVisible(false);
-
         tree.setShowsRootHandles(true);
-
         tree.setEditable(true);
 
-
-
-        tree.setBackground(
-            new Color(
-                248,
-                248,
-                252));
-
-
-        tree.setFont(
-            new Font(
-                "Segoe UI",
-                Font.PLAIN,
-                13));
-
-
+        tree.setBackground(new Color(248, 248, 252));
+        tree.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tree.setRowHeight(24);
-
-
-        tree.setBorder(
-            new EmptyBorder(
-                4,
-                4,
-                4,
-                4));
-
-
-
+        tree.setBorder(new EmptyBorder(4, 4, 4, 4));
 
         tree.setCellEditor(
             new DefaultTreeCellEditor(
                 tree,
-                (javax.swing.tree.DefaultTreeCellRenderer)
-                    tree.getCellRenderer()) {
-
-
+                (DefaultTreeCellRenderer) tree.getCellRenderer()) {
 
                 @Override
-                public boolean isCellEditable(
-                    EventObject e) {
-
-
-                    if(e instanceof MouseEvent mouseEvent) {
-
-                        return mouseEvent.getClickCount() >= 2;
+                public boolean isCellEditable(EventObject e) {
+                    if (e instanceof MouseEvent me) {
+                        return me.getClickCount() >= 2;
                     }
-
-
                     return false;
                 }
             });
-
-
 
 
         // --------------------------------
         // Panels
         // --------------------------------
 
+        headerPanel = new HeaderPanel();
+        columnPanel = new ColumnPanel();
+        bodyPanel   = new BodyPanel(tree, columnPanel);
 
-        headerPanel =
-            new HeaderPanel();
+        scrollPane = new JScrollPane(bodyPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-
-
-        columnPanel =
-            new ColumnPanel();
-
-
-
-        bodyPanel =
-            new BodyPanel(
-                tree,
-                columnPanel);
+        add(headerPanel, BorderLayout.NORTH);
+        add(scrollPane,  BorderLayout.CENTER);
 
 
+        // --------------------------------
+        // Hover-System initialisieren
+        // --------------------------------
 
-        scrollPane =
-            new JScrollPane(bodyPanel);
+        hoverManager = new RowHoverManager();
 
+        // Eigener Renderer für den Tree
+        tree.setCellRenderer(new HoverTreeCellRenderer(hoverManager));
 
+        // Hover-Manager an ColumnPanel weitergeben (gilt für alle Spalten)
+        columnPanel.setHoverManager(hoverManager);
 
-        scrollPane.setBorder(
-            BorderFactory.createEmptyBorder());
-
-
-
-        scrollPane.getVerticalScrollBar()
-            .setUnitIncrement(16);
-
-
-
-
-        add(
-            headerPanel,
-            BorderLayout.NORTH);
+        // Maus-Bewegungen im Tree an den Manager melden
+        installTreeHoverListener();
 
 
+        // --------------------------------
+        // Weitere Listener
+        // --------------------------------
 
-        add(
-            scrollPane,
-            BorderLayout.CENTER);
+        // HeaderPanel delegiert "Spalte entfernen" nach oben
+        headerPanel.setOnColumnRemove(this::removeColumn);
+
+        installTreeListeners();
     }
 
 
 
+    // -------------------------------------------------------
+    // Listener
+    // -------------------------------------------------------
+
+    /**
+     * Meldet Mausbewegungen im Tree als Hover-Row an den RowHoverManager.
+     *
+     * tree.getRowForLocation() liefert die Row unter dem Mauszeiger (0-basiert)
+     * oder -1 wenn keine Row getroffen wurde.
+     */
+    private void installTreeHoverListener() {
+
+        tree.addMouseMotionListener(new MouseAdapter() {
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int row = tree.getRowForLocation(e.getX(), e.getY());
+                hoverManager.setHoveredRow(row); // -1 = RowHoverManager.NONE → kein Highlight
+            }
+        });
+
+        tree.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                hoverManager.clearHover();
+            }
+        });
+
+        // Hover-Änderungen → Tree neu zeichnen
+        hoverManager.addChangeListener(tree::repaint);
+    }
 
 
     /**
-     * Wird vom Menü aufgerufen.
-     *
-     * Beispiel:
-     *
-     * addColumn("Status", ColumnType.CHECKBOX);
+     * Reagiert auf Baum-Änderungen (Knoten hinzufügen/entfernen/klappen)
+     * und synchronisiert die Spalten-Zeilen.
      */
-    public OutlineColumn addColumn(
-        String title,
-        ColumnType type) {
+    private void installTreeListeners() {
+
+        treeModel.addTreeModelListener(new TreeModelListener() {
+
+            @Override
+            public void treeNodesChanged(TreeModelEvent e) {
+                scheduleSyncColumns();
+            }
+
+            @Override
+            public void treeNodesInserted(TreeModelEvent e) {
+                scheduleSyncColumns();
+            }
+
+            @Override
+            public void treeNodesRemoved(TreeModelEvent e) {
+                scheduleSyncColumns();
+            }
+
+            @Override
+            public void treeStructureChanged(TreeModelEvent e) {
+                scheduleSyncColumns();
+            }
+        });
+
+        tree.addTreeExpansionListener(new TreeExpansionListener() {
+
+            @Override
+            public void treeExpanded(TreeExpansionEvent e) {
+                scheduleSyncColumns();
+            }
+
+            @Override
+            public void treeCollapsed(TreeExpansionEvent e) {
+                scheduleSyncColumns();
+            }
+        });
+    }
+
+
+    private void scheduleSyncColumns() {
+        SwingUtilities.invokeLater(this::syncColumns);
+    }
 
 
 
-        OutlineColumn column =
-            columnPanel.addColumn(
-                title,
-                type);
+    // -------------------------------------------------------
+    // Öffentliche API
+    // -------------------------------------------------------
 
+    public OutlineColumn addColumn(String title, ColumnType type) {
 
+        OutlineColumn column = columnPanel.addColumn(title, type);
 
-        headerPanel.addColumnHeader(title);
-
-
+        // Column mitgeben damit Header und Column beim Entfernen
+        // koordiniert abgebaut werden können
+        headerPanel.addColumnHeader(title, column);
 
         bodyPanel.showColumns();
 
-
-
-        // aktuelle Tree-Zeilen übernehmen
         syncColumns();
-
-
 
         return column;
     }
 
 
-
-
-
-    /**
-     * Entfernt eine Spalte.
-     */
-    public void removeColumn(
-        OutlineColumn column) {
-
+    public void removeColumn(OutlineColumn column) {
 
         columnPanel.removeColumn(column);
 
-
-        if(!columnPanel.hasColumns()) {
-
+        if (!columnPanel.hasColumns()) {
             bodyPanel.hideColumns();
-
             headerPanel.clearColumnHeaders();
         }
     }
 
 
-
-
-
-
     /**
-     * Synchronisiert Zusatzspalten
-     * mit den sichtbaren Tree-Zeilen.
+     * Liest alle sichtbaren Rows aus dem Tree und übergibt sie
+     * an das ColumnPanel. Passt auch die Scroll-Höhe an.
      */
     public void syncColumns() {
 
+        int count = tree.getRowCount();
 
-        int count =
-            tree.getRowCount();
+        OutlineNode[] nodes = new OutlineNode[count];
 
-
-
-        OutlineNode[] nodes =
-            new OutlineNode[count];
-
-
-
-        for(int i = 0; i < count; i++) {
-
+        for (int i = 0; i < count; i++) {
 
             Object obj =
                 tree.getPathForRow(i)
                     .getLastPathComponent();
 
-
-
-            if(obj instanceof OutlineNode node) {
-
+            if (obj instanceof OutlineNode node) {
                 nodes[i] = node;
             }
         }
 
+        columnPanel.syncWithTree(nodes, tree.getRowHeight());
 
-
-        columnPanel.syncWithTree(
-            nodes,
-            tree.getRowHeight());
+        bodyPanel.updatePreferredHeight(count, tree.getRowHeight());
     }
 
 
 
-
-
-
-    // -----------------------------
+    // -------------------------------------------------------
     // Getter
-    // -----------------------------
-
+    // -------------------------------------------------------
 
     public JTree getTree() {
-
         return tree;
     }
 
-
-
     public DefaultTreeModel getTreeModel() {
-
         return treeModel;
     }
 
-
-
     public OutlineNode getRootNode() {
-
         return rootNode;
     }
 
-
-
     public HeaderPanel getHeaderPanel() {
-
         return headerPanel;
     }
 
-
-
     public ColumnPanel getColumnPanel() {
-
         return columnPanel;
     }
-
 }

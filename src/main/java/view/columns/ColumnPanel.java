@@ -10,122 +10,94 @@ import java.util.List;
 
 /**
  * Container für alle Zusatzspalten rechts neben dem JTree.
- *
- * Beispiel:
- *
- * +-----------+-----------+-----------+
- * | Status    | Notiz     | Priorität |
- * +-----------+-----------+-----------+
- * | Checkbox  | Text      | Text      |
- * | Checkbox  | Text      | Text      |
- * +-----------+-----------+-----------+
- *
  */
 public class ColumnPanel extends JPanel {
 
 
-  private final List<OutlineColumn> columns =
-      new ArrayList<>();
+  private final List<OutlineColumn> columns = new ArrayList<>();
 
+  private OutlineNode[] currentNodes  = new OutlineNode[0];
+  private int currentRowHeight        = 24;
 
-  private OutlineNode[] currentNodes =
-      new OutlineNode[0];
-
-
-  private int currentRowHeight = 24;
+  /** Wird von OutlinePanel gesetzt und an jede neue Spalte weitergegeben. */
+  private RowHoverManager hoverManager;
 
 
 
   public ColumnPanel() {
 
-    setLayout(
-        new BoxLayout(
-            this,
-            BoxLayout.X_AXIS));
-
-
-    setBackground(
-        new Color(248,248,252));
-
+    setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+    setBackground(new Color(248, 248, 252));
     setOpaque(true);
   }
 
 
 
+  // ── HoverManager ─────────────────────────────────────────────────────────
+
   /**
-   * Erstellt und fügt eine neue Spalte hinzu.
+   * Setzt den RowHoverManager für alle aktuellen und zukünftigen Spalten.
+   * Wird von OutlinePanel einmalig im Konstruktor aufgerufen.
    */
-  public OutlineColumn addColumn(
-      String title,
-      ColumnType type) {
+  public void setHoverManager(RowHoverManager manager) {
+    this.hoverManager = manager;
+    // Bestehende Spalten ebenfalls anschließen
+    for (OutlineColumn col : columns) {
+      col.setHoverManager(manager);
+    }
+  }
 
 
-    OutlineColumn column =
-        new OutlineColumn(title,type);
 
+  // ── Spalten verwalten ────────────────────────────────────────────────────
+
+  public OutlineColumn addColumn(String title, ColumnType type) {
+
+    OutlineColumn column = new OutlineColumn(title, type);
+    column.setHoverManager(hoverManager);
 
     columns.add(column);
-
     add(column);
 
+    column.rebuildRows(currentNodes, currentRowHeight, 0);
 
-    // vorhandene Tree-Zeilen sofort anzeigen
-    column.rebuildRows(
-        currentNodes,
-        currentRowHeight,
-        0);
-
-
+    updatePreferredWidth();
     revalidate();
     repaint();
-
 
     return column;
   }
 
 
+  public void removeColumn(OutlineColumn column) {
 
-
-  /**
-   * Entfernt eine Spalte.
-   */
-  public void removeColumn(
-      OutlineColumn column) {
-
-
-    if(columns.remove(column)) {
-
+    if (columns.remove(column)) {
+      column.setHoverManager(null);
       remove(column);
-
+      updatePreferredWidth();
       revalidate();
       repaint();
     }
   }
 
 
+  /** Setzt preferredSize und maximumSize auf die Summe aller Column-Breiten. */
+  private void updatePreferredWidth() {
+    int totalW = columns.stream().mapToInt(OutlineColumn::getColumnWidth).sum();
+    setPreferredSize(new Dimension(totalW, 0));
+    setMaximumSize(new Dimension(totalW, Integer.MAX_VALUE));
+    setMinimumSize(new Dimension(totalW, 0));
+  }
 
 
-  /**
-   * Aktualisiert alle Spalten passend zum Tree.
-   */
-  public void syncWithTree(
-      OutlineNode[] nodes,
-      int rowHeight) {
+  public void syncWithTree(OutlineNode[] nodes, int rowHeight) {
 
-
-    currentNodes = nodes;
-
+    currentNodes     = nodes;
     currentRowHeight = rowHeight;
 
-
-    for(OutlineColumn column : columns) {
-
-      column.rebuildRows(
-          nodes,
-          rowHeight,
-          0);
+    for (OutlineColumn col : columns) {
+      col.rebuildRows(nodes, rowHeight, 0);
     }
-
 
     revalidate();
     repaint();
@@ -133,30 +105,17 @@ public class ColumnPanel extends JPanel {
 
 
 
-
+  // ── Getter ────────────────────────────────────────────────────────────────
 
   public boolean hasColumns() {
-
     return !columns.isEmpty();
   }
 
-
-
-
-
   public int getColumnCount() {
-
     return columns.size();
   }
 
-
-
-
-
   public List<OutlineColumn> getColumns() {
-
     return Collections.unmodifiableList(columns);
   }
-
-
 }

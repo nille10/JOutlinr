@@ -1,6 +1,7 @@
 package view;
 
 import view.columns.ColumnHeader;
+import view.columns.OutlineColumn;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,126 +11,123 @@ import java.util.List;
 /**
  * Nicht scrollender Header-Bereich des Outliners.
  *
- * Aufbau:
+ * Layout: BorderLayout
  *
- * +----------------+----------------+----------------+
- * | Outliner       | Status         | Notiz          |
- * +----------------+----------------+----------------+
+ *   CENTER = treeHeader   → nimmt den gesamten restlichen Platz
+ *   EAST   = columnHeaders (JPanel, BoxLayout X_AXIS) → fix-breite Spalten
  *
+ * Damit verhält sich der Tree-Header exakt wie der Tree selbst:
+ * er füllt den Platz der übrig bleibt nachdem die Columns ihren
+ * festen Platz eingenommen haben.
+ *
+ * updateTreeHeaderWidth() ist nicht mehr nötig und entfällt –
+ * BorderLayout CENTER erledigt das automatisch.
  */
 public class HeaderPanel extends JPanel {
 
-  private static final int TREE_WIDTH = 320;
 
   private final ColumnHeader treeHeader;
 
+  /** Rechts-angedockter Container für alle Spalten-Header (fix-breit). */
   private final JPanel columnHeaders;
 
-  private final List<ColumnHeader> headers = new ArrayList<>();
+  private record ColumnEntry(ColumnHeader header, OutlineColumn column) {}
+  private final List<ColumnEntry> entries = new ArrayList<>();
+
+  private java.util.function.Consumer<OutlineColumn> onColumnRemove;
+
 
 
   public HeaderPanel() {
 
     setLayout(new BorderLayout());
+    setBackground(new Color(235, 235, 240));
 
-    setBackground(new Color(235,235,240));
 
-
-    // ---------------------------------
-    // Tree Header
-    // ---------------------------------
-
+    // ── Tree-Header (CENTER – nimmt restlichen Platz) ────────────────────
     treeHeader = new ColumnHeader("Outliner");
-
-    treeHeader.setPreferredSize(
-        new Dimension(
-            TREE_WIDTH,
-            ColumnHeader.HEADER_HEIGHT));
-
-    add(treeHeader, BorderLayout.WEST);
+    // preferredSize Breite irrelevant – BorderLayout CENTER dehnt automatisch
+    treeHeader.setPreferredSize(new Dimension(0, ColumnHeader.HEADER_HEIGHT));
+    add(treeHeader, BorderLayout.CENTER);
 
 
-    // ---------------------------------
-    // Zusatzspalten Header
-    // ---------------------------------
-
+    // ── Spalten-Header-Container (EAST – fix-breite Spalten) ─────────────
     columnHeaders = new JPanel();
-
-    columnHeaders.setLayout(
-        new BoxLayout(
-            columnHeaders,
-            BoxLayout.X_AXIS));
-
+    columnHeaders.setLayout(new BoxLayout(columnHeaders, BoxLayout.X_AXIS));
     columnHeaders.setOpaque(false);
-
-
-    add(columnHeaders, BorderLayout.CENTER);
+    add(columnHeaders, BorderLayout.EAST);
   }
 
 
 
+  // ── Callback ─────────────────────────────────────────────────────────────
+
+  public void setOnColumnRemove(java.util.function.Consumer<OutlineColumn> callback) {
+    this.onColumnRemove = callback;
+  }
+
+
+
+  // ── Spalten-Header verwalten ──────────────────────────────────────────────
+
   /**
-   * Fügt einen neuen Spaltenheader hinzu.
+   * Fügt einen neuen Spalten-Header hinzu.
+   *
+   * Der Header bekommt dieselbe feste Breite wie seine OutlineColumn
+   * (column.getColumnWidth()) – dadurch fluchten Header und Zellen exakt.
    */
-  public ColumnHeader addColumnHeader(String title) {
+  public ColumnHeader addColumnHeader(String title, OutlineColumn column) {
 
-    ColumnHeader header =
-        new ColumnHeader(title);
+    ColumnHeader header = new ColumnHeader(title);
 
+    // Breite des Headers = Breite der Column (beide aus demselben computeWidth())
+    int w = column.getColumnWidth();
+    header.setPreferredSize(new Dimension(w, ColumnHeader.HEADER_HEIGHT));
+    header.setMinimumSize(new Dimension(w, ColumnHeader.HEADER_HEIGHT));
+    header.setMaximumSize(new Dimension(w, ColumnHeader.HEADER_HEIGHT));
 
-    headers.add(header);
+    header.setOnRemove(() -> {
+      removeEntry(header, column);
+      if (onColumnRemove != null) {
+        onColumnRemove.accept(column);
+      }
+    });
 
+    entries.add(new ColumnEntry(header, column));
     columnHeaders.add(header);
-
 
     revalidate();
     repaint();
-
 
     return header;
   }
 
 
-
-  /**
-   * Entfernt einen Spaltenheader.
-   */
-  public void removeColumnHeader(ColumnHeader header) {
-
-    headers.remove(header);
-
+  private void removeEntry(ColumnHeader header, OutlineColumn column) {
+    entries.removeIf(e -> e.header() == header);
     columnHeaders.remove(header);
-
-
     revalidate();
     repaint();
   }
 
 
-
-  /**
-   * Entfernt alle Zusatzheader.
-   */
   public void clearColumnHeaders() {
-
-    headers.clear();
-
+    entries.clear();
     columnHeaders.removeAll();
-
-
     revalidate();
     repaint();
   }
 
 
+  // updateTreeHeaderWidth() entfällt – BorderLayout CENTER erledigt das
 
-  public ColumnHeader getTreeHeader() {
-    return treeHeader;
-  }
 
+
+  // ── Getter ────────────────────────────────────────────────────────────────
+
+  public ColumnHeader getTreeHeader() { return treeHeader; }
 
   public List<ColumnHeader> getHeaders() {
-    return List.copyOf(headers);
+    return entries.stream().map(ColumnEntry::header).toList();
   }
-
 }
