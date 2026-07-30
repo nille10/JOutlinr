@@ -115,6 +115,16 @@ public class OutlineController {
         markDirty();
     }
 
+    public void addRootEntry() {
+        OutlineNode node = new OutlineNode("Neuer Eintrag");
+
+        treeModel.insertNodeInto(node, rootNode, rootNode.getChildCount());
+
+        startEditing(node);
+
+        markDirty();
+    }
+
     public void addChild() {
 
         OutlineNode selected = getSelectedNode();
