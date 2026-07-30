@@ -2,9 +2,12 @@ package view;
 
 import view.columns.RowHoverManager;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 /**
  * Tree-Renderer mit Hover- und Selektions-Highlighting.
@@ -24,15 +27,15 @@ import java.awt.*;
  */
 public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
 
-  private static final Color SELECTED_BG     = new Color(91, 132, 219);
+  private static final Color SELECTED_BG     = new Color(0xFC, 0x27, 0x39); // #FC2739
   private static final Color SELECTED_FG     = Color.WHITE;
-  private static final Color SELECTED_BORDER = new Color(70, 110, 200);
+  private static final Color SELECTED_BORDER = new Color(0xD9, 0x1B, 0x2C); // etwas dunkler, für dezente Kontur
 
-  private static final Color HOVER_BG  = new Color(225, 228, 245);
-  private static final Color HOVER_FG  = new Color(30, 30, 50);
+  private static final Color HOVER_BG  = new Color(0xFD, 0xE3, 0xE5); // sehr helles Rosé
+  private static final Color HOVER_FG  = new Color(0x40, 0x20, 0x22); // leicht warmes Dunkelgrau/Braun statt reines Schwarz
 
-  private static final Color DEFAULT_BG = new Color(248, 248, 252);
-  private static final Color DEFAULT_FG = new Color(30, 30, 30);
+  private static final Color DEFAULT_BG = new Color(0xF8, 0xF8, 0xFA);
+  private static final Color DEFAULT_FG = new Color(0x1E, 0x1E, 0x1E);
 
   private final RowHoverManager hoverManager;
 
@@ -45,6 +48,15 @@ public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
     setTextSelectionColor(SELECTED_FG);
     setTextNonSelectionColor(DEFAULT_FG);
     setBorderSelectionColor(SELECTED_BORDER);
+
+    Icon leaf = loadIcon("/icons/dot.png", 8);
+    Icon closed = loadIcon("/icons/empty.png", 8);
+    Icon open = loadIcon("/icons/empty.png", 8);
+
+
+    setLeafIcon(leaf);
+    setClosedIcon(open);
+    setOpenIcon(closed);
   }
 
 
@@ -81,5 +93,21 @@ public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
     }
 
     return c;
+  }
+
+  private Icon loadIcon(String path, int size) {
+    try {
+      var stream = getClass().getResourceAsStream(path);
+      if (stream == null) {
+        System.err.println("Icon nicht gefunden: " + path);
+        return null;
+      }
+      BufferedImage img = ImageIO.read(stream);
+      Image scaled = img.getScaledInstance(size, size, Image.SCALE_SMOOTH);
+      return new ImageIcon(scaled);
+    } catch (IOException e) {
+      System.err.println("Icon konnte nicht geladen werden: " + path);
+      return null;
+    }
   }
 }

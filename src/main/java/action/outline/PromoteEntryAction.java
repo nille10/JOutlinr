@@ -18,6 +18,7 @@ public class PromoteEntryAction extends AbstractAction{
             () -> setEnabled(outlineController.canPromoteSelected()));
 
         putValue(SHORT_DESCRIPTION, "Ebene höher (Promote)");
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK));
     }
 
     @Override
