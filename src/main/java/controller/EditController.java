@@ -1,7 +1,7 @@
 package controller;
 
-import action.commands.DeleteEntryCommand;
-import action.commands.PasteCommand;
+import action.actions.commands.DeleteEntryCommand;
+import action.actions.commands.PasteCommand;
 import action.manager.UndoManager;
 import model.OutlineNode;
 

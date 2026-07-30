@@ -1,4 +1,4 @@
-package action.edit;
+package action.actions.edit;
 
 import controller.EditController;
 

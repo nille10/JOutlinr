@@ -1,6 +1,6 @@
 package action.actions;
 
-import action.edit.*;
+import action.actions.edit.*;
 import controller.EditController;
 
 import javax.swing.*;

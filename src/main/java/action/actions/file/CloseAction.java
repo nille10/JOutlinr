@@ -1,4 +1,4 @@
-package action.file;
+package action.actions.file;
 
 import controller.FileController;
 

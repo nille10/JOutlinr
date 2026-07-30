@@ -1,25 +1,25 @@
-package action.edit;
+package action.actions.edit;
 
 import controller.EditController;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class RedoAction extends AbstractAction {
+public class InsertAction extends AbstractAction {
 
     private final EditController editController;
 
-    public RedoAction(EditController editController) {
-        super("Wiederholen");
+    public InsertAction(EditController editController) {
+        super("Einfügen");
         this.editController = editController;
 
         // TODO
         putValue(SHORT_DESCRIPTION, "");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl Y"));
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl V"));
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        editController.redo();
+        editController.insert();
     }
 }

@@ -1,4 +1,4 @@
-package action.commands;
+package action.actions.commands;
 
 import action.manager.UndoableAction;
 import controller.OutlineController;

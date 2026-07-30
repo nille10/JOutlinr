@@ -2,10 +2,6 @@ package model;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-/**
- * Repräsentiert einen Knoten im Outline-Baum.
- * Jeder Knoten hat einen Titel und optional einen langen Textinhalt.
- */
 public class OutlineNode extends DefaultMutableTreeNode {
 
   private String title;

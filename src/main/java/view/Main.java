@@ -9,9 +9,9 @@ public class Main {
 
   public static void main(String[] args) {
     // Natives Look & Feel des Betriebssystems verwenden
-    try {
+    /*try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    } catch (Exception ignored) {}
+    } catch (Exception ignored) {}*/
 
     SwingUtilities.invokeLater(() -> {
       MainWindow window = new MainWindow();

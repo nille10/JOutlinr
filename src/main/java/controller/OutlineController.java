@@ -1,6 +1,5 @@
 package controller;
 
-import action.edit.CutAction;
 import model.OutlineNode;
 import view.TextWindow;
 import view.OutlinePanel;
@@ -8,7 +7,6 @@ import view.OutlinePanel;
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import java.awt.event.KeyEvent;
 
 
 public class OutlineController {
@@ -18,14 +16,17 @@ public class OutlineController {
     private final JTree tree;
     private final DefaultTreeModel treeModel;
     private final OutlineNode rootNode;
+    private final JFrame mainWindow;
+    private boolean dirty;
 
-    public OutlineController(OutlinePanel view, TextWindow textWindow) {
+    public OutlineController(OutlinePanel view, TextWindow textWindow, JFrame mainWindow) {
 
         this.textWindow = textWindow;
 
         this.tree = view.getTree();
         this.treeModel = view.getTreeModel();
         this.rootNode = view.getRootNode();
+        this.mainWindow = mainWindow;
 
         //createExampleData();
         registerListeners();
@@ -43,8 +44,7 @@ public class OutlineController {
                 new javax.swing.event.TreeModelListener() {
 
                     @Override
-                    public void treeNodesChanged(
-                            javax.swing.event.TreeModelEvent e) {
+                    public void treeNodesChanged(javax.swing.event.TreeModelEvent e) {
 
                         Object[] children = e.getChildren();
 
@@ -52,26 +52,27 @@ public class OutlineController {
                             return;
                         }
 
-                        OutlineNode child =
-                                (OutlineNode) children[0];
+                        OutlineNode child = (OutlineNode) children[0];
 
-                        child.setTitle(
-                                child.getUserObject().toString());
+                        child.setTitle(child.getUserObject().toString());
+
+                        markDirty();
                     }
 
                     @Override
                     public void treeNodesInserted(
                             javax.swing.event.TreeModelEvent e) {
+                        markDirty();
                     }
 
                     @Override
-                    public void treeNodesRemoved(
-                            javax.swing.event.TreeModelEvent e) {
+                    public void treeNodesRemoved(javax.swing.event.TreeModelEvent e) {
+                        markDirty();
                     }
 
                     @Override
-                    public void treeStructureChanged(
-                            javax.swing.event.TreeModelEvent e) {
+                    public void treeStructureChanged(javax.swing.event.TreeModelEvent e) {
+                        markDirty();
                     }
                 });
     }
@@ -110,6 +111,8 @@ public class OutlineController {
         treeModel.insertNodeInto(node, parent, index);
 
         startEditing(node);
+
+        markDirty();
     }
 
     public void addChild() {
@@ -126,6 +129,8 @@ public class OutlineController {
                 parent.getChildCount());
 
         startEditing(node);
+
+        markDirty();
     }
 
     public void deleteSelected() {
@@ -139,6 +144,8 @@ public class OutlineController {
         treeModel.removeNodeFromParent(selected);
 
         textWindow.loadNode(null);
+
+        markDirty();
     }
 
     public void promoteSelected() {
@@ -167,6 +174,8 @@ public class OutlineController {
                 index);
 
         selectNode(selected);
+
+        markDirty();
     }
 
     public void demoteSelected() {
@@ -196,6 +205,8 @@ public class OutlineController {
                 previous.getChildCount());
 
         selectNode(selected);
+
+        markDirty();
     }
 
     public void expandAll() {
@@ -245,6 +256,8 @@ public class OutlineController {
         treeModel.removeNodeFromParent(node);
 
         textWindow.loadNode(null);
+
+        markDirty();
     }
 
     public void insertNode(OutlineNode parent,
@@ -253,6 +266,8 @@ public class OutlineController {
 
         treeModel.insertNodeInto(node, parent, index);
         selectNode(node);
+
+        markDirty();
     }
 
     //Hilfsmethode: expanded ein Node
@@ -286,4 +301,25 @@ public class OutlineController {
     }
 
 
+    public DefaultTreeModel getTreeModel() {
+        return treeModel;
+    }
+
+    private void markDirty() {
+        dirty = true;
+        updateTitle();
+    }
+
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public void saved() {
+        dirty = false;
+        updateTitle();
+    }
+
+    private void updateTitle() {
+        mainWindow.setTitle((isDirty()? "*" : "") + mainWindow.getTitle());
+    }
 }
