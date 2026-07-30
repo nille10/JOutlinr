@@ -213,13 +213,26 @@ public class OutlineController {
         treeModel.removeNodeFromParent(selected);
 
         treeModel.insertNodeInto(
-                selected,
-                grandParent,
-                index);
+            selected,
+            grandParent,
+            index);
 
         selectNode(selected);
 
         markDirty();
+    }
+
+    public boolean canPromoteSelected() {
+
+        OutlineNode selected = getSelectedNode();
+
+        if (selected == null) {
+            return false;
+        }
+
+        OutlineNode parent = (OutlineNode) selected.getParent();
+
+        return parent != null && parent != rootNode;
     }
 
     public void demoteSelected() {
@@ -231,7 +244,7 @@ public class OutlineController {
         }
 
         OutlineNode parent =
-                (OutlineNode) selected.getParent();
+            (OutlineNode) selected.getParent();
 
         int index = parent.getIndex(selected);
 
@@ -244,13 +257,59 @@ public class OutlineController {
         treeModel.removeNodeFromParent(selected);
 
         treeModel.insertNodeInto(
-                selected,
-                previous,
-                previous.getChildCount());
+            selected,
+            previous,
+            previous.getChildCount());
 
         selectNode(selected);
 
         markDirty();
+    }
+
+    public boolean canDemoteSelected() {
+
+        OutlineNode selected = getSelectedNode();
+
+        if (selected == null) {
+            return false;
+        }
+
+        OutlineNode parent = (OutlineNode) selected.getParent();
+
+        if (parent == null) {
+            return false; // Root selbst
+        }
+
+        int index = parent.getIndex(selected);
+
+        if (index == 0) {
+            return false; // kein vorheriger Geschwisterknoten zum "Andocken"
+        }
+
+        // Tiefster Level im gesamten Teilbaum (inkl. aller Kinder/Enkel etc.)
+        int deepestLevelInSubtree = getMaxLevelInSubtree(selected);
+
+        // Nach dem Demote rückt der GESAMTE Teilbaum eine Ebene tiefer
+        return deepestLevelInSubtree < MAX_LEVEL;
+    }
+
+    /**
+     * Ermittelt die tiefste Verschachtelungsebene innerhalb eines Teilbaums
+     * (inklusive des Knotens selbst).
+     */
+    private int getMaxLevelInSubtree(OutlineNode node) {
+
+        int max = node.getLevel();
+
+        for (int i = 0; i < node.getChildCount(); i++) {
+            OutlineNode child = (OutlineNode) node.getChildAt(i);
+            int childMax = getMaxLevelInSubtree(child);
+            if (childMax > max) {
+                max = childMax;
+            }
+        }
+
+        return max;
     }
 
     public void expandAll() {

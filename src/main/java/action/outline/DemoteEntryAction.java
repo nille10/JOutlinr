@@ -14,8 +14,10 @@ public class DemoteEntryAction extends AbstractAction {
         super("Ebene tiefer");
         this.outlineController = outlineController;
 
+        outlineController.addUpdateListener(
+            () -> setEnabled(outlineController.canDemoteSelected()));
+
         putValue(SHORT_DESCRIPTION, "Ebene tiefer (Demote)");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK));
     }
 
     @Override

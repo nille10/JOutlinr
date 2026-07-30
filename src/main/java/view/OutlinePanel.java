@@ -97,6 +97,9 @@ public class OutlinePanel extends JPanel {
 
                 @Override
                 public boolean isCellEditable(EventObject e) {
+                    if (e == null) {
+                        return true; // direkt nach erstellen von Knoten (startEditing(node))
+                    }
                     if (e instanceof MouseEvent me) {
                         return me.getClickCount() >= 2;
                     }
