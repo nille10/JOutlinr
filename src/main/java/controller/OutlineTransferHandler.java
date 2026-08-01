@@ -58,18 +58,22 @@ public class OutlineTransferHandler extends TransferHandler {
 
         int index = dl.getChildIndex();
 
+        DefaultMutableTreeNode target =(DefaultMutableTreeNode) path.getLastPathComponent();
+
+        if (draggedNode == null) {
+            return false;
+        }
+
+        if (draggedNode == target) {
+            return false;
+        }
+
+        model.removeNodeFromParent(draggedNode);
+
         if (index >= 0) {
-
-            DefaultMutableTreeNode parent =(DefaultMutableTreeNode) path.getLastPathComponent();
-
-            model.removeNodeFromParent(draggedNode);
-            model.insertNodeInto(draggedNode, parent, index);
+            model.insertNodeInto(draggedNode, target, index);
 
         } else {
-
-            DefaultMutableTreeNode target =(DefaultMutableTreeNode) path.getLastPathComponent();
-
-            model.removeNodeFromParent(draggedNode);
             model.insertNodeInto(draggedNode, target, target.getChildCount());
         }
 
