@@ -408,7 +408,7 @@ public class OutlineController {
         return treeModel;
     }
 
-    private void markDirty() {
+    public void markDirty() {
         dirty = true;
         updateTitle();
         fireUpdate();
