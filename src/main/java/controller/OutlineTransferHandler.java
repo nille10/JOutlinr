@@ -6,7 +6,6 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 
@@ -73,6 +72,8 @@ public class OutlineTransferHandler extends TransferHandler {
             model.removeNodeFromParent(draggedNode);
             model.insertNodeInto(draggedNode, target, target.getChildCount());
         }
+
+        mainFrame.getOutlineController().markDirty();
 
         return true;
     }
