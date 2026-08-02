@@ -367,6 +367,56 @@ public class OutlineController {
         markDirty();
     }
 
+    public java.util.List<OutlineNode> getSelectedNodes() {
+
+        TreePath[] paths = tree.getSelectionPaths();
+
+        if (paths == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        java.util.List<OutlineNode> nodes = new ArrayList<>();
+
+        for (TreePath path : paths) {
+            nodes.add((OutlineNode) path.getLastPathComponent());
+        }
+
+        return nodes;
+    }
+
+    public void deleteNodes(java.util.List<OutlineNode> nodesToDelete) {
+
+        if (nodesToDelete.isEmpty()) {
+            return;
+        }
+
+        for (OutlineNode node : nodesToDelete) {
+            treeModel.removeNodeFromParent(node);
+        }
+
+        textWindow.loadNode(null);
+
+        markDirty();
+    }
+    public void selectNodes(List<OutlineNode> nodes) {
+
+        if (nodes.isEmpty()) {
+            return;
+        }
+
+        TreePath[] paths = new TreePath[nodes.size()];
+
+        for (int i = 0; i < nodes.size(); i++) {
+            paths[i] = new TreePath(treeModel.getPathToRoot(nodes.get(i)));
+        }
+
+        tree.setSelectionPaths(paths);
+
+        // Auf den letzten wiederhergestellten Knoten scrollen, damit er sichtbar ist
+        tree.scrollPathToVisible(paths[paths.length - 1]);
+    }
+
+
     public void insertNode(OutlineNode parent,
                            OutlineNode node,
                            int index) {
