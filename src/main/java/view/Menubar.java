@@ -151,6 +151,15 @@ public class Menubar extends JMenuBar {
 
         // Ansicht-Menü
         JMenu ansicht = new JMenu("Ansicht");
+
+        JMenuItem expandEntry = menuItem(outlineActions.expandEntryAction);
+        ansicht.add(expandEntry);
+
+        JMenuItem collapseEntry = menuItem(outlineActions.collapseEntryAction);
+        ansicht.add(collapseEntry);
+
+        ansicht.addSeparator();
+
         JMenuItem expandAll = menuItem(outlineActions.expandAllAction);
         ansicht.add(expandAll);
 
@@ -158,6 +167,46 @@ public class Menubar extends JMenuBar {
         ansicht.add(collapseAll);
 
         this.add(ansicht);
+
+        //Settings
+        JMenu einstellungen = new JMenu("Einstellungen");
+
+        JCheckBoxMenuItem darkMode = new JCheckBoxMenuItem("DarkMode");
+
+        // Laden
+        boolean isDarkModeActive = AppPreferences.isDarkMode();
+
+        darkMode.setSelected(isDarkModeActive);
+        einstellungen.add(darkMode);
+
+        darkMode.addActionListener(e -> {
+                AppTheme.toggleDark(darkMode.isSelected(), mainJFrame);
+                AppPreferences.setDarkMode(darkMode.isSelected());
+            }
+        );
+
+        JCheckBoxMenuItem fullscreen = new JCheckBoxMenuItem("Fullscreen");
+        // Laden
+        boolean isFullscreen = AppPreferences.isFullscreen();
+        fullscreen.setSelected(isFullscreen);
+        einstellungen.add(fullscreen);
+        fullscreen.setAccelerator(
+            KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)
+        );
+
+        fullscreen.addActionListener(e -> {
+            if (fullscreen.isSelected()) {
+                mainJFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            }else{
+                mainJFrame.setExtendedState(JFrame.NORMAL);
+            }
+                AppPreferences.setFullScreen(fullscreen.isSelected());
+            }
+        );
+
+
+
+        this.add(einstellungen);
 
         // Hilfe-Menü TODO: muss noch gemacht werden
         JMenu hilfe = new JMenu("Hilfe");

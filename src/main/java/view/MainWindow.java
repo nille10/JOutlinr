@@ -7,10 +7,7 @@ import action.actions.edit.CopyAction;
 import action.actions.edit.CutAction;
 import action.actions.edit.InsertAction;
 import action.manager.UndoManager;
-import action.outline.CollapseEntryAction;
-import action.outline.DemoteEntryAction;
-import action.outline.ExpandEntryAction;
-import action.outline.PromoteEntryAction;
+import action.outline.*;
 import controller.*;
 
 import javax.swing.*;
@@ -97,7 +94,7 @@ public class MainWindow extends JFrame {
         // Status-Leiste
         statusBar = new JLabel(" Bereit");
         statusBar.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        statusBar.setForeground(new Color(100, 100, 120));
+        //statusBar.setForeground(new Color(100, 100, 120));
         statusBar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(200, 200, 210)),
                 BorderFactory.createEmptyBorder(2, 8, 2, 8)

@@ -41,7 +41,7 @@ public class HeaderPanel extends JPanel {
   public HeaderPanel() {
 
     setLayout(new BorderLayout());
-    setBackground(new Color(235, 235, 240));
+    //setBackground(new Color(235, 235, 240));
 
 
     // ── Tree-Header (CENTER – nimmt restlichen Platz) ────────────────────

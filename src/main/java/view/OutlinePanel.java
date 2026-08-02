@@ -98,7 +98,7 @@ public class OutlinePanel extends JPanel {
         tree.setDropMode(DropMode.ON_OR_INSERT);
         tree.setTransferHandler(new OutlineTransferHandler(mainFrame));
 
-        tree.setBackground(new Color(248, 248, 252));
+        //tree.setBackground(new Color(248, 248, 252));
         tree.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tree.setRowHeight(24);
         tree.setBorder(new EmptyBorder(4, 4, 4, 4));
@@ -108,26 +108,7 @@ public class OutlinePanel extends JPanel {
         Icon rightArrow = loadIcon("/icons/right.png", 12);
         Icon downArrow  = loadIcon("/icons/down.png", 12);
 
-        tree.setUI(new javax.swing.plaf.basic.BasicTreeUI() {
-
-            @Override
-            protected void installDefaults() {
-                super.installDefaults();
-                setExpandedIcon(downArrow);
-                setCollapsedIcon(rightArrow);
-            }
-
-            @Override
-            protected void paintHorizontalLine(Graphics g, JComponent c, int y, int left, int right) {
-                // absichtlich leer – keine horizontalen Linien
-            }
-
-            @Override
-            protected void paintVerticalLine(Graphics g, JComponent c, int x, int top, int bottom) {
-                // absichtlich leer – keine vertikalen Linien
-            }
-
-        });
+        tree.putClientProperty("JTree.lineStyle", "None");
 
         //renderer setzen
         hoverManager = new RowHoverManager();
