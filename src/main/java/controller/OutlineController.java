@@ -21,7 +21,7 @@ public class OutlineController {
     private final JFrame mainWindow;
     private boolean dirty;
 
-    public static final int MAX_LEVEL = 4; //Root = 0
+    public static final int MAX_LEVEL = 3; //Root = 0
 
     private final List<Runnable> updateListeners = new ArrayList<>();
 
@@ -337,7 +337,7 @@ public class OutlineController {
         return (OutlineNode) path.getLastPathComponent();
     }
 
-    private void selectNode(OutlineNode node) {
+    public void selectNode(OutlineNode node) {
 
         TreePath path = new TreePath(treeModel.getPathToRoot(node));
 
@@ -422,6 +422,7 @@ public class OutlineController {
                            int index) {
 
         treeModel.insertNodeInto(node, parent, index);
+
         selectNode(node);
 
         markDirty();
