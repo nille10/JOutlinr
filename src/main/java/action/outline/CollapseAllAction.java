@@ -15,7 +15,7 @@ public class CollapseAllAction extends AbstractAction {
         this.outlineController = outlineController;
 
         putValue(SHORT_DESCRIPTION, "Collapse all Entrys in the Outliner");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0));
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, KeyEvent.CTRL_DOWN_MASK));
     }
 
     @Override
