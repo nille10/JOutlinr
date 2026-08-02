@@ -7,7 +7,9 @@ import action.actions.edit.CopyAction;
 import action.actions.edit.CutAction;
 import action.actions.edit.InsertAction;
 import action.manager.UndoManager;
+import action.outline.CollapseEntryAction;
 import action.outline.DemoteEntryAction;
+import action.outline.ExpandEntryAction;
 import action.outline.PromoteEntryAction;
 import controller.*;
 
@@ -128,6 +130,18 @@ public class MainWindow extends JFrame {
             "demoteNode");
 
         actionMap.put("demoteNode", new DemoteEntryAction(outlineController));
+
+        inputMap.put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+            "expandNode");
+
+        actionMap.put("expandNode", new ExpandEntryAction(outlineController));
+
+        inputMap.put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0),
+            "collapseNode");
+
+        actionMap.put("collapseNode", new CollapseEntryAction(outlineController));
 
         inputMap.put(
             KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK),

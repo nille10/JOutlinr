@@ -427,12 +427,17 @@ public class OutlineController {
         markDirty();
     }
 
-    //Hilfsmethode: expanded ein Node
-    public void expandNode(OutlineNode node) {
+    public void collapseNode() {
+        OutlineNode selected = getSelectedNode();
+        if (selected == null) return;
 
-        if (node == null) {
-            return;
-        }
+        TreePath path = new TreePath(treeModel.getPathToRoot(selected));
+        tree.collapsePath(path);
+    }
+
+    public void expandNode() {
+        OutlineNode node = getSelectedNode();
+        if (node == null) return;
 
         TreePath path = new TreePath(treeModel.getPathToRoot(node));
         tree.expandPath(path);
