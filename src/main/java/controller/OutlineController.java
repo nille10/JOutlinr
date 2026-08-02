@@ -347,6 +347,10 @@ public class OutlineController {
 
     private void startEditing(OutlineNode node) {
 
+        if (tree.isEditing()) {
+            tree.getCellEditor().cancelCellEditing();
+        }
+
         TreePath path = new TreePath(treeModel.getPathToRoot(node));
 
         tree.setSelectionPath(path);
@@ -425,5 +429,11 @@ public class OutlineController {
 
     private void updateTitle() {
         mainWindow.setTitle((isDirty()? "*" : "") + mainWindow.getTitle());
+    }
+
+    public void cancelActiveEditing() {
+        if (tree.isEditing()) {
+            tree.getCellEditor().cancelCellEditing();
+        }
     }
 }

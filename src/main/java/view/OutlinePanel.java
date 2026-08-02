@@ -23,6 +23,7 @@ import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+import javax.swing.tree.TreePath;
 import java.io.IOException;
 
 
@@ -79,7 +80,15 @@ public class OutlinePanel extends JPanel {
         // --------------------------------
 
         rootNode  = new OutlineNode("Outliner");
-        treeModel = new DefaultTreeModel(rootNode);
+        treeModel = new DefaultTreeModel(rootNode) {
+            @Override
+            public void valueForPathChanged(TreePath path, Object newValue) {
+                if (path == null) {
+                    return;
+                }
+                super.valueForPathChanged(path, newValue);
+            }
+        };
 
         tree = new JTree(treeModel);
 
@@ -116,6 +125,7 @@ public class OutlinePanel extends JPanel {
             protected void paintVerticalLine(Graphics g, JComponent c, int x, int top, int bottom) {
                 // absichtlich leer – keine vertikalen Linien
             }
+
         });
 
         //renderer setzen
