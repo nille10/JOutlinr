@@ -50,7 +50,7 @@ public class MainWindow extends JFrame {
         setMinimumSize(new Dimension(600, 400));
         setLocationRelativeTo(null);
 
-        outlinePanel = new OutlinePanel();
+        outlinePanel = new OutlinePanel(this);
         textWindow = new TextWindow();
         //Global UndoManager
         UndoManager undoManager = new UndoManager();
@@ -162,6 +162,8 @@ public class MainWindow extends JFrame {
     }
 
     public JLabel getStatusBar() {return statusBar; }
+    public OutlineController getOutlineController() {return outlineController; }
+
     @Override
     public String getTitle() {return title; }
 }

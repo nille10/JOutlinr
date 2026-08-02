@@ -19,10 +19,6 @@ public class OpenFileAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        try {
             fileController.openDocument();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
     }
 }

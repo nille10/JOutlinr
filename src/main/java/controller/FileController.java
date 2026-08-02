@@ -42,15 +42,25 @@ public class FileController {
     }
 
     // Platzhalter
-    public void newDocument()    { JOptionPane.showMessageDialog(mainWindow, "Neu – noch nicht implementiert.");            }
+    public void newDocument()    {
+        checkSavedStatus();
 
-    public void openDocument() throws Exception {
+        treeModel.setRoot(new OutlineNode("Outliner"));
+    }
+
+    public void openDocument() {
         checkSavedStatus();
         int result = openDialog();
         if (result == 1) {
-            importXML();
+
+            try {
+                importXML();
+            } catch (Exception e) {System.out.println(e.getMessage());}
+
         } else if (result == 2) {
-            fromJson();
+            try {
+                fromJson();
+            } catch (IOException e) {System.out.println(e.getMessage());}
         }
         outlineController.saved();
     }

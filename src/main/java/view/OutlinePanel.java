@@ -1,5 +1,6 @@
 package view;
 
+import controller.OutlineTransferHandler;
 import model.OutlineNode;
 import view.columns.ColumnPanel;
 import view.columns.ColumnType;
@@ -12,11 +13,8 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -70,7 +68,7 @@ public class OutlinePanel extends JPanel {
 
 
 
-    public OutlinePanel() {
+    public OutlinePanel(MainWindow mainFrame) {
 
         setLayout(new BorderLayout());
 
@@ -96,6 +94,9 @@ public class OutlinePanel extends JPanel {
         tree.setShowsRootHandles(true);
         tree.setEditable(true);
         tree.setInvokesStopCellEditing(true);
+        tree.setDragEnabled(true);
+        tree.setDropMode(DropMode.ON_OR_INSERT);
+        tree.setTransferHandler(new OutlineTransferHandler(mainFrame));
 
         tree.setBackground(new Color(248, 248, 252));
         tree.setFont(new Font("Segoe UI", Font.PLAIN, 13));
