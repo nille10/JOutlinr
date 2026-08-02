@@ -197,8 +197,10 @@ public class FileController {
     private void fromJson() throws IOException {
         JSONParser jsonParser = new JSONParser(getJson());
 
-        treeModel.setRoot(jsonParser.parse());
-        treeModel.reload();
+        outlineController.cancelActiveEditing();
+
+        OutlineNode parsedRoot = jsonParser.parse();
+        replaceRootContents(parsedRoot);
     }
 
     private String getJson() throws IOException {
@@ -265,7 +267,24 @@ public class FileController {
             throw new IllegalArgumentException("Keine Root-Node gefunden");
         }
 
-        treeModel.setRoot(parseNode(rootNodeElement));
+        outlineController.cancelActiveEditing();
+
+        OutlineNode parsedRoot = parseNode(rootNodeElement);
+        replaceRootContents(parsedRoot);
+    }
+
+    private void replaceRootContents(OutlineNode parsedRoot) {
+        OutlineNode actualRoot = outlineController.getRootNode();
+
+        actualRoot.removeAllChildren();
+        actualRoot.setTitle(parsedRoot.getTitle());
+        actualRoot.setContent(parsedRoot.getContent());
+
+        while (parsedRoot.getChildCount() > 0) {
+            OutlineNode child = (OutlineNode) parsedRoot.getChildAt(0);
+            actualRoot.add(child); // entfernt automatisch aus parsedRoot, rutscht nach
+        }
+
         treeModel.reload();
     }
 
@@ -366,6 +385,8 @@ class CFileChooser extends JFileChooser {
     public File getFile(){
         return this.getSelectedFile();
     }
+
+
 }
 
 
