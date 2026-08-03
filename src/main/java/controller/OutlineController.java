@@ -109,6 +109,8 @@ public class OutlineController {
 
     public void addSibling() {
 
+        commitEditing();
+
         OutlineNode selected = getSelectedNode();
 
         OutlineNode parent = selected != null ?(OutlineNode) selected.getParent() : rootNode;
@@ -129,6 +131,9 @@ public class OutlineController {
     }
 
     public void addRootEntry() {
+
+        commitEditing();
+
         OutlineNode node = new OutlineNode("Neuer Eintrag");
 
         treeModel.insertNodeInto(node, rootNode, rootNode.getChildCount());
@@ -139,6 +144,8 @@ public class OutlineController {
     }
 
     public void addChild() {
+
+        commitEditing();
 
         OutlineNode selected = getSelectedNode();
         OutlineNode parent = selected != null ? selected : rootNode;
@@ -184,6 +191,8 @@ public class OutlineController {
     }
 
     public void addColumn() {
+
+        commitEditing();
 
         JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
 
@@ -232,6 +241,8 @@ public class OutlineController {
 
     public void promoteSelected() {
 
+        commitEditing();
+
         OutlineNode selected = getSelectedNode();
 
         if (selected == null) {
@@ -262,6 +273,8 @@ public class OutlineController {
 
     public boolean canPromoteSelected() {
 
+        commitEditing();
+
         OutlineNode selected = getSelectedNode();
 
         if (selected == null) {
@@ -274,6 +287,8 @@ public class OutlineController {
     }
 
     public void demoteSelected() {
+
+        commitEditing();
 
         OutlineNode selected = getSelectedNode();
 
@@ -390,12 +405,16 @@ public class OutlineController {
 
     public void expandAll() {
 
+        commitEditing();
+
         for (int i = 0; i < tree.getRowCount(); i++) {
             tree.expandRow(i);
         }
     }
 
     public void collapseAll() {
+
+        commitEditing();
 
         for (int i = 0; i < tree.getRowCount(); i++) {
             tree.collapseRow(i);
@@ -414,6 +433,8 @@ public class OutlineController {
     }
 
     public void selectNode(OutlineNode node) {
+
+        commitEditing();
 
         TreePath path = new TreePath(treeModel.getPathToRoot(node));
 
@@ -435,6 +456,8 @@ public class OutlineController {
     }
 
     public void deleteNode(OutlineNode node) {
+
+        commitEditing();
 
         treeModel.removeNodeFromParent(node);
 
@@ -476,6 +499,8 @@ public class OutlineController {
     }
     public void selectNodes(List<OutlineNode> nodes) {
 
+        commitEditing();
+
         if (nodes.isEmpty()) {
             return;
         }
@@ -497,6 +522,8 @@ public class OutlineController {
                            OutlineNode node,
                            int index) {
 
+        commitEditing();
+
         treeModel.insertNodeInto(node, parent, index);
 
         selectNode(node);
@@ -505,6 +532,9 @@ public class OutlineController {
     }
 
     public void collapseNode() {
+
+        commitEditing();
+
         OutlineNode selected = getSelectedNode();
         if (selected == null) return;
 
@@ -513,6 +543,9 @@ public class OutlineController {
     }
 
     public void expandNode() {
+
+        commitEditing();
+
         OutlineNode node = getSelectedNode();
         if (node == null) return;
 
@@ -575,5 +608,13 @@ public class OutlineController {
 
     public boolean getBoolean(){
         return this.isSelected;
+    }
+
+    public void commitEditing() {
+        JTree tree = outlinePanel.getTree();
+
+        if (tree.isEditing()) {
+            tree.stopEditing();
+        }
     }
 }

@@ -119,19 +119,27 @@ public class OutlinePanel extends JPanel {
 
         //dann editor bauen
         tree.setCellEditor(
-            new DefaultTreeCellEditor(tree, renderer) {
+                new DefaultTreeCellEditor(tree, renderer) {
 
-                @Override
-                public boolean isCellEditable(EventObject e) {
-                    if (e == null) {
-                        return true;
+                    @Override
+                    public boolean isCellEditable(EventObject e) {
+                        if (e == null) {
+                            return true;
+                        }
+                        if (e instanceof MouseEvent me) {
+                            return me.getClickCount() >= 2;
+                        }
+                        return false;
                     }
-                    if (e instanceof MouseEvent me) {
-                        return me.getClickCount() >= 2;
-                    }
-                    return false;
-                }
-            });
+                });
+
+// Zusätzlich weiterhin für Menüs (MenuSelectionManager reagiert
+// oft schneller/zuverlässiger als der reine Fokus-Wechsel bei Menüs)
+        javax.swing.MenuSelectionManager.defaultManager().addChangeListener(e -> {
+            if (tree.isEditing()) {
+                tree.getCellEditor().stopCellEditing();
+            }
+        });
 
 
         // --------------------------------
