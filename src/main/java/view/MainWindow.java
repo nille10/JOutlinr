@@ -61,7 +61,7 @@ public class MainWindow extends JFrame {
 
         // KeyBindings für den Tree registrieren
         //Wichtig, da sonst andere JavaSwing Elemente KeyBindings schlucken
-        registerOutlineKeyBindings(outlinePanel.getTree(), editController);
+        registerOutlineKeyBindings(outlinePanel.getTree(), editController, undoManager);
 
         // Actions
         EditActions editActions = new EditActions(editController);
@@ -111,7 +111,7 @@ public class MainWindow extends JFrame {
         });
     }
 
-    private void registerOutlineKeyBindings(JTree tree, EditController editController) {
+    private void registerOutlineKeyBindings(JTree tree, EditController editController, UndoManager undoManager) {
 
         InputMap inputMap = tree.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap actionMap = tree.getActionMap();
@@ -157,6 +157,12 @@ public class MainWindow extends JFrame {
             "pasteNode");
 
         actionMap.put("pasteNode", new InsertAction(editController));
+
+        inputMap.put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0),
+            "deleteNode");
+
+        actionMap.put("deleteNode", new DeleteEntryAction(outlineController, undoManager));
     }
 
     private Image loadLogo() {
