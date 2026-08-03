@@ -1,5 +1,6 @@
 package controller;
 
+import enums.SaveStatus;
 import model.JSONParser;
 import model.OutlineNode;
 
@@ -44,40 +45,46 @@ public class FileController {
 
     // Platzhalter
     public void newDocument() {
-        checkSavedStatus();
+        if (checkSavedStatus() == SaveStatus.SAVE_FAILED) {
 
-        outlineController.cancelActiveEditing();
+            outlineController.cancelActiveEditing();
 
-        OutlineNode root = outlineController.getRootNode();
+            OutlineNode root = outlineController.getRootNode();
 
-        root.removeAllChildren();
-        root.setTitle("Outliner");
-        root.setContent("");
+            root.removeAllChildren();
+            root.setTitle("Outliner");
+            root.setContent("");
 
-        treeModel.reload();
+            treeModel.reload();
 
-        saveLocation = null;
+            saveLocation = null;
 
-        outlineController.saved();
+            outlineController.saved();
 
-        mainWindow.getStatusBar().setText(" Bereit");
+            mainWindow.getStatusBar().setText(" Bereit");
+        }
     }
 
     public void openDocument() {
-        checkSavedStatus();
-        int result = openDialog();
-        if (result == 1) {
+        if (checkSavedStatus() == SaveStatus.SAVE_FAILED) {
+            int result = openDialog();
+            if (result == 1) {
 
-            try {
-                importXML();
-            } catch (Exception e) {System.out.println(e.getMessage());}
+                try {
+                    importXML();
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
 
-        } else if (result == 2) {
-            try {
-                fromJson();
-            } catch (IOException e) {System.out.println(e.getMessage());}
+            } else if (result == 2) {
+                try {
+                    fromJson();
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+            outlineController.saved();
         }
-        outlineController.saved();
     }
 
     public void saveDocument() throws Exception {
@@ -102,9 +109,6 @@ public class FileController {
     }
 
     public void close() {
-        try {
-            checkSavedStatus();
-        } catch (Exception ignore) {}
         mainWindow.dispatchEvent(new WindowEvent(mainWindow, WindowEvent.WINDOW_CLOSING));
     }
 
@@ -375,7 +379,7 @@ public class FileController {
         mainWindow.getStatusBar().setText("Last Saved: " + localDateTime.format(dateTimeFormatter));
     }
 
-    public void checkSavedStatus() {
+    public SaveStatus checkSavedStatus() {
         if (outlineController.isDirty()) {
             int result = JOptionPane.showConfirmDialog(
                     mainWindow,
@@ -386,9 +390,17 @@ public class FileController {
             if (result == JOptionPane.YES_OPTION) {
                 try {
                     saveDocument();
-                } catch (Exception ignored) {}
+                    return SaveStatus.SAVED;
+                } catch (Exception ignored) {
+                    return SaveStatus.SAVE_FAILED;
+                }
+            } else if (result == JOptionPane.NO_OPTION) {
+                return SaveStatus.DONT_SAVE;
+            } else {
+                return SaveStatus.SAVE_FAILED;
             }
         }
+        return SaveStatus.NO_CHANGES;
     }
 }
 

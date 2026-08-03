@@ -12,6 +12,7 @@ import action.outline.DemoteEntryAction;
 import action.outline.ExpandEntryAction;
 import action.outline.PromoteEntryAction;
 import controller.*;
+import enums.SaveStatus;
 
 import javax.swing.*;
 import java.awt.*;
@@ -108,8 +109,9 @@ public class MainWindow extends JFrame {
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                fileController.checkSavedStatus();
-                dispose();
+                if(fileController.checkSavedStatus() != SaveStatus.SAVE_FAILED) {
+                    dispose();
+                }
             }
         });
     }
