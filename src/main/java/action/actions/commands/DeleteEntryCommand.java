@@ -64,20 +64,22 @@ public class DeleteEntryCommand implements UndoableAction {
 
     controller.deleteNodes(nodesToRemove);
 
-    // Nach dem Löschen den Knoten vor dem ersten gelöschten auswählen
-    DeletedEntry first = deleteOrder.get(deleteOrder.size() - 1); // kleinster Index
-    OutlineNode parent = first.parent();
-    int prevIndex = first.index() - 1;
+    if(controller.getBoolean()){
+      // Nach dem Löschen den Knoten vor dem ersten gelöschten auswählen
+      DeletedEntry first = deleteOrder.get(deleteOrder.size() - 1); // kleinster Index
+      OutlineNode parent = first.parent();
+      int prevIndex = first.index() - 1;
 
-    if (prevIndex >= 0 && prevIndex < parent.getChildCount()) {
-      // Knoten direkt darüber
-      controller.selectNode((OutlineNode) parent.getChildAt(prevIndex));
-    } else if (parent.getChildCount() > 0) {
-      // Kein Vorgänger aber noch Kinder → ersten nehmen
-      controller.selectNode((OutlineNode) parent.getChildAt(0));
-    } else if (parent != controller.getRootNode()) {
-      // Parent selbst wenn er kein Root ist
-      controller.selectNode(parent);
+      if (prevIndex >= 0 && prevIndex < parent.getChildCount()) {
+        // Knoten direkt darüber
+        controller.selectNode((OutlineNode) parent.getChildAt(prevIndex));
+      } else if (parent.getChildCount() > 0) {
+        // Kein Vorgänger aber noch Kinder → ersten nehmen
+        controller.selectNode((OutlineNode) parent.getChildAt(0));
+      } else if (parent != controller.getRootNode()) {
+        // Parent selbst wenn er kein Root ist
+        controller.selectNode(parent);
+      }
     }
   }
 

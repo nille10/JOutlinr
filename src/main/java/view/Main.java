@@ -11,6 +11,7 @@ public class Main {
     // Natives Look & Feel des Betriebssystems verwenden
 
     AppTheme.apply();
+
 /*
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -18,6 +19,17 @@ public class Main {
 */
     SwingUtilities.invokeLater(() -> {
       MainWindow window = new MainWindow();
+      window.setVisible(true);
+
+      boolean isDarkModeActive = AppPreferences.isDarkMode();
+      AppTheme.toggleDark(isDarkModeActive, window);
+
+      if (AppPreferences.isFullscreen()) {
+        window.setExtendedState(JFrame.MAXIMIZED_BOTH);
+      }else {
+        window.setExtendedState(JFrame.NORMAL);
+      }
+
       window.setVisible(true);
     });
   }

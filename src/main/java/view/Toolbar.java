@@ -14,7 +14,7 @@ public class Toolbar extends JToolBar {
 
     public Toolbar(OutlineActions outlineActions) {
         setFloatable(false);
-        setBackground(new Color(245, 245, 248));
+        //setBackground(new Color(245, 245, 248));
         setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 210)));
 
         add(toolButton(outlineActions.newRootEntryAction, "root", "Root Eintrag"));
@@ -25,6 +25,7 @@ public class Toolbar extends JToolBar {
         add(toolButton(outlineActions.demoteEntryAction,   "demote", "Demote"));
         add(toolButton(outlineActions.expandAllAction,     "aufklappen", "Aufklappen"));
         add(toolButton(outlineActions.collapseAllAction,   "zuklappen", "Zuklappen"));
+        add(toolButton(outlineActions.addColumnAction,   "column", "Neue Spalte"));
     }
 
     /**

@@ -3,10 +3,12 @@ package controller;
 import model.OutlineNode;
 import view.TextWindow;
 import view.OutlinePanel;
+import view.columns.ColumnType;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +16,15 @@ import java.util.List;
 public class OutlineController {
 
     private final TextWindow textWindow;
+    private final OutlinePanel outlinePanel;
 
     private final JTree tree;
     private final DefaultTreeModel treeModel;
     private final OutlineNode rootNode;
     private final JFrame mainWindow;
     private boolean dirty;
+
+    private boolean isSelected = true;
 
     public static final int MAX_LEVEL = 3; //Root = 0
 
@@ -28,6 +33,7 @@ public class OutlineController {
     public OutlineController(OutlinePanel view, TextWindow textWindow, JFrame mainWindow) {
 
         this.textWindow = textWindow;
+        this.outlinePanel = view;
 
         this.tree = view.getTree();
         this.treeModel = view.getTreeModel();
@@ -103,6 +109,8 @@ public class OutlineController {
 
     public void addSibling() {
 
+        commitEditing();
+
         OutlineNode selected = getSelectedNode();
 
         OutlineNode parent = selected != null ?(OutlineNode) selected.getParent() : rootNode;
@@ -123,6 +131,9 @@ public class OutlineController {
     }
 
     public void addRootEntry() {
+
+        commitEditing();
+
         OutlineNode node = new OutlineNode("Neuer Eintrag");
 
         treeModel.insertNodeInto(node, rootNode, rootNode.getChildCount());
@@ -133,6 +144,8 @@ public class OutlineController {
     }
 
     public void addChild() {
+
+        commitEditing();
 
         OutlineNode selected = getSelectedNode();
         OutlineNode parent = selected != null ? selected : rootNode;
@@ -177,6 +190,40 @@ public class OutlineController {
         }
     }
 
+    public void addColumn() {
+
+        commitEditing();
+
+        JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+
+        JTextField titleField = new JTextField("Neue Spalte");
+        JComboBox<ColumnType> typeBox = new JComboBox<>(ColumnType.values());
+
+        panel.add(new JLabel("Titel:"));
+        panel.add(titleField);
+        panel.add(new JLabel("Typ:"));
+        panel.add(typeBox);
+
+        int result = JOptionPane.showConfirmDialog(
+            mainWindow,           // <-- statt "this"
+            panel,
+            "Neue Spalte",
+            JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+
+            String title = titleField.getText().trim();
+
+            if (title.isEmpty()) {
+                title = "Spalte";
+            }
+
+            ColumnType type = (ColumnType) typeBox.getSelectedItem();
+
+            outlinePanel.addColumn(title, type); // <-- jetzt gültig, da Feld existiert
+        }
+    }
+
     public void deleteSelected() {
 
         OutlineNode selected = getSelectedNode();
@@ -193,6 +240,8 @@ public class OutlineController {
     }
 
     public void promoteSelected() {
+
+        commitEditing();
 
         OutlineNode selected = getSelectedNode();
 
@@ -224,6 +273,8 @@ public class OutlineController {
 
     public boolean canPromoteSelected() {
 
+        commitEditing();
+
         OutlineNode selected = getSelectedNode();
 
         if (selected == null) {
@@ -236,6 +287,8 @@ public class OutlineController {
     }
 
     public void demoteSelected() {
+
+        commitEditing();
 
         OutlineNode selected = getSelectedNode();
 
@@ -294,6 +347,7 @@ public class OutlineController {
     }
 
     /**
+     * KI generiert
      * Ermittelt die tiefste Verschachtelungsebene innerhalb eines Teilbaums
      * (inklusive des Knotens selbst).
      */
@@ -312,7 +366,46 @@ public class OutlineController {
         return max;
     }
 
+    //KI
+    public boolean canPasteInto(OutlineNode parent, OutlineNode nodeToPaste) {
+
+        if (parent == null || nodeToPaste == null) {
+            return true;
+        }
+
+        // Tiefster Level, den der eingefügte Teilbaum relativ zu SICH SELBST hat
+        // (0 = nodeToPaste selbst, +1 pro Verschachtelungsebene seiner Kinder)
+        int subtreeDepth = getRelativeDepth(nodeToPaste);
+
+        // Nach dem Einfügen läge der tiefste Nachkomme auf: parent.getLevel() + 1 + subtreeDepth
+        int resultingMaxLevel = parent.getLevel() + 1 + subtreeDepth;
+
+        return resultingMaxLevel <= MAX_LEVEL;
+    }
+
+    /**
+     * KI generiert
+     * Ermittelt die relative Tiefe eines (noch nicht eingehängten) Teilbaums,
+     * unabhängig von seinem aktuellen Level im Baum (der bei einer Kopie z.B. 0 sein kann).
+     */
+    private int getRelativeDepth(OutlineNode node) {
+
+        int max = 0;
+
+        for (int i = 0; i < node.getChildCount(); i++) {
+            OutlineNode child = (OutlineNode) node.getChildAt(i);
+            int childDepth = 1 + getRelativeDepth(child);
+            if (childDepth > max) {
+                max = childDepth;
+            }
+        }
+
+        return max;
+    }
+
     public void expandAll() {
+
+        commitEditing();
 
         for (int i = 0; i < tree.getRowCount(); i++) {
             tree.expandRow(i);
@@ -320,6 +413,8 @@ public class OutlineController {
     }
 
     public void collapseAll() {
+
+        commitEditing();
 
         for (int i = 0; i < tree.getRowCount(); i++) {
             tree.collapseRow(i);
@@ -338,6 +433,8 @@ public class OutlineController {
     }
 
     public void selectNode(OutlineNode node) {
+
+        commitEditing();
 
         TreePath path = new TreePath(treeModel.getPathToRoot(node));
 
@@ -359,6 +456,8 @@ public class OutlineController {
     }
 
     public void deleteNode(OutlineNode node) {
+
+        commitEditing();
 
         treeModel.removeNodeFromParent(node);
 
@@ -400,6 +499,8 @@ public class OutlineController {
     }
     public void selectNodes(List<OutlineNode> nodes) {
 
+        commitEditing();
+
         if (nodes.isEmpty()) {
             return;
         }
@@ -421,6 +522,8 @@ public class OutlineController {
                            OutlineNode node,
                            int index) {
 
+        commitEditing();
+
         treeModel.insertNodeInto(node, parent, index);
 
         selectNode(node);
@@ -429,6 +532,9 @@ public class OutlineController {
     }
 
     public void collapseNode() {
+
+        commitEditing();
+
         OutlineNode selected = getSelectedNode();
         if (selected == null) return;
 
@@ -437,6 +543,9 @@ public class OutlineController {
     }
 
     public void expandNode() {
+
+        commitEditing();
+
         OutlineNode node = getSelectedNode();
         if (node == null) return;
 
@@ -490,6 +599,22 @@ public class OutlineController {
     public void cancelActiveEditing() {
         if (tree.isEditing()) {
             tree.getCellEditor().cancelCellEditing();
+        }
+    }
+
+    public void setBoolean(boolean isSelected){
+        this.isSelected = isSelected;
+    }
+
+    public boolean getBoolean(){
+        return this.isSelected;
+    }
+
+    public void commitEditing() {
+        JTree tree = outlinePanel.getTree();
+
+        if (tree.isEditing()) {
+            tree.stopEditing();
         }
     }
 }
