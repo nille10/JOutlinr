@@ -3,6 +3,7 @@ package view;
 import action.actions.EditActions;
 import action.actions.FileActions;
 import action.actions.OutlineActions;
+import controller.OutlineController;
 import view.columns.ColumnType;
 
 import javax.swing.*;
@@ -12,7 +13,7 @@ import java.awt.event.KeyEvent;
 
 public class Menubar extends JMenuBar {
 
-    public Menubar(FileActions fileActions, OutlineActions outlineActions, EditActions editActions, JFrame mainJFrame, OutlinePanel outlinePanel) {
+    public Menubar(FileActions fileActions, OutlineActions outlineActions, EditActions editActions, JFrame mainJFrame, OutlinePanel outlinePanel, OutlineController outlineController) {
         // Datei-Menü
         JMenu datei = new JMenu("Datei");
         datei.setMnemonic(KeyEvent.VK_D);
@@ -58,57 +59,7 @@ public class Menubar extends JMenuBar {
         );
 
 
-        addColumnItem.addActionListener(e -> {
-
-            JPanel panel = new JPanel(new GridLayout(2,2,5,5));
-
-
-            JTextField titleField =
-                new JTextField("Neue Spalte");
-
-
-            JComboBox<ColumnType> typeBox =
-                new JComboBox<>(ColumnType.values());
-
-
-            panel.add(new JLabel("Titel:"));
-            panel.add(titleField);
-
-            panel.add(new JLabel("Typ:"));
-            panel.add(typeBox);
-
-
-
-            int result = JOptionPane.showConfirmDialog(
-                this,
-                panel,
-                "Neue Spalte",
-                JOptionPane.OK_CANCEL_OPTION);
-
-
-            if(result == JOptionPane.OK_OPTION) {
-
-
-                String title =
-                    titleField.getText().trim();
-
-
-                if(title.isEmpty()) {
-                    title = "Spalte";
-                }
-
-
-                ColumnType type =
-                    (ColumnType) typeBox.getSelectedItem();
-
-
-
-                outlinePanel.addColumn(
-                    title,
-                    type);
-            }
-
-        });
+        addColumnItem.addActionListener(e -> outlineController.addColumn());
 
 
         bearbeiten.add(addColumnItem);

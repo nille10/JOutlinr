@@ -69,7 +69,7 @@ public class MainWindow extends JFrame {
         OutlineActions outlineActions = new OutlineActions(outlineController, undoManager);
 
         // Menüleiste
-        Menubar menubar = new Menubar(fileActions, outlineActions, editActions, this, outlinePanel);
+        Menubar menubar = new Menubar(fileActions, outlineActions, editActions, this, outlinePanel, outlineController);
         setJMenuBar(menubar);
 
         // Toolbar
