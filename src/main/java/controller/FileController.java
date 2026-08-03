@@ -45,7 +45,7 @@ public class FileController {
 
     // Platzhalter
     public void newDocument() {
-        if (checkSavedStatus() == SaveStatus.SAVE_FAILED) {
+        if (checkSavedStatus() != SaveStatus.SAVE_FAILED) {
 
             outlineController.cancelActiveEditing();
 
@@ -66,7 +66,7 @@ public class FileController {
     }
 
     public void openDocument() {
-        if (checkSavedStatus() == SaveStatus.SAVE_FAILED) {
+        if (checkSavedStatus() != SaveStatus.SAVE_FAILED) {
             int result = openDialog();
             if (result == 1) {
 
@@ -311,7 +311,7 @@ public class FileController {
 
         while (parsedRoot.getChildCount() > 0) {
             OutlineNode child = (OutlineNode) parsedRoot.getChildAt(0);
-            actualRoot.add(child); // entfernt automatisch aus parsedRoot, rutscht nach
+            actualRoot.add(child);
         }
 
         treeModel.reload();
@@ -384,7 +384,7 @@ public class FileController {
             int result = JOptionPane.showConfirmDialog(
                     mainWindow,
                     "Änderungen speichern?",
-                    "Ungespeicherte Änderungen",
+                    "Unsaved changes",
                     JOptionPane.YES_NO_OPTION
             );
             if (result == JOptionPane.YES_OPTION) {
