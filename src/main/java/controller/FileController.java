@@ -8,6 +8,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultTreeModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -42,10 +43,24 @@ public class FileController {
     }
 
     // Platzhalter
-    public void newDocument()    {
+    public void newDocument() {
         checkSavedStatus();
 
-        treeModel.setRoot(new OutlineNode("Outliner"));
+        outlineController.cancelActiveEditing();
+
+        OutlineNode root = outlineController.getRootNode();
+
+        root.removeAllChildren();
+        root.setTitle("Outliner");
+        root.setContent("");
+
+        treeModel.reload();
+
+        saveLocation = null;
+
+        outlineController.saved();
+
+        mainWindow.getStatusBar().setText(" Bereit");
     }
 
     public void openDocument() {
