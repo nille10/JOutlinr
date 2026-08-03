@@ -15,7 +15,7 @@ public class ExpandAllAction extends AbstractAction {
         this.outlineController = outlineController;
 
         putValue(SHORT_DESCRIPTION, "Expand all Entry's in the Outliner");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK));
     }
 
     @Override
