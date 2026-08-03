@@ -44,7 +44,7 @@ public class MainWindow extends JFrame {
     public MainWindow() {
         super(title);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        setSize(900, 640);
+        setSize(950, 640);
         setIconImage(loadLogo());
         setMinimumSize(new Dimension(600, 400));
         setLocationRelativeTo(null);

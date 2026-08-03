@@ -24,6 +24,8 @@ public class OutlineController {
     private final JFrame mainWindow;
     private boolean dirty;
 
+    private boolean isSelected = true;
+
     public static final int MAX_LEVEL = 3; //Root = 0
 
     private final List<Runnable> updateListeners = new ArrayList<>();
@@ -565,5 +567,13 @@ public class OutlineController {
         if (tree.isEditing()) {
             tree.getCellEditor().cancelCellEditing();
         }
+    }
+
+    public void setBoolean(boolean isSelected){
+        this.isSelected = isSelected;
+    }
+
+    public boolean getBoolean(){
+        return this.isSelected;
     }
 }

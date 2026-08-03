@@ -9,6 +9,7 @@ public class AppPreferences {
 
   private static final String KEY_DARK_MODE = "darkMode";
   private static final String KEY_FULLSCREEN = "fullscreen";
+  private static final String KEY_SELECT_DELETE = "selectAfterDelete";
 
   public static boolean isDarkMode() {
     return PREFS.getBoolean(KEY_DARK_MODE, false);
@@ -24,5 +25,13 @@ public class AppPreferences {
 
   public static void setFullScreen(boolean enabled) {
     PREFS.putBoolean(KEY_FULLSCREEN, enabled);
+  }
+
+  public static boolean isSelectAfterDeleteOn(){
+    return PREFS.getBoolean(KEY_SELECT_DELETE, true);
+  }
+
+  public static void setSelectAfterDelete(boolean enabled) {
+    PREFS.putBoolean(KEY_SELECT_DELETE, enabled);
   }
 }

@@ -122,8 +122,8 @@ public class Menubar extends JMenuBar {
         //Settings
         JMenu einstellungen = new JMenu("Einstellungen");
 
+        //Darkmode
         JCheckBoxMenuItem darkMode = new JCheckBoxMenuItem("DarkMode");
-
         // Laden
         boolean isDarkModeActive = AppPreferences.isDarkMode();
 
@@ -136,13 +136,14 @@ public class Menubar extends JMenuBar {
             }
         );
 
-        JCheckBoxMenuItem fullscreen = new JCheckBoxMenuItem("Fullscreen");
+        //Fullscreen
+        JCheckBoxMenuItem fullscreen = new JCheckBoxMenuItem("Vollbild");
         // Laden
         boolean isFullscreen = AppPreferences.isFullscreen();
         fullscreen.setSelected(isFullscreen);
         einstellungen.add(fullscreen);
         fullscreen.setAccelerator(
-            KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)
+            KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.CTRL_DOWN_MASK)
         );
 
         fullscreen.addActionListener(e -> {
@@ -153,6 +154,20 @@ public class Menubar extends JMenuBar {
             }
                 AppPreferences.setFullScreen(fullscreen.isSelected());
             }
+        );
+
+        //Select Last Entry after deletion?
+        JCheckBoxMenuItem selectAfterDelete = new JCheckBoxMenuItem("Letzten Eintrag nach Löschvorgang auswählen");
+        // Laden
+        boolean isSelectAfterDeletionOn = AppPreferences.isSelectAfterDeleteOn();
+        System.out.println(isSelectAfterDeletionOn);
+        selectAfterDelete.setSelected(isSelectAfterDeletionOn);
+        einstellungen.add(selectAfterDelete);
+
+        selectAfterDelete.addActionListener(e -> {
+                    outlineController.setBoolean(selectAfterDelete.isSelected());
+                    AppPreferences.setSelectAfterDelete(selectAfterDelete.isSelected());
+                }
         );
 
 
