@@ -330,6 +330,7 @@ public class OutlineController {
     }
 
     /**
+     * KI generiert
      * Ermittelt die tiefste Verschachtelungsebene innerhalb eines Teilbaums
      * (inklusive des Knotens selbst).
      */
@@ -342,6 +343,43 @@ public class OutlineController {
             int childMax = getMaxLevelInSubtree(child);
             if (childMax > max) {
                 max = childMax;
+            }
+        }
+
+        return max;
+    }
+
+    //KI
+    public boolean canPasteInto(OutlineNode parent, OutlineNode nodeToPaste) {
+
+        if (parent == null || nodeToPaste == null) {
+            return true;
+        }
+
+        // Tiefster Level, den der eingefügte Teilbaum relativ zu SICH SELBST hat
+        // (0 = nodeToPaste selbst, +1 pro Verschachtelungsebene seiner Kinder)
+        int subtreeDepth = getRelativeDepth(nodeToPaste);
+
+        // Nach dem Einfügen läge der tiefste Nachkomme auf: parent.getLevel() + 1 + subtreeDepth
+        int resultingMaxLevel = parent.getLevel() + 1 + subtreeDepth;
+
+        return resultingMaxLevel <= MAX_LEVEL;
+    }
+
+    /**
+     * KI generiert
+     * Ermittelt die relative Tiefe eines (noch nicht eingehängten) Teilbaums,
+     * unabhängig von seinem aktuellen Level im Baum (der bei einer Kopie z.B. 0 sein kann).
+     */
+    private int getRelativeDepth(OutlineNode node) {
+
+        int max = 0;
+
+        for (int i = 0; i < node.getChildCount(); i++) {
+            OutlineNode child = (OutlineNode) node.getChildAt(i);
+            int childDepth = 1 + getRelativeDepth(child);
+            if (childDepth > max) {
+                max = childDepth;
             }
         }
 
