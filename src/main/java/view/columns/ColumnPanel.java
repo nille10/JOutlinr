@@ -27,8 +27,8 @@ public class ColumnPanel extends JPanel {
   public ColumnPanel() {
 
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-    setBackground(new Color(248, 248, 252));
-    setOpaque(true);
+
+    setOpaque(false);
   }
 
 

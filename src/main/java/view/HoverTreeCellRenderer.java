@@ -9,33 +9,35 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-/**
- * Tree-Renderer mit Hover- und Selektions-Highlighting.
- *
- * Prioritäten:
- *   1. selected → Blau
- *   2. hovered  → Hellgrau
- *   3. default  → transparent
- *
- * Wichtig: DefaultTreeCellRenderer ist ein einzelnes wiederverwendetes
- * JLabel-Objekt. Swing ruft getTreeCellRendererComponent() für jede
- * sichtbare Zeile nacheinander auf – Zustand vom vorherigen Aufruf
- * bleibt hängen wenn man ihn nicht explizit überschreibt.
- *
- * Deshalb: in JEDEM der drei Fälle werden background, foreground
- * und opaque vollständig gesetzt – kein Fall lässt etwas offen.
- */
 public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
 
-  private static final Color SELECTED_BG     = new Color(0xFC, 0x27, 0x39); // #FC2739
+  // Accent-Farben bleiben fix – gehören zum App-Design
+  private static final Color SELECTED_BG     = new Color(0xFC, 0x27, 0x39);
   private static final Color SELECTED_FG     = Color.WHITE;
-  private static final Color SELECTED_BORDER = new Color(0xD9, 0x1B, 0x2C); // etwas dunkler, für dezente Kontur
+  private static final Color SELECTED_BORDER = new Color(0xD9, 0x1B, 0x2C);
 
-  private static final Color HOVER_BG  = new Color(0xFD, 0xE3, 0xE5); // sehr helles Rosé
-  private static final Color HOVER_FG  = new Color(0x40, 0x20, 0x22); // leicht warmes Dunkelgrau/Braun statt reines Schwarz
+  // Hover hell (Light Mode)
+  private static final Color HOVER_BG_LIGHT = new Color(0xFD, 0xE3, 0xE5);
+  private static final Color HOVER_FG_LIGHT = new Color(0x40, 0x20, 0x22);
 
-  private static final Color DEFAULT_BG = new Color(0xF8, 0xF8, 0xFA);
-  private static final Color DEFAULT_FG = new Color(0x1E, 0x1E, 0x1E);
+  // Hover dunkel (Dark Mode)
+  private static final Color HOVER_BG_DARK  = new Color(0x5A, 0x1A, 0x20);
+  private static final Color HOVER_FG_DARK  = new Color(0xFF, 0xCC, 0xCC);
+
+  // Default: immer aus UIManager lesen
+  private static Color defaultBg() {
+    Color c = UIManager.getColor("Tree.background");
+    return c != null ? c : Color.WHITE;
+  }
+  private static Color defaultFg() {
+    Color c = UIManager.getColor("Tree.foreground");
+    return c != null ? c : Color.BLACK;
+  }
+  private static boolean isDark() {
+    return defaultBg().getRed() < 128;
+  }
+  private static Color hoverBg() { return isDark() ? HOVER_BG_DARK : HOVER_BG_LIGHT; }
+  private static Color hoverFg() { return isDark() ? HOVER_FG_DARK : HOVER_FG_LIGHT; }
 
   private final RowHoverManager hoverManager;
 
@@ -43,20 +45,17 @@ public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
   public HoverTreeCellRenderer(RowHoverManager hoverManager) {
     this.hoverManager = hoverManager;
 
-    setBackgroundNonSelectionColor(DEFAULT_BG);
     setBackgroundSelectionColor(SELECTED_BG);
     setTextSelectionColor(SELECTED_FG);
-    setTextNonSelectionColor(DEFAULT_FG);
     setBorderSelectionColor(SELECTED_BORDER);
 
-    Icon leaf = loadIcon("/icons/dot.png", 8);
+    Icon leaf   = loadIcon("/icons/dot.png",   8);
     Icon closed = loadIcon("/icons/empty.png", 8);
-    Icon open = loadIcon("/icons/empty.png", 8);
-
+    Icon open   = loadIcon("/icons/empty.png", 8);
 
     setLeafIcon(leaf);
-    setClosedIcon(open);
-    setOpenIcon(closed);
+    setClosedIcon(closed);
+    setOpenIcon(open);
   }
 
 
@@ -70,25 +69,28 @@ public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
       int row,
       boolean hasFocus) {
 
+    // Default-Farben vor super-Aufruf aktuell setzen
+    setBackgroundNonSelectionColor(defaultBg());
+    setTextNonSelectionColor(defaultFg());
+
     Component c = super.getTreeCellRendererComponent(
         tree, value, selected, expanded, leaf, row, hasFocus);
 
     JLabel label = (JLabel) c;
 
     if (selected) {
-      // Explizit setzen – nicht dem super-Zustand vertrauen
       label.setBackground(SELECTED_BG);
       label.setForeground(SELECTED_FG);
       label.setOpaque(true);
 
     } else if (hoverManager.isHovered(row)) {
-      label.setBackground(HOVER_BG);
-      label.setForeground(HOVER_FG);
+      label.setBackground(hoverBg());
+      label.setForeground(hoverFg());
       label.setOpaque(true);
 
     } else {
-      label.setBackground(DEFAULT_BG);
-      label.setForeground(DEFAULT_FG);
+      label.setBackground(defaultBg());
+      label.setForeground(defaultFg());
       label.setOpaque(false);
     }
 

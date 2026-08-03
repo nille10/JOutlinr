@@ -36,11 +36,11 @@ public class BodyPanel extends JPanel {
     this.columnPanel = columnPanel;
 
     setLayout(new BorderLayout());
-    setBackground(new Color(248, 248, 252));
+    //setBackground(new Color(248, 248, 252));
 
     // ── Tree-Container (CENTER – nimmt den Restplatz) ────────────────────
     treeContainer = new JPanel(new BorderLayout());
-    treeContainer.setBackground(new Color(248, 248, 252));
+    //treeContainer.setBackground(new Color(248, 248, 252));
     treeContainer.add(tree, BorderLayout.CENTER);
     treeContainer.setMinimumSize(new Dimension(80, 0));
     add(treeContainer, BorderLayout.CENTER);

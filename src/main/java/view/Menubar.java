@@ -3,6 +3,7 @@ package view;
 import action.actions.EditActions;
 import action.actions.FileActions;
 import action.actions.OutlineActions;
+import controller.OutlineController;
 import view.columns.ColumnType;
 
 import javax.swing.*;
@@ -12,7 +13,7 @@ import java.awt.event.KeyEvent;
 
 public class Menubar extends JMenuBar {
 
-    public Menubar(FileActions fileActions, OutlineActions outlineActions, EditActions editActions, JFrame mainJFrame, OutlinePanel outlinePanel) {
+    public Menubar(FileActions fileActions, OutlineActions outlineActions, EditActions editActions, JFrame mainJFrame, OutlinePanel outlinePanel, OutlineController outlineController) {
         // Datei-Menü
         JMenu datei = new JMenu("Datei");
         datei.setMnemonic(KeyEvent.VK_D);
@@ -58,57 +59,7 @@ public class Menubar extends JMenuBar {
         );
 
 
-        addColumnItem.addActionListener(e -> {
-
-            JPanel panel = new JPanel(new GridLayout(2,2,5,5));
-
-
-            JTextField titleField =
-                new JTextField("Neue Spalte");
-
-
-            JComboBox<ColumnType> typeBox =
-                new JComboBox<>(ColumnType.values());
-
-
-            panel.add(new JLabel("Titel:"));
-            panel.add(titleField);
-
-            panel.add(new JLabel("Typ:"));
-            panel.add(typeBox);
-
-
-
-            int result = JOptionPane.showConfirmDialog(
-                this,
-                panel,
-                "Neue Spalte",
-                JOptionPane.OK_CANCEL_OPTION);
-
-
-            if(result == JOptionPane.OK_OPTION) {
-
-
-                String title =
-                    titleField.getText().trim();
-
-
-                if(title.isEmpty()) {
-                    title = "Spalte";
-                }
-
-
-                ColumnType type =
-                    (ColumnType) typeBox.getSelectedItem();
-
-
-
-                outlinePanel.addColumn(
-                    title,
-                    type);
-            }
-
-        });
+        addColumnItem.addActionListener(e -> outlineController.addColumn());
 
 
         bearbeiten.add(addColumnItem);
@@ -151,6 +102,15 @@ public class Menubar extends JMenuBar {
 
         // Ansicht-Menü
         JMenu ansicht = new JMenu("Ansicht");
+
+        JMenuItem expandEntry = menuItem(outlineActions.expandEntryAction);
+        ansicht.add(expandEntry);
+
+        JMenuItem collapseEntry = menuItem(outlineActions.collapseEntryAction);
+        ansicht.add(collapseEntry);
+
+        ansicht.addSeparator();
+
         JMenuItem expandAll = menuItem(outlineActions.expandAllAction);
         ansicht.add(expandAll);
 
@@ -158,6 +118,61 @@ public class Menubar extends JMenuBar {
         ansicht.add(collapseAll);
 
         this.add(ansicht);
+
+        //Settings
+        JMenu einstellungen = new JMenu("Einstellungen");
+
+        //Darkmode
+        JCheckBoxMenuItem darkMode = new JCheckBoxMenuItem("DarkMode");
+        // Laden
+        boolean isDarkModeActive = AppPreferences.isDarkMode();
+
+        darkMode.setSelected(isDarkModeActive);
+        einstellungen.add(darkMode);
+
+        darkMode.addActionListener(e -> {
+                AppTheme.toggleDark(darkMode.isSelected(), mainJFrame);
+                AppPreferences.setDarkMode(darkMode.isSelected());
+            }
+        );
+
+        //Fullscreen
+        JCheckBoxMenuItem fullscreen = new JCheckBoxMenuItem("Vollbild");
+        // Laden
+        boolean isFullscreen = AppPreferences.isFullscreen();
+        fullscreen.setSelected(isFullscreen);
+        einstellungen.add(fullscreen);
+        fullscreen.setAccelerator(
+            KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.CTRL_DOWN_MASK)
+        );
+
+        fullscreen.addActionListener(e -> {
+            if (fullscreen.isSelected()) {
+                mainJFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            }else{
+                mainJFrame.setExtendedState(JFrame.NORMAL);
+            }
+                AppPreferences.setFullScreen(fullscreen.isSelected());
+            }
+        );
+
+        //Select Last Entry after deletion?
+        JCheckBoxMenuItem selectAfterDelete = new JCheckBoxMenuItem("Letzten Eintrag nach Löschvorgang auswählen");
+        // Laden
+        boolean isSelectAfterDeletionOn = AppPreferences.isSelectAfterDeleteOn();
+        System.out.println(isSelectAfterDeletionOn);
+        selectAfterDelete.setSelected(isSelectAfterDeletionOn);
+        einstellungen.add(selectAfterDelete);
+
+        selectAfterDelete.addActionListener(e -> {
+                    outlineController.setBoolean(selectAfterDelete.isSelected());
+                    AppPreferences.setSelectAfterDelete(selectAfterDelete.isSelected());
+                }
+        );
+
+
+
+        this.add(einstellungen);
 
         // Hilfe-Menü TODO: muss noch gemacht werden
         JMenu hilfe = new JMenu("Hilfe");

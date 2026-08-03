@@ -7,10 +7,7 @@ import action.actions.edit.CopyAction;
 import action.actions.edit.CutAction;
 import action.actions.edit.InsertAction;
 import action.manager.UndoManager;
-import action.outline.CollapseEntryAction;
-import action.outline.DemoteEntryAction;
-import action.outline.ExpandEntryAction;
-import action.outline.PromoteEntryAction;
+import action.outline.*;
 import controller.*;
 
 import javax.swing.*;
@@ -47,7 +44,7 @@ public class MainWindow extends JFrame {
     public MainWindow() {
         super(title);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        setSize(900, 640);
+        setSize(950, 640);
         setIconImage(loadLogo());
         setMinimumSize(new Dimension(600, 400));
         setLocationRelativeTo(null);
@@ -64,7 +61,7 @@ public class MainWindow extends JFrame {
 
         // KeyBindings für den Tree registrieren
         //Wichtig, da sonst andere JavaSwing Elemente KeyBindings schlucken
-        registerOutlineKeyBindings(outlinePanel.getTree(), editController);
+        registerOutlineKeyBindings(outlinePanel.getTree(), editController, undoManager);
 
         // Actions
         EditActions editActions = new EditActions(editController);
@@ -72,7 +69,7 @@ public class MainWindow extends JFrame {
         OutlineActions outlineActions = new OutlineActions(outlineController, undoManager);
 
         // Menüleiste
-        Menubar menubar = new Menubar(fileActions, outlineActions, editActions, this, outlinePanel);
+        Menubar menubar = new Menubar(fileActions, outlineActions, editActions, this, outlinePanel, outlineController);
         setJMenuBar(menubar);
 
         // Toolbar
@@ -97,7 +94,7 @@ public class MainWindow extends JFrame {
         // Status-Leiste
         statusBar = new JLabel(" Bereit");
         statusBar.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        statusBar.setForeground(new Color(100, 100, 120));
+        //statusBar.setForeground(new Color(100, 100, 120));
         statusBar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(200, 200, 210)),
                 BorderFactory.createEmptyBorder(2, 8, 2, 8)
@@ -114,7 +111,7 @@ public class MainWindow extends JFrame {
         });
     }
 
-    private void registerOutlineKeyBindings(JTree tree, EditController editController) {
+    private void registerOutlineKeyBindings(JTree tree, EditController editController, UndoManager undoManager) {
 
         InputMap inputMap = tree.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap actionMap = tree.getActionMap();
@@ -160,6 +157,12 @@ public class MainWindow extends JFrame {
             "pasteNode");
 
         actionMap.put("pasteNode", new InsertAction(editController));
+
+        inputMap.put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0),
+            "deleteNode");
+
+        actionMap.put("deleteNode", new DeleteEntryAction(outlineController, undoManager));
     }
 
     private Image loadLogo() {
