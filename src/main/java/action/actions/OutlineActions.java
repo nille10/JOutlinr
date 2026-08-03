@@ -20,6 +20,7 @@ public class OutlineActions {
     public final Action expandEntryAction;
     public final Action collapseEntryAction;
     public final Action deleteEntryAction;
+    public final Action addColumnAction;
 
     public OutlineActions(OutlineController outlineController, UndoManager undoManager) {
         newEntryAction = new NewEntryAction(outlineController);
@@ -32,6 +33,7 @@ public class OutlineActions {
         expandEntryAction = new ExpandEntryAction(outlineController);
         collapseEntryAction = new CollapseEntryAction(outlineController);
         deleteEntryAction = new DeleteEntryAction(outlineController, undoManager);
+        addColumnAction = new AddColumnAction(outlineController);
 
     }
 }

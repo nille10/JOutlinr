@@ -25,6 +25,7 @@ public class Toolbar extends JToolBar {
         add(toolButton(outlineActions.demoteEntryAction,   "demote", "Demote"));
         add(toolButton(outlineActions.expandAllAction,     "aufklappen", "Aufklappen"));
         add(toolButton(outlineActions.collapseAllAction,   "zuklappen", "Zuklappen"));
+        add(toolButton(outlineActions.addColumnAction,   "column", "Neue Spalte"));
     }
 
     /**

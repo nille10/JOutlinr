@@ -3,10 +3,12 @@ package controller;
 import model.OutlineNode;
 import view.TextWindow;
 import view.OutlinePanel;
+import view.columns.ColumnType;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import java.util.List;
 public class OutlineController {
 
     private final TextWindow textWindow;
+    private final OutlinePanel outlinePanel;
 
     private final JTree tree;
     private final DefaultTreeModel treeModel;
@@ -28,6 +31,7 @@ public class OutlineController {
     public OutlineController(OutlinePanel view, TextWindow textWindow, JFrame mainWindow) {
 
         this.textWindow = textWindow;
+        this.outlinePanel = view;
 
         this.tree = view.getTree();
         this.treeModel = view.getTreeModel();
@@ -174,6 +178,38 @@ public class OutlineController {
     private void fireUpdate() {
         for (Runnable r : updateListeners) {
             r.run();
+        }
+    }
+
+    public void addColumn() {
+
+        JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+
+        JTextField titleField = new JTextField("Neue Spalte");
+        JComboBox<ColumnType> typeBox = new JComboBox<>(ColumnType.values());
+
+        panel.add(new JLabel("Titel:"));
+        panel.add(titleField);
+        panel.add(new JLabel("Typ:"));
+        panel.add(typeBox);
+
+        int result = JOptionPane.showConfirmDialog(
+            mainWindow,           // <-- statt "this"
+            panel,
+            "Neue Spalte",
+            JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+
+            String title = titleField.getText().trim();
+
+            if (title.isEmpty()) {
+                title = "Spalte";
+            }
+
+            ColumnType type = (ColumnType) typeBox.getSelectedItem();
+
+            outlinePanel.addColumn(title, type); // <-- jetzt gültig, da Feld existiert
         }
     }
 
