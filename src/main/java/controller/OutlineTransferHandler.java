@@ -40,6 +40,9 @@ public class OutlineTransferHandler extends TransferHandler {
         return dl.getPath() != null;
     }
 
+    /*
+    * Teils KI generiert
+     */
     @Override
     public boolean importData(TransferSupport support) {
         if (!canImport(support)) {
@@ -62,40 +65,51 @@ public class OutlineTransferHandler extends TransferHandler {
         DefaultMutableTreeNode target = (DefaultMutableTreeNode) path.getLastPathComponent();
         int dropIndex = dl.getChildIndex();
 
-        // Falls auf den Knoten selbst statt zwischen Knoten gedroppt wird, an das Ende anfügen
         if (dropIndex < 0) {
             dropIndex = target.getChildCount();
         }
 
-        for (OutlineNode node : draggedNodes) {
-            // OutlineNode muss ein DefaultMutableTreeNode sein (oder davon erben)
-            DefaultMutableTreeNode draggedNode = (DefaultMutableTreeNode) (Object) node;
+        if (getSubTreeHight() + target.getLevel() > 2) {
+            mainFrame.getStatusBar().setText("Zu viele Ebenen (maximal 3 zugelassen)");
+            return false;
+        }
 
-            // Verschieben in sich selbst oder eigene Kinder verhindern
-            if (target.isNodeAncestor(draggedNode)) {
+        for (OutlineNode node : draggedNodes) {
+
+            if (target.isNodeAncestor(node)) {
                 continue;
             }
 
-            DefaultMutableTreeNode oldParent = (DefaultMutableTreeNode) draggedNode.getParent();
+            DefaultMutableTreeNode oldParent = (DefaultMutableTreeNode) node.getParent();
             if (oldParent != null) {
-                int oldIndex = oldParent.getIndex(draggedNode);
+                int oldIndex = oldParent.getIndex(node);
 
-                // Index-Korrektur, wenn innerhalb desselben Elternknotens nach unten verschoben wird
                 if (oldParent == target && oldIndex < dropIndex) {
                     dropIndex--;
                 }
 
-                model.removeNodeFromParent(draggedNode);
+                model.removeNodeFromParent(node);
             }
 
-            // Knoten an der berechneten Position einfügen
-            model.insertNodeInto(draggedNode, target, dropIndex);
+            model.insertNodeInto(node, target, dropIndex);
 
-            // Nachfolgende gedroppte Knoten direkt dahinter einfügen
             dropIndex++;
         }
 
         mainFrame.getOutlineController().markDirty();
         return true;
+    }
+
+    private int getSubTreeHight() {
+        OutlineController outlineController = mainFrame.getOutlineController();
+
+        int maxSubtreeHeight = 0;
+        for (OutlineNode node : draggedNodes) {
+            int height = outlineController.getRelativeDepth(node); // Höchster Pfad im Teilbaum
+            if (height > maxSubtreeHeight) {
+                maxSubtreeHeight = height;
+            }
+        }
+        return maxSubtreeHeight;
     }
 }
