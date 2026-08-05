@@ -226,6 +226,13 @@ public class OutlineController {
         }
     }
 
+    public void addColumn(String title, ColumnType type) {
+
+        commitEditing();
+
+        outlinePanel.addColumn(title, type);
+    }
+
     public void deleteSelected() {
 
         OutlineNode selected = getSelectedNode();
@@ -576,7 +583,8 @@ public class OutlineController {
         fireUpdate();
     }
 
-    public boolean isDirty() {return dirty;
+    public boolean isDirty() {
+        return dirty;
     }
 
     public void saved() {
@@ -594,16 +602,37 @@ public class OutlineController {
         }
     }
 
+    public void setBoolean(boolean isSelected){
+        this.isSelected = isSelected;
+    }
+
+    public boolean getBoolean(){
+        return this.isSelected;
+    }
+
+    //GETTER - Columns
+    public ColumnHeader getTreeHeader(){
+        return outlinePanel.getHeaderPanel().getTreeHeader();
+    }
+
+    public List<ColumnHeader> getHeaderList(){
+        return outlinePanel.getHeaderPanel().getHeaders();
+    }
+
+    public List<OutlineColumn> getColumns(){
+        return outlinePanel.getColumnPanel().getColumns();
+    }
+
+    public void syncColumns(OutlineNode[] nodes, int rowHeight){
+        outlinePanel.getColumnPanel().syncWithTree(nodes, rowHeight);
+    }
+
     public void commitEditing() {
         JTree tree = outlinePanel.getTree();
 
         if (tree.isEditing()) {
             tree.stopEditing();
         }
-    }
-
-    public void setBoolean(boolean isSelected){
-        this.isSelected = isSelected;
     }
 
     public void setHeaderTitle(String title) {outlinePanel.getHeaderPanel().getTreeHeader().setTitle(title); }
@@ -614,10 +643,6 @@ public class OutlineController {
 
     public DefaultTreeModel getTreeModel() {
         return treeModel;
-    }
-
-    public boolean getBoolean(){
-        return this.isSelected;
     }
 
     public String getHeaderTitle() {return outlinePanel.getHeaderPanel().getTreeHeader().getTitle(); }
