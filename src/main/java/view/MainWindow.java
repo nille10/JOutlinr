@@ -10,6 +10,7 @@ import action.manager.UndoManager;
 import action.outline.*;
 import controller.*;
 import controller.SaveStatus;
+import model.OutlineNode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -101,6 +102,13 @@ public class MainWindow extends JFrame {
                 BorderFactory.createEmptyBorder(2, 8, 2, 8)
         ));
         getContentPane().add(statusBar, BorderLayout.SOUTH);
+
+        textWindow.setOnContentChanged(() -> {
+            OutlineNode selected = outlineController.getSelectedNode();
+            if (selected != null) {
+                outlineController.getTreeModel().nodeChanged(selected);
+            }
+        });
 
         //Fenster schließen
         this.addWindowListener(new WindowAdapter() {
