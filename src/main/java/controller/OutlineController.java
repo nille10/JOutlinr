@@ -3,7 +3,9 @@ package controller;
 import model.OutlineNode;
 import view.TextWindow;
 import view.OutlinePanel;
+import view.columns.ColumnHeader;
 import view.columns.ColumnType;
+import view.columns.OutlineColumn;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
@@ -222,6 +224,13 @@ public class OutlineController {
 
             outlinePanel.addColumn(title, type); // <-- jetzt gültig, da Feld existiert
         }
+    }
+
+    public void addColumn(String title, ColumnType type) {
+
+        commitEditing();
+
+        outlinePanel.addColumn(title, type);
     }
 
     public void deleteSelected() {
@@ -608,6 +617,23 @@ public class OutlineController {
 
     public boolean getBoolean(){
         return this.isSelected;
+    }
+
+    //GETTER - Columns
+    public ColumnHeader getTreeHeader(){
+        return outlinePanel.getHeaderPanel().getTreeHeader();
+    }
+
+    public List<ColumnHeader> getHeaderList(){
+        return outlinePanel.getHeaderPanel().getHeaders();
+    }
+
+    public List<OutlineColumn> getColumns(){
+        return outlinePanel.getColumnPanel().getColumns();
+    }
+
+    public void syncColumns(OutlineNode[] nodes, int rowHeight){
+        outlinePanel.getColumnPanel().syncWithTree(nodes, rowHeight);
     }
 
     public void commitEditing() {
