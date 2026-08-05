@@ -9,7 +9,7 @@ import action.actions.edit.InsertAction;
 import action.manager.UndoManager;
 import action.outline.*;
 import controller.*;
-import enums.SaveStatus;
+import controller.SaveStatus;
 
 import javax.swing.*;
 import java.awt.*;

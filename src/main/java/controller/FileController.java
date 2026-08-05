@@ -1,6 +1,5 @@
 package controller;
 
-import enums.SaveStatus;
 import model.JSONParser;
 import model.OutlineNode;
 
@@ -9,7 +8,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultTreeModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -19,6 +17,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import view.MainWindow;
+import view.columns.ColumnHeader;
+import view.columns.OutlineColumn;
 
 import java.awt.event.WindowEvent;
 import java.io.*;
@@ -88,6 +88,15 @@ public class FileController {
     }
 
     public void saveDocument() throws Exception {
+        /*System.out.println(outlineController.getHeaderTitle());
+        for (ColumnHeader c :outlineController.getSpaltenNamen()) {
+            System.out.println(c.getTitle());
+        }
+        for (OutlineColumn c : outlineController.getSpalten()) {
+            System.out.println(c.getType());
+        }*/
+
+
         if (saveLocation != null) {
             if (saveLocation.getName().toLowerCase().endsWith("xml")) {
                 Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
@@ -97,8 +106,8 @@ public class FileController {
         } else {
             saveDialog();
         }
-
-        updateLastSavedTime();
+        if(saveLocation != null)
+            updateLastSavedTime();
         outlineController.saved();
     }
 

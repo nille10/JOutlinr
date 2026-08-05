@@ -3,7 +3,9 @@ package controller;
 import model.OutlineNode;
 import view.TextWindow;
 import view.OutlinePanel;
+import view.columns.ColumnHeader;
 import view.columns.ColumnType;
+import view.columns.OutlineColumn;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
@@ -568,23 +570,13 @@ public class OutlineController {
         }
     }
 
-    public OutlineNode getRootNode() {
-        return rootNode;
-    }
-
-
-    public DefaultTreeModel getTreeModel() {
-        return treeModel;
-    }
-
     public void markDirty() {
         dirty = true;
         updateTitle();
         fireUpdate();
     }
 
-    public boolean isDirty() {
-        return dirty;
+    public boolean isDirty() {return dirty;
     }
 
     public void saved() {
@@ -602,14 +594,6 @@ public class OutlineController {
         }
     }
 
-    public void setBoolean(boolean isSelected){
-        this.isSelected = isSelected;
-    }
-
-    public boolean getBoolean(){
-        return this.isSelected;
-    }
-
     public void commitEditing() {
         JTree tree = outlinePanel.getTree();
 
@@ -617,4 +601,28 @@ public class OutlineController {
             tree.stopEditing();
         }
     }
+
+    public void setBoolean(boolean isSelected){
+        this.isSelected = isSelected;
+    }
+
+    public void setHeaderTitle(String title) {outlinePanel.getHeaderPanel().getTreeHeader().setTitle(title); }
+
+    public OutlineNode getRootNode() {
+        return rootNode;
+    }
+
+    public DefaultTreeModel getTreeModel() {
+        return treeModel;
+    }
+
+    public boolean getBoolean(){
+        return this.isSelected;
+    }
+
+    public String getHeaderTitle() {return outlinePanel.getHeaderPanel().getTreeHeader().getTitle(); }
+
+    public List<ColumnHeader> getSpaltenNamen() {return outlinePanel.getHeaderPanel().getHeaders(); }
+
+    public List<OutlineColumn> getSpalten() {return outlinePanel.getColumnPanel().getColumns();}
 }

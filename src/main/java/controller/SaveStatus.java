@@ -1,4 +1,4 @@
-package enums;
+package controller;
 
 public enum SaveStatus {
     NO_CHANGES,
