@@ -390,7 +390,7 @@ public class OutlineController {
      * Ermittelt die relative Tiefe eines (noch nicht eingehängten) Teilbaums,
      * unabhängig von seinem aktuellen Level im Baum (der bei einer Kopie z.B. 0 sein kann).
      */
-    private int getRelativeDepth(OutlineNode node) {
+    public int getRelativeDepth(OutlineNode node) {
 
         int max = 0;
 
