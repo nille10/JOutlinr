@@ -68,6 +68,14 @@ public class OutlineTransferHandler extends TransferHandler {
             return false;
         }
 
+        DefaultMutableTreeNode oldParent =(DefaultMutableTreeNode) draggedNode.getParent();
+
+        int oldIndex = oldParent.getIndex(draggedNode);
+
+        if (index >= 0 && oldParent == target && oldIndex < index) {
+            index--;
+        }
+
         model.removeNodeFromParent(draggedNode);
 
         if (index >= 0) {

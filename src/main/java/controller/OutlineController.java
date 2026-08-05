@@ -577,15 +577,6 @@ public class OutlineController {
         }
     }
 
-    public OutlineNode getRootNode() {
-        return rootNode;
-    }
-
-
-    public DefaultTreeModel getTreeModel() {
-        return treeModel;
-    }
-
     public void markDirty() {
         dirty = true;
         updateTitle();
@@ -643,4 +634,20 @@ public class OutlineController {
             tree.stopEditing();
         }
     }
+
+    public void setHeaderTitle(String title) {outlinePanel.getHeaderPanel().getTreeHeader().setTitle(title); }
+
+    public OutlineNode getRootNode() {
+        return rootNode;
+    }
+
+    public DefaultTreeModel getTreeModel() {
+        return treeModel;
+    }
+
+    public String getHeaderTitle() {return outlinePanel.getHeaderPanel().getTreeHeader().getTitle(); }
+
+    public List<ColumnHeader> getSpaltenNamen() {return outlinePanel.getHeaderPanel().getHeaders(); }
+
+    public List<OutlineColumn> getSpalten() {return outlinePanel.getColumnPanel().getColumns();}
 }

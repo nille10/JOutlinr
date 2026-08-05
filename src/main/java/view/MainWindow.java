@@ -9,6 +9,7 @@ import action.actions.edit.InsertAction;
 import action.manager.UndoManager;
 import action.outline.*;
 import controller.*;
+import controller.SaveStatus;
 
 import javax.swing.*;
 import java.awt.*;
@@ -105,8 +106,9 @@ public class MainWindow extends JFrame {
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                fileController.checkSavedStatus();
-                dispose();
+                if(fileController.checkSavedStatus() != SaveStatus.SAVE_FAILED) {
+                    dispose();
+                }
             }
         });
     }

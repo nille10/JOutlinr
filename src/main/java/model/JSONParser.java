@@ -114,8 +114,30 @@ public class JSONParser {
             char c = json.charAt(pos++);
 
             if (c == '\\') {
-                if (pos < json.length()) {
-                    sb.append(json.charAt(pos++));
+                if (pos >= json.length()) {
+                    throw new RuntimeException("Ungültige Escape-Sequenz");
+                }
+
+                char escaped = json.charAt(pos++);
+
+                switch (escaped) {
+                    case 'n':
+                        sb.append('\n');
+                        break;
+                    case 'r':
+                        sb.append('\r');
+                        break;
+                    case 't':
+                        sb.append('\t');
+                        break;
+                    case '"':
+                        sb.append('"');
+                        break;
+                    case '\\':
+                        sb.append('\\');
+                        break;
+                    default:
+                        sb.append(escaped);
                 }
             } else if (c == '"') {
                 break;

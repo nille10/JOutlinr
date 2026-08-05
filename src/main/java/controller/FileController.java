@@ -8,7 +8,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultTreeModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -18,6 +17,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import view.MainWindow;
+import view.columns.ColumnHeader;
+import view.columns.OutlineColumn;
 
 import java.awt.event.WindowEvent;
 import java.io.*;
@@ -44,43 +45,58 @@ public class FileController {
 
     // Platzhalter
     public void newDocument() {
-        checkSavedStatus();
+        if (checkSavedStatus() != SaveStatus.SAVE_FAILED) {
 
-        outlineController.cancelActiveEditing();
+            outlineController.cancelActiveEditing();
 
-        OutlineNode root = outlineController.getRootNode();
+            OutlineNode root = outlineController.getRootNode();
 
-        root.removeAllChildren();
-        root.setTitle("Outliner");
-        root.setContent("");
+            root.removeAllChildren();
+            root.setTitle("Outliner");
+            root.setContent("");
 
-        treeModel.reload();
+            treeModel.reload();
 
-        saveLocation = null;
+            saveLocation = null;
 
-        outlineController.saved();
+            outlineController.saved();
 
-        mainWindow.getStatusBar().setText(" Bereit");
+            mainWindow.getStatusBar().setText(" Bereit");
+        }
     }
 
     public void openDocument() {
-        checkSavedStatus();
-        int result = openDialog();
-        if (result == 1) {
+        if (checkSavedStatus() != SaveStatus.SAVE_FAILED) {
+            int result = openDialog();
+            if (result == 1) {
 
-            try {
-                importXML();
-            } catch (Exception e) {System.out.println(e.getMessage());}
+                try {
+                    importXML();
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
 
-        } else if (result == 2) {
-            try {
-                fromJson();
-            } catch (IOException e) {System.out.println(e.getMessage());}
+            } else if (result == 2) {
+                try {
+                    fromJson();
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+            outlineController.saved();
         }
-        outlineController.saved();
     }
 
     public void saveDocument() throws Exception {
+        /*System.out.println(outlineController.getHeaderTitle());
+        for (ColumnHeader c :outlineController.getSpaltenNamen()) {
+            System.out.println(c.getTitle());
+        }
+        for (OutlineColumn c : outlineController.getSpalten()) {
+            System.out.println(c.getType());
+        }*/
+
+
         if (saveLocation != null) {
             if (saveLocation.getName().toLowerCase().endsWith("xml")) {
                 Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
@@ -90,8 +106,8 @@ public class FileController {
         } else {
             saveDialog();
         }
-
-        updateLastSavedTime();
+        if(saveLocation != null)
+            updateLastSavedTime();
         outlineController.saved();
     }
 
@@ -102,9 +118,6 @@ public class FileController {
     }
 
     public void close() {
-        try {
-            checkSavedStatus();
-        } catch (Exception ignore) {}
         mainWindow.dispatchEvent(new WindowEvent(mainWindow, WindowEvent.WINDOW_CLOSING));
     }
 
@@ -307,7 +320,7 @@ public class FileController {
 
         while (parsedRoot.getChildCount() > 0) {
             OutlineNode child = (OutlineNode) parsedRoot.getChildAt(0);
-            actualRoot.add(child); // entfernt automatisch aus parsedRoot, rutscht nach
+            actualRoot.add(child);
         }
 
         treeModel.reload();
@@ -375,20 +388,28 @@ public class FileController {
         mainWindow.getStatusBar().setText("Last Saved: " + localDateTime.format(dateTimeFormatter));
     }
 
-    public void checkSavedStatus() {
+    public SaveStatus checkSavedStatus() {
         if (outlineController.isDirty()) {
             int result = JOptionPane.showConfirmDialog(
                     mainWindow,
                     "Änderungen speichern?",
-                    "Ungespeicherte Änderungen",
+                    "Unsaved changes",
                     JOptionPane.YES_NO_OPTION
             );
             if (result == JOptionPane.YES_OPTION) {
                 try {
                     saveDocument();
-                } catch (Exception ignored) {}
+                    return SaveStatus.SAVED;
+                } catch (Exception ignored) {
+                    return SaveStatus.SAVE_FAILED;
+                }
+            } else if (result == JOptionPane.NO_OPTION) {
+                return SaveStatus.DONT_SAVE;
+            } else {
+                return SaveStatus.SAVE_FAILED;
             }
         }
+        return SaveStatus.NO_CHANGES;
     }
 }
 
