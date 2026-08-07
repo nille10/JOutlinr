@@ -12,6 +12,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import model.XMLParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -71,7 +72,8 @@ public class FileController {
             if (result == 1) {
 
                 try {
-                    importXML();
+                    XMLParser xmlParser = new XMLParser(outlineController);
+                    xmlParser.importXML(saveLocation);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
@@ -99,7 +101,8 @@ public class FileController {
 
         if (saveLocation != null) {
             if (saveLocation.getName().toLowerCase().endsWith("xml")) {
-                Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
+                XMLParser xmlParser = new XMLParser(outlineController);
+                Files.writeString(saveLocation.toPath(), xmlParser.toXMLString(treeModel));
             } else if (saveLocation.getName().toLowerCase().endsWith(".json")) {
                 Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
             }
@@ -156,7 +159,8 @@ public class FileController {
                     Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
                 } else if (!fileChooser.getFile().getName().toLowerCase().endsWith(".xml") && fileChooser.getFileFilter().getDescription().contains("XML")) {
                     saveLocation = new File(fileChooser.getFile().getAbsolutePath() + ".xml");
-                    Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
+                    XMLParser xmlParser = new XMLParser(outlineController);
+                    Files.writeString(saveLocation.toPath(), xmlParser.toXMLString(treeModel));
                 } else{
                     JOptionPane.showMessageDialog(mainWindow, "Bitte einen gültigen Pfad angeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
                 }
@@ -255,62 +259,6 @@ public class FileController {
         return json.toString();
     }
 
-    public String toXMLString(DefaultTreeModel treeModel) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.newDocument();
-
-        Element rootElement = doc.createElement("outline");
-        doc.appendChild(rootElement);
-
-        OutlineNode rootNode = (OutlineNode) treeModel.getRoot();
-        appendNode(doc, rootElement, rootNode);
-
-        Transformer transformer = TransformerFactory.newInstance().newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        //transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-
-        StringWriter writer = new StringWriter();
-        transformer.transform(new DOMSource(doc), new StreamResult(writer));
-
-        return writer.toString();
-    }
-
-    private void appendNode(Document doc, Element parentElement, OutlineNode node) {
-        Element nodeElement = doc.createElement("node");
-        nodeElement.setAttribute("title", node.getTitle());
-
-        Element contentElement = doc.createElement("content");
-        contentElement.appendChild(doc.createTextNode(node.getContent()));
-        nodeElement.appendChild(contentElement);
-
-        parentElement.appendChild(nodeElement);
-
-        for (int i = 0; i < node.getChildCount(); i++) {
-            OutlineNode child = (OutlineNode) node.getChildAt(i);
-            appendNode(doc, nodeElement, child);
-        }
-    }
-
-    public void importXML() throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
-        Document doc = builder.parse(saveLocation);
-
-        Element rootElement = doc.getDocumentElement();
-        Element rootNodeElement = (Element) rootElement.getElementsByTagName("node").item(0);
-
-        if (rootNodeElement == null) {
-            throw new IllegalArgumentException("Keine Root-Node gefunden");
-        }
-
-        outlineController.cancelActiveEditing();
-
-        OutlineNode parsedRoot = parseNode(rootNodeElement);
-        replaceRootContents(parsedRoot);
-    }
-
     private void replaceRootContents(OutlineNode parsedRoot) {
         OutlineNode actualRoot = outlineController.getRootNode();
 
@@ -324,33 +272,6 @@ public class FileController {
         }
 
         treeModel.reload();
-    }
-
-    private OutlineNode parseNode(Element nodeElement) {
-        String title = nodeElement.getAttribute("title");
-
-        OutlineNode node = new OutlineNode(title);
-
-        NodeList children = nodeElement.getChildNodes();
-
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-
-            if (!(child instanceof Element element)) {
-                continue;
-            }
-
-            switch (element.getTagName()) {
-                case "content" -> node.setContent(element.getTextContent());
-
-                case "node" -> {
-                    OutlineNode childNode = parseNode(element);
-                    node.add(childNode);
-                }
-            }
-        }
-
-        return node;
     }
 
     private String toLatexString(OutlineNode node) {
