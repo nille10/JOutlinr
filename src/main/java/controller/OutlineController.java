@@ -71,6 +71,11 @@ public class OutlineController {
 
                         child.setTitle(child.getUserObject().toString());
 
+                        SwingUtilities.invokeLater(() -> {
+                            tree.treeDidChange();
+                            tree.repaint();
+                        });
+
                         markDirty();
                     }
 

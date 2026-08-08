@@ -11,18 +11,17 @@ public class TextWindow extends JPanel {
   private final JTextArea textArea;
   private final JLabel nodeLabel;
   private OutlineNode currentNode;
+  private Runnable onContentChanged;
 
   public TextWindow() {
     setLayout(new BorderLayout(0, 4));
     setBorder(new EmptyBorder(6, 8, 8, 8));
-    // kein setBackground – FlatLaf übernimmt Panel.background
 
     JPanel header = new JPanel(new BorderLayout());
     header.setOpaque(false);
 
     nodeLabel = new JLabel("Kein Element ausgewählt");
     nodeLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-    // kein setForeground – FlatLaf übernimmt Label.foreground
     nodeLabel.setBorder(new EmptyBorder(0, 0, 4, 0));
     header.add(nodeLabel, BorderLayout.WEST);
     add(header, BorderLayout.NORTH);
@@ -32,7 +31,6 @@ public class TextWindow extends JPanel {
     textArea.setLineWrap(true);
     textArea.setWrapStyleWord(true);
     textArea.setEnabled(false);
-    // kein setBackground/setForeground – FlatLaf färbt TextArea automatisch
     textArea.setMargin(new Insets(8, 8, 8, 8));
 
     textArea.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
@@ -42,9 +40,13 @@ public class TextWindow extends JPanel {
     });
 
     JScrollPane scrollPane = new JScrollPane(textArea);
-    // kein setBorder mit hardcodierter Farbe – FlatLaf zeichnet den Rahmen
     scrollPane.setBorder(BorderFactory.createEmptyBorder());
     add(scrollPane, BorderLayout.CENTER);
+  }
+
+  /** Wird aufgerufen wenn sich der Content eines Nodes ändert. */
+  public void setOnContentChanged(Runnable callback) {
+    this.onContentChanged = callback;
   }
 
   public void loadNode(OutlineNode node) {
@@ -64,6 +66,7 @@ public class TextWindow extends JPanel {
   private void saveToNode() {
     if (currentNode != null) {
       currentNode.setContent(textArea.getText());
+      if (onContentChanged != null) onContentChanged.run();
     }
   }
 }

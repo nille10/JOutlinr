@@ -131,6 +131,25 @@ public class OutlinePanel extends JPanel {
                         }
                         return false;
                     }
+
+                    @Override
+                    public Component getTreeCellEditorComponent(
+                            JTree tree, Object value, boolean isSelected,
+                            boolean expanded, boolean leaf, int row) {
+
+                        Component editingComponent = super.getTreeCellEditorComponent(
+                                tree, value, isSelected, expanded, leaf, row);
+
+                        if (editingComponent instanceof JTextField textField) {
+                            // Feste, großzügige Breite statt automatischer Berechnung
+                            // basierend auf dem aktuellen (kurzen) Text
+                            Dimension size = textField.getPreferredSize();
+                            size.width = Math.max(size.width, tree.getWidth() - 60);
+                            textField.setPreferredSize(size);
+                        }
+
+                        return editingComponent;
+                    }
                 });
 
 // Zusätzlich weiterhin für Menüs (MenuSelectionManager reagiert
