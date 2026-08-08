@@ -47,7 +47,7 @@ public class OutlineColumn extends JPanel {
 
   private final ColumnType type;
   private final int columnWidth;
-  private final String title;
+  private String title; //kann sich ändern (umbenennen)
 
   private final Map<OutlineNode, Object> dataMap    = new HashMap<>();
   private final JPanel                   cellContainer;
@@ -233,5 +233,9 @@ public class OutlineColumn extends JPanel {
   // ── Setter ──
   public void setValue(OutlineNode node, Object value) {
     dataMap.put(node, value);
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
   }
 }
