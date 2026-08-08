@@ -5,6 +5,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import view.columns.ColumnType;
 
 import javax.swing.tree.DefaultTreeModel;
 import javax.xml.parsers.DocumentBuilder;
@@ -32,6 +33,8 @@ public class XMLParser {
         Document doc = builder.parse(saveLocation);
 
         Element rootElement = doc.getDocumentElement();
+
+        Element headElement = (Element) rootElement.getElementsByTagName("head").item(0);
         Element rootNodeElement = (Element) rootElement.getElementsByTagName("node").item(0);
 
         if (rootNodeElement == null) {
@@ -40,8 +43,30 @@ public class XMLParser {
 
         outlineController.cancelActiveEditing();
 
+        if (headElement != null) {
+            rebuildColumns(headElement);
+        }
+
         OutlineNode parsedRoot = parseNode(rootNodeElement);
         replaceRootContents(parsedRoot);
+    }
+
+    private void rebuildColumns(Element headElement) {
+
+        NodeList columnHeaders = headElement.getElementsByTagName("ColumnHeader");
+
+        for (int i = 0; i < columnHeaders.getLength(); i++) {
+            Element headerElement = (Element) columnHeaders.item(i);
+
+            String title = headerElement.getTextContent();
+            String typeAttr = headerElement.getAttribute("type");
+
+            ColumnType type = typeAttr.isEmpty()
+                    ? ColumnType.TEXTFIELD
+                    : ColumnType.valueOf(typeAttr);
+
+            outlineController.addColumn(title, type);
+        }
     }
 
     public String toXMLString(DefaultTreeModel treeModel) throws Exception {
@@ -70,9 +95,10 @@ public class XMLParser {
         Element header = doc.createElement("head");
         header.setAttribute("title", outlineController.getHeaderTitle());
 
-        for (var spaltenName : outlineController.getSpaltenNamen()) {
+        for (var column : outlineController.getSpalten()) {
             Element columnHeader = doc.createElement("ColumnHeader");
-            columnHeader.setTextContent(spaltenName.getTitle());
+            columnHeader.setAttribute("type", column.getType().name());
+            columnHeader.setTextContent(column.getTitle());
 
             header.appendChild(columnHeader);
         }
@@ -85,8 +111,10 @@ public class XMLParser {
 
         for (var column : outlineController.getSpalten()) {
             Element columnElement = doc.createElement("column");
-            columnElement.setAttribute("columnType", column.getType().toString());
+            columnElement.setAttribute("columnTitle", column.getTitle());
+            columnElement.setAttribute("columnType", column.getType().name());
             columnElement.setAttribute("columnValue", column.getValue(node).toString());
+            nodeElement.appendChild(columnElement); // <-- fehlte komplett
         }
 
         Element contentElement = doc.createElement("content");
@@ -132,6 +160,21 @@ public class XMLParser {
 
             switch (element.getTagName()) {
                 case "content" -> node.setContent(element.getTextContent());
+
+                case "column" -> {
+                    String columnTitle = element.getAttribute("columnTitle");
+                    String rawValue = element.getAttribute("columnValue");
+
+                    for (var column : outlineController.getSpalten()) {
+                        if (column.getTitle().equals(columnTitle)) {
+                            Object value = column.getType() == ColumnType.CHECKBOX
+                                    ? Boolean.parseBoolean(rawValue)
+                                    : rawValue;
+                            column.setValue(node, value);
+                            break;
+                        }
+                    }
+                }
 
                 case "node" -> {
                     OutlineNode childNode = parseNode(element);

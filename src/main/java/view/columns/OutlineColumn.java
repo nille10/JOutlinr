@@ -211,7 +211,19 @@ public class OutlineColumn extends JPanel {
   // ── Getter ──
 
   public ColumnType getType()                  { return type; }
-  public Object     getValue(OutlineNode node) { return dataMap.get(node); }
+  public Object getValue(OutlineNode node) {
+    Object value = dataMap.get(node);
+
+    if (value == null) {
+      return switch (type) {
+        case CHECKBOX -> Boolean.FALSE;
+        case TEXTFIELD -> "";
+        default -> "";
+      };
+    }
+
+    return value;
+  }
   public int        getColumnWidth()           { return columnWidth; }
   public String getTitle() {
     return title;
