@@ -68,7 +68,6 @@ public class ColumnPanel extends JPanel {
     return column;
   }
 
-
   public void removeColumn(OutlineColumn column) {
 
     if (columns.remove(column)) {

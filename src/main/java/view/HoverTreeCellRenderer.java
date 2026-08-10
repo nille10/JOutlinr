@@ -1,5 +1,6 @@
 package view;
 
+import model.OutlineNode;
 import view.columns.RowHoverManager;
 
 import javax.imageio.ImageIO;
@@ -11,20 +12,15 @@ import java.io.IOException;
 
 public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
 
-  // Accent-Farben bleiben fix – gehören zum App-Design
   private static final Color SELECTED_BG     = new Color(0xFC, 0x27, 0x39);
   private static final Color SELECTED_FG     = Color.WHITE;
   private static final Color SELECTED_BORDER = new Color(0xD9, 0x1B, 0x2C);
 
-  // Hover hell (Light Mode)
   private static final Color HOVER_BG_LIGHT = new Color(0xFD, 0xE3, 0xE5);
   private static final Color HOVER_FG_LIGHT = new Color(0x40, 0x20, 0x22);
-
-  // Hover dunkel (Dark Mode)
   private static final Color HOVER_BG_DARK  = new Color(0x5A, 0x1A, 0x20);
   private static final Color HOVER_FG_DARK  = new Color(0xFF, 0xCC, 0xCC);
 
-  // Default: immer aus UIManager lesen
   private static Color defaultBg() {
     Color c = UIManager.getColor("Tree.background");
     return c != null ? c : Color.WHITE;
@@ -33,77 +29,97 @@ public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
     Color c = UIManager.getColor("Tree.foreground");
     return c != null ? c : Color.BLACK;
   }
-  private static boolean isDark() {
-    return defaultBg().getRed() < 128;
-  }
-  private static Color hoverBg() { return isDark() ? HOVER_BG_DARK : HOVER_BG_LIGHT; }
-  private static Color hoverFg() { return isDark() ? HOVER_FG_DARK : HOVER_FG_LIGHT; }
+  private static boolean isDark() { return defaultBg().getRed() < 128; }
+  private static Color hoverBg()  { return isDark() ? HOVER_BG_DARK  : HOVER_BG_LIGHT; }
+  private static Color hoverFg()  { return isDark() ? HOVER_FG_DARK  : HOVER_FG_LIGHT; }
 
   private final RowHoverManager hoverManager;
+  private final Icon contentIndicatorIcon;
+
+  // Wrapper: label links, indicator rechts
+  private final JPanel wrapper;
+  private final JLabel indicatorLabel;
 
 
   public HoverTreeCellRenderer(RowHoverManager hoverManager) {
-    this.hoverManager = hoverManager;
+    this.hoverManager         = hoverManager;
+    this.contentIndicatorIcon = loadIcon("/icons/document.png", 12);
 
     setBackgroundSelectionColor(SELECTED_BG);
     setTextSelectionColor(SELECTED_FG);
     setBorderSelectionColor(SELECTED_BORDER);
 
-    Icon leaf   = loadIcon("/icons/dot.png",   8);
-    Icon closed = loadIcon("/icons/empty.png", 8);
-    Icon open   = loadIcon("/icons/empty.png", 8);
+    setLeafIcon(loadIcon("/icons/dot.png",   8));
+    setClosedIcon(loadIcon("/icons/empty.png", 8));
+    setOpenIcon(loadIcon("/icons/empty.png", 8));
 
-    setLeafIcon(leaf);
-    setClosedIcon(closed);
-    setOpenIcon(open);
+    wrapper = new JPanel(new BorderLayout(0, 0));
+    wrapper.setOpaque(false);
+    // 'this' (das Label) sitzt im CENTER
+    wrapper.add(this, BorderLayout.CENTER);
+
+    // Indicator: feste Breite nur wenn sichtbar, sonst width=0
+    indicatorLabel = new JLabel();
+    indicatorLabel.setOpaque(false);
   }
 
 
   @Override
   public Component getTreeCellRendererComponent(
-      JTree tree,
-      Object value,
-      boolean selected,
-      boolean expanded,
-      boolean leaf,
-      int row,
-      boolean hasFocus) {
+          JTree tree,
+          Object value,
+          boolean selected,
+          boolean expanded,
+          boolean leaf,
+          int row,
+          boolean hasFocus) {
 
-    // Default-Farben vor super-Aufruf aktuell setzen
     setBackgroundNonSelectionColor(defaultBg());
     setTextNonSelectionColor(defaultFg());
 
-    Component c = super.getTreeCellRendererComponent(
-        tree, value, selected, expanded, leaf, row, hasFocus);
+    super.getTreeCellRendererComponent(
+            tree, value, selected, expanded, leaf, row, hasFocus);
 
-    JLabel label = (JLabel) c;
-
-    if (selected) {
-      label.setBackground(SELECTED_BG);
-      label.setForeground(SELECTED_FG);
-      label.setOpaque(true);
-
-    } else if (hoverManager.isHovered(row)) {
-      label.setBackground(hoverBg());
-      label.setForeground(hoverFg());
-      label.setOpaque(true);
-
-    } else {
-      label.setBackground(defaultBg());
-      label.setForeground(defaultFg());
-      label.setOpaque(false);
+    // ── Content-Indicator ───────────────────────────────────────────────
+    boolean hasContent = false;
+    if (value instanceof OutlineNode node) {
+      hasContent = node.getContent() != null && !node.getContent().isBlank();
     }
 
-    return c;
+    if (hasContent && contentIndicatorIcon != null) {
+      indicatorLabel.setIcon(contentIndicatorIcon);
+      indicatorLabel.setPreferredSize(new Dimension(contentIndicatorIcon.getIconWidth() + 6, 1));
+      if (indicatorLabel.getParent() == null) {
+        wrapper.add(indicatorLabel, BorderLayout.EAST);
+      }
+    } else {
+      // Indicator aus dem Wrapper entfernen → kein Platz verbraucht
+      if (indicatorLabel.getParent() != null) {
+        wrapper.remove(indicatorLabel);
+      }
+    }
+
+    // ── Farben ──────────────────────────────────────────────────────────
+    Color bg; Color fg; boolean opaque;
+    if (selected) {
+      bg = SELECTED_BG; fg = SELECTED_FG; opaque = true;
+    } else if (hoverManager.isHovered(row)) {
+      bg = hoverBg(); fg = hoverFg(); opaque = true;
+    } else {
+      bg = defaultBg(); fg = defaultFg(); opaque = false;
+    }
+
+    setBackground(bg); setForeground(fg); setOpaque(opaque);
+    wrapper.setBackground(bg); wrapper.setOpaque(opaque);
+
+    return wrapper;
   }
+
 
   private Icon loadIcon(String path, int size) {
     try {
       var stream = getClass().getResourceAsStream(path);
-      if (stream == null) {
-        System.err.println("Icon nicht gefunden: " + path);
-        return null;
-      }
+      if (stream == null) { System.err.println("Icon nicht gefunden: " + path); return null; }
       BufferedImage img = ImageIO.read(stream);
       Image scaled = img.getScaledInstance(size, size, Image.SCALE_SMOOTH);
       return new ImageIcon(scaled);

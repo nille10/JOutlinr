@@ -22,6 +22,12 @@ public class OutlineNode extends DefaultMutableTreeNode {
     setUserObject(title);
   }
 
+  @Override
+  public void setUserObject(Object userObject) {
+    super.setUserObject(userObject);
+    this.title = userObject != null ? userObject.toString() : "";
+  }
+
   public String getContent() {
     return content;
   }

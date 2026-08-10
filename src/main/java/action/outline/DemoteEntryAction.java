@@ -11,7 +11,7 @@ public class DemoteEntryAction extends AbstractAction {
     private final OutlineController outlineController;
 
     public DemoteEntryAction(OutlineController outlineController) {
-        super("Ebene tiefer");
+        super("Demote");
         this.outlineController = outlineController;
 
         outlineController.addUpdateListener(
