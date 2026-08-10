@@ -11,7 +11,7 @@ public class PromoteEntryAction extends AbstractAction{
     private final OutlineController outlineController;
 
     public PromoteEntryAction(OutlineController outlineController) {
-        super("Ebene höher");
+        super("Promote");
         this.outlineController = outlineController;
 
         outlineController.addUpdateListener(
