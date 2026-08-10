@@ -49,6 +49,7 @@ public class FileController {
         if (checkSavedStatus() != SaveStatus.SAVE_FAILED) {
 
             outlineController.cancelActiveEditing();
+            outlineController.deleteAllColumns();
 
             OutlineNode root = outlineController.getRootNode();
 
@@ -73,6 +74,7 @@ public class FileController {
 
                 try {
                     XMLParser xmlParser = new XMLParser(outlineController);
+                    outlineController.deleteAllColumns();
                     xmlParser.importXML(saveLocation);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
@@ -80,6 +82,7 @@ public class FileController {
 
             } else if (result == 2) {
                 try {
+                    outlineController.deleteAllColumns();
                     fromJson();
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
@@ -193,17 +196,36 @@ public class FileController {
         return -1;
     }
 
-    private static String toJsonString(DefaultTreeModel treeModel) {
+    private String toJsonString(DefaultTreeModel treeModel) {
         StringBuilder json = new StringBuilder("{\n");
+
+        json.append(jsonHeader());
+
         OutlineNode root = (OutlineNode) treeModel.getRoot();
 
-        json.append(JsonChild(0, root));
+        json.append(jsonChild(0, root));
         json.append("\n}");
 
         return json.toString();
     }
 
-    private static StringBuilder JsonChild(int amountParents, OutlineNode node) {
+    private StringBuilder jsonHeader() {
+        StringBuilder jsonHeader = new StringBuilder();
+
+        jsonHeader.append("  \"header\" : \"").append(outlineController.getHeaderTitle()).append("\",\n");
+        jsonHeader.append("  \"headerColumns\" : [\n");
+        var headers = outlineController.getHeaderList();
+        for (int i = 0; i < headers.size(); i++) {
+            if (headers.size() == 1 || headers.size() -1 == i)
+                jsonHeader.append("    \"").append(headers.get(i).getTitle()).append("\"\n");
+            else
+                jsonHeader.append("    \"").append(headers.get(i).getTitle()).append("\",\n");
+        }
+        jsonHeader.append("  ],\n");
+        return jsonHeader;
+    }
+
+    private StringBuilder jsonChild(int amountParents, OutlineNode node) {
         StringBuilder sb = new StringBuilder();
 
         // Spaces
@@ -212,23 +234,38 @@ public class FileController {
 
         sb.append(spaces).append("\"title\" : \"").append(node.getTitle()).append("\",\n");
         sb.append(spaces).append("\"content\" : \"").append(node.getContent()).append("\",\n");
+        sb.append(spaces).append("\"columns\" : [");
+        var headers = outlineController.getColumns();
+        for (int i = 0; i < headers.size(); i++) {
+            sb.append(" {\n");
+            sb.append(spaces).append("  ").append("\"columnTitle\" : \"").append(headers.get(i).getTitle()).append("\",\n");
+            sb.append(spaces).append("  ").append("\"columnType\" : \"").append(headers.get(i).getType()).append("\",\n");
+            sb.append(spaces).append("  ").append("\"columnValue\" : \"").append(headers.get(i).getValue(node)).append("\"\n");
+            if (headers.size() == 1 || headers.size() -1 == i) {
+                sb.append(spaces).append("} ");
+            } else {
+                sb.append(spaces).append("},");
+            }
+        }
+        sb.append("],\n");
+
         sb.append(spaces).append("\"children\" : ").append("[ ");
         if (node.getChildCount() == 0) {
             sb.append("]");
             return sb;
         } else if (node.getChildCount() == 1) {
             sb.append("{\n");
-            sb.append(JsonChild(++amountParents,(OutlineNode) node.getChildAt(0)));
+            sb.append(jsonChild(++amountParents,(OutlineNode) node.getChildAt(0)));
             sb.append("\n").append(spaces).append("} ]");
         } else {
             amountParents++;
             for (int i = 0; i < node.getChildCount(); i++) {
                 sb.append("{\n");
                 if (node.getChildCount() -1 == i) {
-                    sb.append(JsonChild(amountParents, (OutlineNode) node.getChildAt(i)));
+                    sb.append(jsonChild(amountParents, (OutlineNode) node.getChildAt(i)));
                     sb.append("\n").append(spaces).append("} ]");
                 } else {
-                    sb.append(JsonChild(amountParents, (OutlineNode) node.getChildAt(i)));
+                    sb.append(jsonChild(amountParents, (OutlineNode) node.getChildAt(i)));
                     sb.append("\n").append(spaces).append("}, ");
                 }
             }

@@ -627,6 +627,15 @@ public class OutlineController {
         outlinePanel.getColumnPanel().syncWithTree(nodes, rowHeight);
     }
 
+    public void deleteAllColumns() {
+        List<OutlineColumn> columns = getColumns();
+        int columnSize = columns.size();
+        for (int i = columnSize - 1; i >= 0; i--) {
+            outlinePanel.removeColumn(columns.get(i));
+        }
+        outlinePanel.getHeaderPanel().clearColumnHeaders();
+    }
+
     public void commitEditing() {
         JTree tree = outlinePanel.getTree();
 

@@ -114,7 +114,7 @@ public class XMLParser {
             columnElement.setAttribute("columnTitle", column.getTitle());
             columnElement.setAttribute("columnType", column.getType().name());
             columnElement.setAttribute("columnValue", column.getValue(node).toString());
-            nodeElement.appendChild(columnElement); // <-- fehlte komplett
+            nodeElement.appendChild(columnElement);
         }
 
         Element contentElement = doc.createElement("content");
@@ -145,7 +145,7 @@ public class XMLParser {
     }
 
     private OutlineNode parseNode(Element nodeElement) {
-        String title = nodeElement.getAttribute("title");
+         String title = nodeElement.getAttribute("title");
 
         OutlineNode node = new OutlineNode(title);
 
@@ -167,9 +167,7 @@ public class XMLParser {
 
                     for (var column : outlineController.getSpalten()) {
                         if (column.getTitle().equals(columnTitle)) {
-                            Object value = column.getType() == ColumnType.CHECKBOX
-                                    ? Boolean.parseBoolean(rawValue)
-                                    : rawValue;
+                            Object value = column.getType() == ColumnType.CHECKBOX ? Boolean.parseBoolean(rawValue) : rawValue;
                             column.setValue(node, value);
                             break;
                         }
