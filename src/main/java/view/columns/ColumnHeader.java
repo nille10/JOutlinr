@@ -25,7 +25,7 @@ public class ColumnHeader extends JPanel {
     return c != null ? c : new Color(180, 180, 180);
   }
 
-  private final JTextField textField;
+  private JTextField textField;
   private final JLabel removeButton;
   private Runnable onRemove;
   private java.util.function.Consumer<String> onRename;
@@ -201,6 +201,6 @@ public class ColumnHeader extends JPanel {
   // ── Getter / Setter ───────────────────────────────────────────────────────
 
   public String     getTitle()         { return textField.getText(); }
-  public void       setTitle(String t) { textField.setText(t); }
+  public void       setTitle(String t) {textField.setText(t); }
   public JTextField getTextField()     { return textField; }
 }

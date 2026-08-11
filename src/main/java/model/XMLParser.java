@@ -53,6 +53,8 @@ public class XMLParser {
 
     private void rebuildColumns(Element headElement) {
 
+        outlineController.setHeaderTitle(headElement.getAttribute("title"));
+
         NodeList columnHeaders = headElement.getElementsByTagName("ColumnHeader");
 
         for (int i = 0; i < columnHeaders.getLength(); i++) {
@@ -160,7 +162,6 @@ public class XMLParser {
 
             switch (element.getTagName()) {
                 case "content" -> node.setContent(element.getTextContent());
-
                 case "column" -> {
                     String columnTitle = element.getAttribute("columnTitle");
                     String rawValue = element.getAttribute("columnValue");
@@ -173,7 +174,6 @@ public class XMLParser {
                         }
                     }
                 }
-
                 case "node" -> {
                     OutlineNode childNode = parseNode(element);
                     node.add(childNode);
