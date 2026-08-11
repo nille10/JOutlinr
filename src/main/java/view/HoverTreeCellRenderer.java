@@ -50,8 +50,8 @@ public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
     setBorderSelectionColor(SELECTED_BORDER);
 
     setLeafIcon(loadIcon("/icons/dot.png",   8));
-    setClosedIcon(loadIcon("/icons/empty.png", 8));
-    setOpenIcon(loadIcon("/icons/empty.png", 8));
+    setClosedIcon(loadIcon("/icons/dot.png", 8));
+    setOpenIcon(loadIcon("/icons/dot.png", 8));
 
     wrapper = new JPanel(new BorderLayout(0, 0));
     wrapper.setOpaque(false);
