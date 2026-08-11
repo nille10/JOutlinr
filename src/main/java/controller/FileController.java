@@ -147,11 +147,19 @@ public class FileController {
                     saveLocation = new File(fileChooser.getFile().getAbsolutePath() + ".json");
                     Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
                     return SaveStatus.SAVED;
-                } else if (!fileChooser.getFile().getName().toLowerCase().endsWith(".xml") && fileChooser.getFileFilter().getDescription().contains("XML")) {
+                } else if (fileChooser.getFile().getName().toLowerCase().endsWith(".json") && fileChooser.getFileFilter().getDescription().contains("JSON")) {
+                    saveLocation = new File(fileChooser.getFile().getAbsolutePath());
+                    Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
+                    return SaveStatus.SAVED;
+                }else if (!fileChooser.getFile().getName().toLowerCase().endsWith(".xml") && fileChooser.getFileFilter().getDescription().contains("XML")) {
                     saveLocation = new File(fileChooser.getFile().getAbsolutePath() + ".xml");
                     Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
                     return SaveStatus.SAVED;
-                } else{
+                } else if (fileChooser.getFile().getName().toLowerCase().endsWith(".xml") && fileChooser.getFileFilter().getDescription().contains("XML")) {
+                    saveLocation = new File(fileChooser.getFile().getAbsolutePath());
+                    Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
+                    return SaveStatus.SAVED;
+                }else{
                     JOptionPane.showMessageDialog(mainWindow, "Bitte einen gültigen Pfad angeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
                     return SaveStatus.SAVE_FAILED;
                 }
@@ -271,17 +279,19 @@ public class FileController {
         }
     }
 
-    public void tryImportLastFile() {
+    public void tryImportLastEditedFile() {
         String lastPath = AppPreferences.getLastFile();
 
         if (!lastPath.isEmpty()) {
             if (lastPath.endsWith("xml")) {
                 try {
                     importXML(new File(lastPath));
+                    saveLocation = new File(lastPath);
                 } catch (Exception ignored) {}
             } else if (lastPath.endsWith("json")) {
                 try {
                     importJson(new File(lastPath));
+                    new File(lastPath);
                 } catch (Exception ignored) {}
             }
         }

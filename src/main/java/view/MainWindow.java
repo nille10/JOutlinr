@@ -113,7 +113,8 @@ public class MainWindow extends JFrame {
             }
         });
 
-        fileController.tryImportLastFile();
+        fileController.tryImportLastEditedFile();
+        outlineController.saved();
     }
 
     private void registerOutlineKeyBindings(JTree tree, EditController editController, UndoManager undoManager) {

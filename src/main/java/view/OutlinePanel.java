@@ -66,9 +66,11 @@ public class OutlinePanel extends JPanel {
 
     private final RowHoverManager hoverManager;
 
+    private final MainWindow mainFrame;
 
 
     public OutlinePanel(MainWindow mainFrame) {
+        this.mainFrame = mainFrame;
 
         setLayout(new BorderLayout());
 
@@ -293,6 +295,8 @@ public class OutlinePanel extends JPanel {
             bodyPanel.hideColumns();
             headerPanel.clearColumnHeaders();
         }
+
+        mainFrame.getOutlineController().markDirty();
     }
 
 

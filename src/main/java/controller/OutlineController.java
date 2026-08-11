@@ -224,6 +224,7 @@ public class OutlineController {
 
             outlinePanel.addColumn(title, type); // <-- jetzt gültig, da Feld existiert
         }
+        markDirty();
     }
 
     public void addColumn(String title, ColumnType type) {
@@ -231,6 +232,7 @@ public class OutlineController {
         commitEditing();
 
         outlinePanel.addColumn(title, type);
+        // kein markDirty() da die Methode nur in den Parsern benutzt wird
     }
 
     public void deleteSelected() {
