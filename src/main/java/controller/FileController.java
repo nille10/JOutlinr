@@ -92,16 +92,7 @@ public class FileController {
         }
     }
 
-    public void saveDocument() throws Exception {
-        /*System.out.println(outlineController.getHeaderTitle());
-        for (ColumnHeader c :outlineController.getSpaltenNamen()) {
-            System.out.println(c.getTitle());
-        }
-        for (OutlineColumn c : outlineController.getSpalten()) {
-            System.out.println(c.getType());
-        }*/
-
-
+    public SaveStatus saveDocument() throws Exception {
         if (saveLocation != null) {
             if (saveLocation.getName().toLowerCase().endsWith("xml")) {
                 XMLParser xmlParser = new XMLParser(outlineController);
@@ -110,11 +101,12 @@ public class FileController {
                 Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
             }
         } else {
-            saveDialog();
+            return saveDialog();
         }
         if(saveLocation != null)
             updateLastSavedTime();
         outlineController.saved();
+        return SaveStatus.SAVED;
     }
 
     public void saveDocumentAs() throws Exception {
@@ -148,7 +140,7 @@ public class FileController {
         return null;
     }
 
-    private void saveDialog() throws Exception {
+    private SaveStatus saveDialog() throws Exception {
         CFileChooser fileChooser = new CFileChooser("Datei Speichern",
                 new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml"),
                 new FileNameExtensionFilter("JSON-Dateien (*.json)", "json")
@@ -160,17 +152,22 @@ public class FileController {
                 if (!fileChooser.getFile().getName().toLowerCase().endsWith(".json") && fileChooser.getFileFilter().getDescription().contains("JSON")) {
                     saveLocation = new File(fileChooser.getFile().getAbsolutePath() + ".json");
                     Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
+                    return SaveStatus.SAVED;
                 } else if (!fileChooser.getFile().getName().toLowerCase().endsWith(".xml") && fileChooser.getFileFilter().getDescription().contains("XML")) {
                     saveLocation = new File(fileChooser.getFile().getAbsolutePath() + ".xml");
                     XMLParser xmlParser = new XMLParser(outlineController);
                     Files.writeString(saveLocation.toPath(), xmlParser.toXMLString(treeModel));
+                    return SaveStatus.SAVED;
                 } else{
                     JOptionPane.showMessageDialog(mainWindow, "Bitte einen gültigen Pfad angeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                    return SaveStatus.SAVE_FAILED;
                 }
             }
         } else if (result != JFileChooser.CANCEL_OPTION) {
             JOptionPane.showMessageDialog(mainWindow, "Fehler beim Speichern der Datei", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return SaveStatus.SAVE_FAILED;
         }
+        return SaveStatus.SAVE_FAILED;
     }
 
     private int openDialog() {
@@ -356,8 +353,7 @@ public class FileController {
             );
             if (result == JOptionPane.YES_OPTION) {
                 try {
-                    saveDocument();
-                    return SaveStatus.SAVED;
+                    return saveDocument();
                 } catch (Exception ignored) {
                     return SaveStatus.SAVE_FAILED;
                 }
