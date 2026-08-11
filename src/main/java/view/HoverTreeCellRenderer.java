@@ -61,6 +61,7 @@ public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
     // Indicator: feste Breite nur wenn sichtbar, sonst width=0
     indicatorLabel = new JLabel();
     indicatorLabel.setOpaque(false);
+
   }
 
 
@@ -86,7 +87,7 @@ public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
       hasContent = node.getContent() != null && !node.getContent().isBlank();
     }
 
-    if (hasContent && contentIndicatorIcon != null) {
+    if (hasContent && contentIndicatorIcon != null  && AppPreferences.isShowIcon()) {
       indicatorLabel.setIcon(contentIndicatorIcon);
       indicatorLabel.setPreferredSize(new Dimension(contentIndicatorIcon.getIconWidth() + 6, 1));
       if (indicatorLabel.getParent() == null) {

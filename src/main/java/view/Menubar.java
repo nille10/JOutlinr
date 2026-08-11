@@ -160,7 +160,6 @@ public class Menubar extends JMenuBar {
         JCheckBoxMenuItem selectAfterDelete = new JCheckBoxMenuItem("Letzten Eintrag nach Löschvorgang auswählen");
         // Laden
         boolean isSelectAfterDeletionOn = AppPreferences.isSelectAfterDeleteOn();
-        System.out.println(isSelectAfterDeletionOn);
         selectAfterDelete.setSelected(isSelectAfterDeletionOn);
         einstellungen.add(selectAfterDelete);
 
@@ -170,7 +169,18 @@ public class Menubar extends JMenuBar {
                 }
         );
 
+        JCheckBoxMenuItem showIconItem = new JCheckBoxMenuItem("Icon anzeigen, wenn mit Text gefüllt");
+        //Laden
+        boolean isShowIconOn = AppPreferences.isShowIcon();
+        showIconItem.setSelected(isShowIconOn);
+        einstellungen.add(showIconItem);
 
+        showIconItem.addActionListener(e -> {
+                    AppPreferences.setShowIcon(showIconItem.isSelected());
+                    outlineController.getTreeModel().nodeStructureChanged(outlineController.getRootNode());
+                    outlineController.getTree().repaint();
+                }
+        );
 
         this.add(einstellungen);
 
