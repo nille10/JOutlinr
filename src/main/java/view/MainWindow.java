@@ -40,11 +40,11 @@ public class MainWindow extends JFrame {
     private final OutlineController outlineController;
     private final TextWindow textWindow;
     private final JLabel statusBar;
-    private static final String title = "JOutlinr";
+    private static final String BASE_TITLE = "JOutlinr";
 
 
     public MainWindow() {
-        super(title);
+        super(BASE_TITLE);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setSize(950, 640);
         setIconImage(loadLogo());
@@ -194,7 +194,4 @@ public class MainWindow extends JFrame {
 
     public JLabel getStatusBar() {return statusBar; }
     public OutlineController getOutlineController() {return outlineController; }
-
-    @Override
-    public String getTitle() {return title; }
 }

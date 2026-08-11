@@ -601,7 +601,7 @@ public class OutlineController {
     }
 
     private void updateTitle() {
-        mainWindow.setTitle((isDirty()? "*" : "") + mainWindow.getTitle());
+        mainWindow.setTitle((dirty ? "* " : "") + "JOutlinr");
     }
 
     public void cancelActiveEditing() {
