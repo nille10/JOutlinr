@@ -229,6 +229,7 @@ public class OutlineController {
 
             outlinePanel.addColumn(title, type); // <-- jetzt gültig, da Feld existiert
         }
+        markDirty();
     }
 
     public void addColumn(String title, ColumnType type) {
@@ -236,6 +237,7 @@ public class OutlineController {
         commitEditing();
 
         outlinePanel.addColumn(title, type);
+        // kein markDirty() da die Methode nur in den Parsern benutzt wird
     }
 
     public void deleteSelected() {
@@ -630,6 +632,15 @@ public class OutlineController {
 
     public void syncColumns(OutlineNode[] nodes, int rowHeight){
         outlinePanel.getColumnPanel().syncWithTree(nodes, rowHeight);
+    }
+
+    public void deleteAllColumns() {
+        List<OutlineColumn> columns = getColumns();
+        int columnSize = columns.size();
+        for (int i = columnSize - 1; i >= 0; i--) {
+            outlinePanel.removeColumn(columns.get(i));
+        }
+        outlinePanel.getHeaderPanel().clearColumnHeaders();
     }
 
     public void commitEditing() {

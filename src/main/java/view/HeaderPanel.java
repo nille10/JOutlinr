@@ -93,6 +93,8 @@ public class HeaderPanel extends JPanel {
       }
     });
 
+    header.setOnRename(newTitle -> column.setTitle(newTitle));
+
     entries.add(new ColumnEntry(header, column));
     columnHeaders.add(header);
 

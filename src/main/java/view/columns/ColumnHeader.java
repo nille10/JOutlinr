@@ -25,9 +25,10 @@ public class ColumnHeader extends JPanel {
     return c != null ? c : new Color(180, 180, 180);
   }
 
-  private final JTextField textField;
+  private JTextField textField;
   private final JLabel removeButton;
   private Runnable onRemove;
+  private java.util.function.Consumer<String> onRename;
   private boolean hovered = false;
 
 
@@ -149,6 +150,10 @@ public class ColumnHeader extends JPanel {
     textField.select(0, 0);
     textField.setFocusable(false);
     textField.setFocusable(true);
+
+    if (onRename != null) {
+      onRename.accept(textField.getText());
+    }
   }
 
 
@@ -188,10 +193,14 @@ public class ColumnHeader extends JPanel {
     removeButton.setVisible(hovered && onRemove != null);
   }
 
+  public void setOnRename(java.util.function.Consumer<String> onRename) {
+    this.onRename = onRename;
+  }
+
 
   // ── Getter / Setter ───────────────────────────────────────────────────────
 
   public String     getTitle()         { return textField.getText(); }
-  public void       setTitle(String t) { textField.setText(t); }
+  public void       setTitle(String t) {textField.setText(t); }
   public JTextField getTextField()     { return textField; }
 }

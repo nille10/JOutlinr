@@ -6,20 +6,15 @@ import model.OutlineNode;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultTreeModel;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
+import model.XMLParser;
+import view.AppPreferences;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import view.LatexExportDialog;
 import view.MainWindow;
-import view.columns.ColumnHeader;
-import view.columns.OutlineColumn;
 
 import java.awt.event.WindowEvent;
 import java.io.*;
@@ -49,6 +44,7 @@ public class FileController {
         if (checkSavedStatus() != SaveStatus.SAVE_FAILED) {
 
             outlineController.cancelActiveEditing();
+            outlineController.deleteAllColumns();
 
             OutlineNode root = outlineController.getRootNode();
 
@@ -59,6 +55,8 @@ public class FileController {
             treeModel.reload();
 
             saveLocation = null;
+
+            outlineController.setHeaderTitle("Outliner");
 
             outlineController.saved();
 
@@ -72,15 +70,17 @@ public class FileController {
             if (result == 1) {
 
                 try {
-                    importXML();
+                    outlineController.deleteAllColumns();
+                    importXML(saveLocation);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
 
             } else if (result == 2) {
                 try {
-                    fromJson();
-                } catch (IOException e) {
+                    outlineController.deleteAllColumns();
+                    importJson(saveLocation);
+                } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
             }
@@ -88,16 +88,7 @@ public class FileController {
         }
     }
 
-    public void saveDocument() throws Exception {
-        /*System.out.println(outlineController.getHeaderTitle());
-        for (ColumnHeader c :outlineController.getSpaltenNamen()) {
-            System.out.println(c.getTitle());
-        }
-        for (OutlineColumn c : outlineController.getSpalten()) {
-            System.out.println(c.getType());
-        }*/
-
-
+    public SaveStatus saveDocument() throws Exception {
         if (saveLocation != null) {
             if (saveLocation.getName().toLowerCase().endsWith("xml")) {
                 Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
@@ -105,11 +96,12 @@ public class FileController {
                 Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
             }
         } else {
-            saveDialog();
+            return saveDialog();
         }
         if(saveLocation != null)
             updateLastSavedTime();
         outlineController.saved();
+        return SaveStatus.SAVED;
     }
 
     public void saveDocumentAs() throws Exception {
@@ -424,11 +416,15 @@ public class FileController {
                 .replace("^", "\\textasciicircum{}");
     }
 
-    private void saveDialog() throws Exception {
+    private SaveStatus saveDialog() throws Exception {
         CFileChooser fileChooser = new CFileChooser("Datei Speichern",
                 new FileNameExtensionFilter("XML-Dateien (*.xml)", "xml"),
                 new FileNameExtensionFilter("JSON-Dateien (*.json)", "json")
         );
+
+        if (!outlineController.getHeaderTitle().isEmpty()) {
+            fileChooser.setSelectedFile(new File(outlineController.getHeaderTitle()));
+        }
 
         int result = fileChooser.getSaveResult(mainWindow);
         if (result == JFileChooser.APPROVE_OPTION) {
@@ -436,16 +432,29 @@ public class FileController {
                 if (!fileChooser.getFile().getName().toLowerCase().endsWith(".json") && fileChooser.getFileFilter().getDescription().contains("JSON")) {
                     saveLocation = new File(fileChooser.getFile().getAbsolutePath() + ".json");
                     Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
-                } else if (!fileChooser.getFile().getName().toLowerCase().endsWith(".xml") && fileChooser.getFileFilter().getDescription().contains("XML")) {
+                    return SaveStatus.SAVED;
+                } else if (fileChooser.getFile().getName().toLowerCase().endsWith(".json") && fileChooser.getFileFilter().getDescription().contains("JSON")) {
+                    saveLocation = new File(fileChooser.getFile().getAbsolutePath());
+                    Files.writeString(saveLocation.toPath(), toJsonString(treeModel));
+                    return SaveStatus.SAVED;
+                }else if (!fileChooser.getFile().getName().toLowerCase().endsWith(".xml") && fileChooser.getFileFilter().getDescription().contains("XML")) {
                     saveLocation = new File(fileChooser.getFile().getAbsolutePath() + ".xml");
                     Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
-                } else{
+                    return SaveStatus.SAVED;
+                } else if (fileChooser.getFile().getName().toLowerCase().endsWith(".xml") && fileChooser.getFileFilter().getDescription().contains("XML")) {
+                    saveLocation = new File(fileChooser.getFile().getAbsolutePath());
+                    Files.writeString(saveLocation.toPath(), toXMLString(treeModel));
+                    return SaveStatus.SAVED;
+                }else{
                     JOptionPane.showMessageDialog(mainWindow, "Bitte einen gültigen Pfad angeben.", "Fehler", JOptionPane.ERROR_MESSAGE);
+                    return SaveStatus.SAVE_FAILED;
                 }
             }
         } else if (result != JFileChooser.CANCEL_OPTION) {
             JOptionPane.showMessageDialog(mainWindow, "Fehler beim Speichern der Datei", "Fehler", JOptionPane.ERROR_MESSAGE);
+            return SaveStatus.SAVE_FAILED;
         }
+        return SaveStatus.SAVE_FAILED;
     }
 
     private int openDialog() {
@@ -471,168 +480,25 @@ public class FileController {
         return -1;
     }
 
-    private static String toJsonString(DefaultTreeModel treeModel) {
-        StringBuilder json = new StringBuilder("{\n");
-        OutlineNode root = (OutlineNode) treeModel.getRoot();
-
-        json.append(JsonChild(0, root));
-        json.append("\n}");
-
-        return json.toString();
+    private void importJson(File file) throws Exception {
+        JSONParser jsonParser = new JSONParser(outlineController);
+        jsonParser.importJson(file);
     }
 
-    private static StringBuilder JsonChild(int amountParents, OutlineNode node) {
-        StringBuilder sb = new StringBuilder();
-
-        // Spaces
-        StringBuilder spaces = new StringBuilder("  ");
-        spaces.repeat("  ", Math.max(0, amountParents));
-
-        sb.append(spaces).append("\"title\" : \"").append(node.getTitle()).append("\",\n");
-        sb.append(spaces).append("\"content\" : \"").append(node.getContent()).append("\",\n");
-        sb.append(spaces).append("\"children\" : ").append("[ ");
-        if (node.getChildCount() == 0) {
-            sb.append("]");
-            return sb;
-        } else if (node.getChildCount() == 1) {
-            sb.append("{\n");
-            sb.append(JsonChild(++amountParents,(OutlineNode) node.getChildAt(0)));
-            sb.append("\n").append(spaces).append("} ]");
-        } else {
-            amountParents++;
-            for (int i = 0; i < node.getChildCount(); i++) {
-                sb.append("{\n");
-                if (node.getChildCount() -1 == i) {
-                    sb.append(JsonChild(amountParents, (OutlineNode) node.getChildAt(i)));
-                    sb.append("\n").append(spaces).append("} ]");
-                } else {
-                    sb.append(JsonChild(amountParents, (OutlineNode) node.getChildAt(i)));
-                    sb.append("\n").append(spaces).append("}, ");
-                }
-            }
-        }
-        return sb;
+    private String toJsonString(DefaultTreeModel treeModel) {
+        JSONParser jsonParser = new JSONParser(outlineController);
+        return jsonParser.toJsonString(treeModel);
     }
 
-    private void fromJson() throws IOException {
-        JSONParser jsonParser = new JSONParser(getJson());
 
-        outlineController.cancelActiveEditing();
-
-        OutlineNode parsedRoot = jsonParser.parse();
-        replaceRootContents(parsedRoot);
+    private void importXML(File file) throws Exception {
+        XMLParser xmlParser = new XMLParser(outlineController);
+        xmlParser.importXML(file);
     }
 
-    private String getJson() throws IOException {
-        StringBuilder json = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(saveLocation))) {
-            String line = br.readLine();
-
-            while (line != null) {
-                json.append(line);
-                json.append(System.lineSeparator());
-                line = br.readLine();
-            }
-        }
-        return json.toString();
-    }
-
-    public String toXMLString(DefaultTreeModel treeModel) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.newDocument();
-
-        Element rootElement = doc.createElement("outline");
-        doc.appendChild(rootElement);
-
-        OutlineNode rootNode = (OutlineNode) treeModel.getRoot();
-        appendNode(doc, rootElement, rootNode);
-
-        Transformer transformer = TransformerFactory.newInstance().newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        //transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-
-        StringWriter writer = new StringWriter();
-        transformer.transform(new DOMSource(doc), new StreamResult(writer));
-
-        return writer.toString();
-    }
-
-    private void appendNode(Document doc, Element parentElement, OutlineNode node) {
-        Element nodeElement = doc.createElement("node");
-        nodeElement.setAttribute("title", node.getTitle());
-
-        Element contentElement = doc.createElement("content");
-        contentElement.appendChild(doc.createTextNode(node.getContent()));
-        nodeElement.appendChild(contentElement);
-
-        parentElement.appendChild(nodeElement);
-
-        for (int i = 0; i < node.getChildCount(); i++) {
-            OutlineNode child = (OutlineNode) node.getChildAt(i);
-            appendNode(doc, nodeElement, child);
-        }
-    }
-
-    public void importXML() throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
-        Document doc = builder.parse(saveLocation);
-
-        Element rootElement = doc.getDocumentElement();
-        Element rootNodeElement = (Element) rootElement.getElementsByTagName("node").item(0);
-
-        if (rootNodeElement == null) {
-            throw new IllegalArgumentException("Keine Root-Node gefunden");
-        }
-
-        outlineController.cancelActiveEditing();
-
-        OutlineNode parsedRoot = parseNode(rootNodeElement);
-        replaceRootContents(parsedRoot);
-    }
-
-    private void replaceRootContents(OutlineNode parsedRoot) {
-        OutlineNode actualRoot = outlineController.getRootNode();
-
-        actualRoot.removeAllChildren();
-        actualRoot.setTitle(parsedRoot.getTitle());
-        actualRoot.setContent(parsedRoot.getContent());
-
-        while (parsedRoot.getChildCount() > 0) {
-            OutlineNode child = (OutlineNode) parsedRoot.getChildAt(0);
-            actualRoot.add(child);
-        }
-
-        treeModel.reload();
-    }
-
-    private OutlineNode parseNode(Element nodeElement) {
-        String title = nodeElement.getAttribute("title");
-
-        OutlineNode node = new OutlineNode(title);
-
-        NodeList children = nodeElement.getChildNodes();
-
-        for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
-
-            if (!(child instanceof Element element)) {
-                continue;
-            }
-
-            switch (element.getTagName()) {
-                case "content" -> node.setContent(element.getTextContent());
-
-                case "node" -> {
-                    OutlineNode childNode = parseNode(element);
-                    node.add(childNode);
-                }
-            }
-        }
-
-        return node;
+    private String toXMLString(DefaultTreeModel treeModel) throws Exception {
+        XMLParser xmlParser = new XMLParser(outlineController);
+        return xmlParser.toXMLString(treeModel);
     }
 
     private String toLatexString(OutlineNode node) {
@@ -680,8 +546,7 @@ public class FileController {
             );
             if (result == JOptionPane.YES_OPTION) {
                 try {
-                    saveDocument();
-                    return SaveStatus.SAVED;
+                    return saveDocument();
                 } catch (Exception ignored) {
                     return SaveStatus.SAVE_FAILED;
                 }
@@ -692,6 +557,30 @@ public class FileController {
             }
         }
         return SaveStatus.NO_CHANGES;
+    }
+
+    public void saveLastPath() {
+        if (saveLocation != null) {
+            AppPreferences.setLastFile(saveLocation.toString());
+        }
+    }
+
+    public void tryImportLastEditedFile() {
+        String lastPath = AppPreferences.getLastFile();
+
+        if (!lastPath.isEmpty()) {
+            if (lastPath.endsWith("xml")) {
+                try {
+                    importXML(new File(lastPath));
+                    saveLocation = new File(lastPath);
+                } catch (Exception ignored) {}
+            } else if (lastPath.endsWith("json")) {
+                try {
+                    importJson(new File(lastPath));
+                    new File(lastPath);
+                } catch (Exception ignored) {}
+            }
+        }
     }
 }
 

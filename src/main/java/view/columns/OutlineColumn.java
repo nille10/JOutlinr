@@ -47,7 +47,7 @@ public class OutlineColumn extends JPanel {
 
   private final ColumnType type;
   private final int columnWidth;
-  private final String title;
+  private String title; //kann sich ändern (umbenennen)
 
   private final Map<OutlineNode, Object> dataMap    = new HashMap<>();
   private final JPanel                   cellContainer;
@@ -211,7 +211,19 @@ public class OutlineColumn extends JPanel {
   // ── Getter ──
 
   public ColumnType getType()                  { return type; }
-  public Object     getValue(OutlineNode node) { return dataMap.get(node); }
+  public Object getValue(OutlineNode node) {
+    Object value = dataMap.get(node);
+
+    if (value == null) {
+      return switch (type) {
+        case CHECKBOX -> Boolean.FALSE;
+        case TEXTFIELD -> "";
+        default -> "";
+      };
+    }
+
+    return value;
+  }
   public int        getColumnWidth()           { return columnWidth; }
   public String getTitle() {
     return title;
@@ -221,5 +233,9 @@ public class OutlineColumn extends JPanel {
   // ── Setter ──
   public void setValue(OutlineNode node, Object value) {
     dataMap.put(node, value);
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
   }
 }

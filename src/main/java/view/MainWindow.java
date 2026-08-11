@@ -115,10 +115,14 @@ public class MainWindow extends JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 if(fileController.checkSavedStatus() != SaveStatus.SAVE_FAILED) {
+                    fileController.saveLastPath();
                     dispose();
                 }
             }
         });
+
+        fileController.tryImportLastEditedFile();
+        outlineController.saved();
     }
 
     private void registerOutlineKeyBindings(JTree tree, EditController editController, UndoManager undoManager) {
