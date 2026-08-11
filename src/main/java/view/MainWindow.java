@@ -93,6 +93,8 @@ public class MainWindow extends JFrame {
         getContentPane().add(toolbar, BorderLayout.NORTH);
         getContentPane().add(splitPane, BorderLayout.CENTER);
 
+        outlinePanel.getColumnPanel().setOnDataChanged(outlineController::markDirty);
+
         // Status-Leiste
         statusBar = new JLabel(" Bereit");
         statusBar.setFont(new Font("Segoe UI", Font.PLAIN, 11));

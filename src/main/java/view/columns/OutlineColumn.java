@@ -161,7 +161,10 @@ public class OutlineColumn extends JPanel {
         cb.setHorizontalAlignment(SwingConstants.CENTER);
         cb.setOpaque(false);
         cb.setSelected(Boolean.TRUE.equals(dataMap.get(node)));
-        cb.addActionListener(e -> dataMap.put(node, cb.isSelected()));
+        cb.addActionListener(e -> {
+          dataMap.put(node, cb.isSelected());
+          if (onDataChanged != null) onDataChanged.run();
+        });
         installHoverListener(cb, rowIndex);
         cell.add(cb, BorderLayout.CENTER);
       }
@@ -174,9 +177,9 @@ public class OutlineColumn extends JPanel {
         tf.setOpaque(false);
         // kein setForeground – FlatLaf übernimmt das
         tf.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-          public void insertUpdate(javax.swing.event.DocumentEvent e)  { dataMap.put(node, tf.getText()); }
-          public void removeUpdate(javax.swing.event.DocumentEvent e)  { dataMap.put(node, tf.getText()); }
-          public void changedUpdate(javax.swing.event.DocumentEvent e) { dataMap.put(node, tf.getText()); }
+          public void insertUpdate(javax.swing.event.DocumentEvent e)  { dataMap.put(node, tf.getText()); if (onDataChanged != null) onDataChanged.run(); }
+          public void removeUpdate(javax.swing.event.DocumentEvent e)  { dataMap.put(node, tf.getText()); if (onDataChanged != null) onDataChanged.run(); }
+          public void changedUpdate(javax.swing.event.DocumentEvent e) { dataMap.put(node, tf.getText()); if (onDataChanged != null) onDataChanged.run(); }
         });
         installHoverListener(tf, rowIndex);
         cell.add(tf, BorderLayout.CENTER);
@@ -207,6 +210,12 @@ public class OutlineColumn extends JPanel {
     }
   }
 
+  //column data Change
+  private Runnable onDataChanged;
+
+  public void setOnDataChanged(Runnable callback) {
+    this.onDataChanged = callback;
+  }
 
   // ── Getter ──
 
