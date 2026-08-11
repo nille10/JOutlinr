@@ -10,6 +10,7 @@ public class AppPreferences {
   private static final String KEY_DARK_MODE = "darkMode";
   private static final String KEY_FULLSCREEN = "fullscreen";
   private static final String KEY_SELECT_DELETE = "selectAfterDelete";
+  private static final String KEY_SHOW_ICON = "showIcon";
   private static final String KEY_LAST_FILE = "";
 
   public static boolean isDarkMode() {
@@ -34,6 +35,14 @@ public class AppPreferences {
 
   public static void setSelectAfterDelete(boolean enabled) {
     PREFS.putBoolean(KEY_SELECT_DELETE, enabled);
+  }
+
+  public static boolean isShowIcon(){
+    return PREFS.getBoolean(KEY_SHOW_ICON, true);
+  }
+
+  public static void setShowIcon(boolean enabled){
+    PREFS.putBoolean(KEY_SHOW_ICON, enabled);
   }
 
   public static void setLastFile(String path) {PREFS.put(KEY_LAST_FILE, path); }

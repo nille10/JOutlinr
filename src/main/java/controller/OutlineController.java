@@ -1,5 +1,6 @@
 package controller;
 
+import com.sun.source.tree.Tree;
 import model.OutlineNode;
 import view.TextWindow;
 import view.OutlinePanel;
@@ -600,7 +601,7 @@ public class OutlineController {
     }
 
     private void updateTitle() {
-        mainWindow.setTitle((isDirty()? "*" : "") + mainWindow.getTitle());
+        mainWindow.setTitle((dirty ? "* " : "") + "JOutlinr");
     }
 
     public void cancelActiveEditing() {
@@ -666,4 +667,8 @@ public class OutlineController {
     public List<ColumnHeader> getSpaltenNamen() {return outlinePanel.getHeaderPanel().getHeaders(); }
 
     public List<OutlineColumn> getSpalten() {return outlinePanel.getColumnPanel().getColumns();}
+
+    public JTree getTree(){
+        return this.tree;
+    }
 }

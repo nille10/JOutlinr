@@ -51,9 +51,16 @@ public class ColumnPanel extends JPanel {
 
   // ── Spalten verwalten ────────────────────────────────────────────────────
 
+  private Runnable onDataChanged;
+
+  public void setOnDataChanged(Runnable callback) {
+    this.onDataChanged = callback;
+  }
+
   public OutlineColumn addColumn(String title, ColumnType type) {
 
     OutlineColumn column = new OutlineColumn(title, type);
+    column.setOnDataChanged(onDataChanged);
     column.setHoverManager(hoverManager);
 
     columns.add(column);
