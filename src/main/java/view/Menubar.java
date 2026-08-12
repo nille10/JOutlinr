@@ -107,7 +107,7 @@ public class Menubar extends JMenuBar {
         ansicht.add(expandEntry);
 
         JMenuItem collapseEntry = menuItem(outlineActions.collapseEntryAction);
-        ansicht.add(collapseEntry);
+        //ansicht.add(collapseEntry);
 
         ansicht.addSeparator();
 
@@ -115,7 +115,7 @@ public class Menubar extends JMenuBar {
         ansicht.add(expandAll);
 
         JMenuItem collapseAll = menuItem(outlineActions.collapseAllAction);
-        ansicht.add(collapseAll);
+        //ansicht.add(collapseAll);
 
         this.add(ansicht);
 

@@ -1,5 +1,8 @@
 package action.outline;
 
+import action.actions.commands.DemoteEntryCommand;
+import action.actions.commands.PromoteEntryCommand;
+import action.manager.UndoManager;
 import controller.OutlineController;
 
 import javax.swing.*;
@@ -9,10 +12,12 @@ import java.awt.event.KeyEvent;
 public class DemoteEntryAction extends AbstractAction {
 
     private final OutlineController outlineController;
+    private final UndoManager undoManager;
 
-    public DemoteEntryAction(OutlineController outlineController) {
+    public DemoteEntryAction(OutlineController outlineController, UndoManager undoManager) {
         super("Demote");
         this.outlineController = outlineController;
+        this.undoManager = undoManager;
 
         outlineController.addUpdateListener(
             () -> setEnabled(outlineController.canDemoteSelected()));
@@ -23,6 +28,7 @@ public class DemoteEntryAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        outlineController.demoteSelected();
+        undoManager.execute(
+                new DemoteEntryCommand(outlineController));
     }
 }

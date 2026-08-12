@@ -23,17 +23,17 @@ public class OutlineActions {
     public final Action addColumnAction;
 
     public OutlineActions(OutlineController outlineController, UndoManager undoManager) {
-        newEntryAction = new NewEntryAction(outlineController);
-        newChildEntryAction = new NewChildEntryAction(outlineController);
-        newRootEntryAction = new NewRootEntryAction(outlineController);
-        promoteEntryAction =  new PromoteEntryAction(outlineController);
-        demoteEntryAction = new DemoteEntryAction(outlineController);
+        newEntryAction = new NewEntryAction(outlineController, undoManager);
+        newChildEntryAction = new NewChildEntryAction(outlineController, undoManager);
+        newRootEntryAction = new NewRootEntryAction(outlineController, undoManager);
+        promoteEntryAction =  new PromoteEntryAction(outlineController, undoManager);
+        demoteEntryAction = new DemoteEntryAction(outlineController, undoManager);
         expandAllAction = new ExpandAllAction(outlineController);
         collapseAllAction = new CollapseAllAction(outlineController);
         expandEntryAction = new ExpandEntryAction(outlineController);
         collapseEntryAction = new CollapseEntryAction(outlineController);
         deleteEntryAction = new DeleteEntryAction(outlineController, undoManager);
-        addColumnAction = new AddColumnAction(outlineController);
+        addColumnAction = new AddColumnAction(outlineController, undoManager);
 
     }
 }

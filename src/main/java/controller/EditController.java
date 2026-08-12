@@ -28,8 +28,14 @@ public class EditController {
     }
 
     public void cut() {
-        copy();
+        OutlineNode selected = outlineController.getSelectedNode();
+        if (selected == null) return;
+
+        clipboard = selected.deepCopy();
+
         undoManager.execute(new DeleteEntryCommand(outlineController));
+
+        outlineController.getTree().clearSelection();
     }
 
     private OutlineNode clipboard;

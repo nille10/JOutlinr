@@ -16,6 +16,8 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
@@ -153,6 +155,22 @@ public class OutlinePanel extends JPanel {
                         return editingComponent;
                     }
                 });
+
+        tree.getInputMap(JComponent.WHEN_FOCUSED).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK),
+                "renameNode"
+        );
+
+        tree.getActionMap().put("renameNode", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OutlineNode selected = (OutlineNode) tree.getLastSelectedPathComponent();
+                if (selected != null) {
+                    TreePath path = new TreePath(treeModel.getPathToRoot(selected));
+                    tree.startEditingAtPath(path);
+                }
+            }
+        });
 
 // Zusätzlich weiterhin für Menüs (MenuSelectionManager reagiert
 // oft schneller/zuverlässiger als der reine Fokus-Wechsel bei Menüs)
