@@ -1,5 +1,8 @@
 package action.outline;
 
+import action.actions.commands.NewEntryCommand;
+import action.actions.commands.PromoteEntryCommand;
+import action.manager.UndoManager;
 import controller.OutlineController;
 
 import javax.swing.*;
@@ -9,10 +12,12 @@ import java.awt.event.KeyEvent;
 public class PromoteEntryAction extends AbstractAction{
 
     private final OutlineController outlineController;
+    private final UndoManager undoManager;
 
-    public PromoteEntryAction(OutlineController outlineController) {
+    public PromoteEntryAction(OutlineController outlineController, UndoManager undoManager) {
         super("Promote");
         this.outlineController = outlineController;
+        this.undoManager = undoManager;
 
         outlineController.addUpdateListener(
             () -> setEnabled(outlineController.canPromoteSelected()));
@@ -23,6 +28,7 @@ public class PromoteEntryAction extends AbstractAction{
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        outlineController.promoteSelected();
+        undoManager.execute(
+                new PromoteEntryCommand(outlineController));
     }
 }

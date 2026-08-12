@@ -459,7 +459,7 @@ public class OutlineController {
         tree.scrollPathToVisible(path);
     }
 
-    private void startEditing(OutlineNode node) {
+    public void startEditing(OutlineNode node) {
 
         if (tree.isEditing()) {
             tree.getCellEditor().cancelCellEditing();

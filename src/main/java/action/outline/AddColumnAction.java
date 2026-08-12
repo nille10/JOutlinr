@@ -1,5 +1,6 @@
 package action.outline;
 
+import action.manager.UndoManager;
 import controller.OutlineController;
 
 import javax.swing.*;
@@ -10,7 +11,7 @@ public class AddColumnAction extends AbstractAction {
 
   private final OutlineController outlineController;
 
-  public AddColumnAction(OutlineController outlineController) {
+  public AddColumnAction(OutlineController outlineController, UndoManager undoManager) {
     super("Neue Spalte");
     this.outlineController = outlineController;
 

@@ -14,6 +14,7 @@ import model.OutlineNode;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.imageio.ImageIO;
 import java.awt.event.WindowAdapter;
@@ -136,25 +137,62 @@ public class MainWindow extends JFrame {
             KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK),
             "promoteNode");
 
-        actionMap.put("promoteNode", new PromoteEntryAction(outlineController));
+        actionMap.put("promoteNode", new PromoteEntryAction(outlineController, undoManager));
 
         inputMap.put(
             KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK),
             "demoteNode");
 
-        actionMap.put("demoteNode", new DemoteEntryAction(outlineController));
+        actionMap.put("demoteNode", new DemoteEntryAction(outlineController, undoManager));
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
-            "expandNode");
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+                "toggleNode");
 
-        actionMap.put("expandNode", new ExpandEntryAction(outlineController));
+        actionMap.put("toggleNode", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OutlineNode selected = outlineController.getSelectedNode();
+                if (selected == null) return;
+
+                javax.swing.tree.TreePath path = new javax.swing.tree.TreePath(
+                        outlineController.getTreeModel().getPathToRoot(selected));
+
+                JTree t = outlinePanel.getTree();
+
+                if (t.isExpanded(path)) {
+                    t.collapsePath(path);
+                } else {
+                    t.expandPath(path);
+                }
+            }
+        });
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0),
-            "collapseNode");
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK),
+                "toggleAll");
 
-        actionMap.put("collapseNode", new CollapseEntryAction(outlineController));
+        actionMap.put("toggleAll", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JTree t = outlinePanel.getTree();
+
+                // Prüfen ob irgendetwas aufgeklappt ist — wenn ja, alles zuklappen
+                boolean anyExpanded = false;
+                for (int i = 0; i < t.getRowCount(); i++) {
+                    if (t.isExpanded(i)) {
+                        anyExpanded = true;
+                        break;
+                    }
+                }
+
+                if (anyExpanded) {
+                    outlineController.collapseAll();
+                } else {
+                    outlineController.expandAll();
+                }
+            }
+        });
 
         inputMap.put(
             KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK),
@@ -175,7 +213,7 @@ public class MainWindow extends JFrame {
         actionMap.put("pasteNode", new InsertAction(editController));
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0),
             "deleteNode");
 
         actionMap.put("deleteNode", new DeleteEntryAction(outlineController, undoManager));

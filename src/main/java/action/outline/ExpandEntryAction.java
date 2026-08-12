@@ -11,10 +11,10 @@ public class ExpandEntryAction extends AbstractAction {
   private final OutlineController outlineController;
 
   public ExpandEntryAction(OutlineController outlineController) {
-    super("Eintrag aufklappen");
+    super("Eintrag auf/zuklappen");
     this.outlineController = outlineController;
 
-    putValue(SHORT_DESCRIPTION, "Expand selected Entry in the Outliner");
+    putValue(SHORT_DESCRIPTION, "Expand/collapse selected Entry in the Outliner");
     putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
   }
 
