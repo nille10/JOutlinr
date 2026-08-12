@@ -55,7 +55,7 @@ public class Menubar extends JMenuBar {
             new JMenuItem("Spalte hinzufügen");
 
         addColumnItem.setAccelerator(
-            KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK)
+            KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.SHIFT_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
         );
 
 
@@ -143,7 +143,7 @@ public class Menubar extends JMenuBar {
         fullscreen.setSelected(isFullscreen);
         einstellungen.add(fullscreen);
         fullscreen.setAccelerator(
-            KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.CTRL_DOWN_MASK)
+            KeyStroke.getKeyStroke(KeyEvent.VK_F10, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
         );
 
         fullscreen.addActionListener(e -> {

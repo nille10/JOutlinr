@@ -134,13 +134,13 @@ public class MainWindow extends JFrame {
         ActionMap actionMap = tree.getActionMap();
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.CTRL_DOWN_MASK),
+            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
             "promoteNode");
 
         actionMap.put("promoteNode", new PromoteEntryAction(outlineController, undoManager));
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.CTRL_DOWN_MASK),
+            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
             "demoteNode");
 
         actionMap.put("demoteNode", new DemoteEntryAction(outlineController, undoManager));
@@ -169,7 +169,7 @@ public class MainWindow extends JFrame {
         });
 
         inputMap.put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK),
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx() | KeyEvent.SHIFT_DOWN_MASK),
                 "toggleAll");
 
         actionMap.put("toggleAll", new AbstractAction() {
@@ -195,19 +195,19 @@ public class MainWindow extends JFrame {
         });
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK),
+            KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
             "cutNode");
 
         actionMap.put("cutNode", new CutAction(editController));
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK),
+            KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
             "copyNode");
 
         actionMap.put("copyNode", new CopyAction(editController));
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK),
+            KeyStroke.getKeyStroke(KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
             "pasteNode");
 
         actionMap.put("pasteNode", new InsertAction(editController));

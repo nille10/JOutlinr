@@ -3,7 +3,9 @@ package action.actions.file;
 import controller.FileController;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class CloseAction extends AbstractAction {
 
@@ -14,7 +16,7 @@ public class CloseAction extends AbstractAction {
         this.fileController = fileController;
 
         putValue(SHORT_DESCRIPTION, "Close File");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl Q"));
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
     }
 
     @Override

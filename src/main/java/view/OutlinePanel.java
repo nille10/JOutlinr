@@ -157,7 +157,7 @@ public class OutlinePanel extends JPanel {
                 });
 
         tree.getInputMap(JComponent.WHEN_FOCUSED).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK),
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
                 "renameNode"
         );
 

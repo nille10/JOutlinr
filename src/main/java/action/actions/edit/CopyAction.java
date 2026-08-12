@@ -3,7 +3,9 @@ package action.actions.edit;
 import controller.EditController;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class CopyAction extends AbstractAction {
 
@@ -15,7 +17,7 @@ public class CopyAction extends AbstractAction {
 
         // TODO
         putValue(SHORT_DESCRIPTION, "");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl C"));
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
     }
 
     @Override

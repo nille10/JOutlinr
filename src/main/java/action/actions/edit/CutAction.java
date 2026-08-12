@@ -3,6 +3,7 @@ package action.actions.edit;
 import controller.EditController;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
@@ -18,7 +19,7 @@ public class CutAction extends AbstractAction {
         putValue(SHORT_DESCRIPTION, "");
         putValue(
             ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK)
+            KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
         );
     }
 

@@ -3,7 +3,9 @@ package action.actions.edit;
 import controller.EditController;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class InsertAction extends AbstractAction {
 
@@ -13,9 +15,8 @@ public class InsertAction extends AbstractAction {
         super("Einfügen");
         this.editController = editController;
 
-        // TODO
         putValue(SHORT_DESCRIPTION, "");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl V"));
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
     }
 
     @Override

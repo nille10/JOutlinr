@@ -1,6 +1,5 @@
 package controller;
 
-import com.sun.source.tree.Tree;
 import model.OutlineNode;
 import view.TextWindow;
 import view.OutlinePanel;

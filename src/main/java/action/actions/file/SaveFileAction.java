@@ -3,7 +3,9 @@ package action.actions.file;
 import controller.FileController;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class SaveFileAction extends AbstractAction {
     private final FileController fileController;
@@ -13,7 +15,7 @@ public class SaveFileAction extends AbstractAction {
         this.fileController = fileController;
 
         putValue(SHORT_DESCRIPTION, "Save File");
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl S"));
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
     }
 
     @Override

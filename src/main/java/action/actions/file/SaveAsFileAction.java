@@ -14,7 +14,6 @@ public class SaveAsFileAction extends AbstractAction {
         this.fileController = fileController;
 
         putValue(SHORT_DESCRIPTION, "Close File");
-        //putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke());
     }
 
     @Override
