@@ -1,6 +1,5 @@
 package action.outline;
 
-import action.actions.commands.NewEntryCommand;
 import action.actions.commands.PromoteEntryCommand;
 import action.manager.UndoManager;
 import controller.OutlineController;

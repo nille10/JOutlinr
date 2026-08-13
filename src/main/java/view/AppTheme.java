@@ -15,8 +15,8 @@ import java.awt.*;
 public class AppTheme {
 
   // ── Accent-Palette ───────────────────────────────────────────────────────
-  public static final Color ACCENT       = new Color(0xFC, 0x27, 0x39);
-  public static final Color ACCENT_DARK  = new Color(0xD9, 0x1B, 0x2C);
+  public static final Color ACCENT       = new Color(250, 109, 123, 255);
+  public static final Color ACCENT_DARK  = new Color(0xFC, 0x27, 0x39);
   public static final Color ACCENT_LIGHT = new Color(0xFD, 0xE3, 0xE5);
 
   private static boolean dark = false;

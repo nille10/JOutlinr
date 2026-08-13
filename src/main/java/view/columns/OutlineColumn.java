@@ -1,3 +1,6 @@
+/*
+  KI generiert
+*/
 package view.columns;
 
 import model.OutlineNode;
@@ -145,6 +148,7 @@ public class OutlineColumn extends JPanel {
 
   // ── Zelle bauen ──────────────────────────────────────────────────────────
 
+  //hier ggf. erweiterbar
   private JPanel buildCell(OutlineNode node, int rowIndex) {
 
     JPanel cell = new JPanel(new BorderLayout());

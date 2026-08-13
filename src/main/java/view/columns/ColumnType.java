@@ -1,9 +1,6 @@
 package view.columns;
 
-/**
- * Definiert die verfügbaren Spaltentypen für den Outliner.
- * Jeder Typ bestimmt, welches Swing-Element pro Zeile gerendert wird.
- */
+//erweiterbar
 public enum ColumnType {
 
   CHECKBOX("Checkbox", "Einfaches Häkchen pro Knoten"),

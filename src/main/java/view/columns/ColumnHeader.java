@@ -1,3 +1,6 @@
+/*
+  KI generiert
+*/
 package view.columns;
 
 import javax.swing.*;
