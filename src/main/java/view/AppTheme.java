@@ -15,9 +15,9 @@ import java.awt.*;
 public class AppTheme {
 
   // ── Accent-Palette ───────────────────────────────────────────────────────
-  public static final Color ACCENT       = new Color(250, 109, 123, 255);
-  public static final Color ACCENT_DARK  = new Color(0xFC, 0x27, 0x39);
-  public static final Color ACCENT_LIGHT = new Color(0xFD, 0xE3, 0xE5);
+  public static Color ACCENT       = new Color(250, 109, 123, 255);
+  public static Color ACCENT_DARK  = new Color(0xFC, 0x27, 0x39);
+  public static Color ACCENT_LIGHT = new Color(0xFD, 0xE3, 0xE5);
 
   private static boolean dark = false;
 
@@ -202,6 +202,32 @@ public class AppTheme {
 
 
   // ── Hilfsmethoden ────────────────────────────────────────────────────────
+
+  public static void setAccent(Color color, JFrame frame) {
+    ACCENT = color;
+    applyAll();
+    SwingUtilities.updateComponentTreeUI(frame);
+  }
+
+  public static void setAccentDark(Color color, JFrame frame) {
+    ACCENT_DARK = color;
+    applyAll();
+    SwingUtilities.updateComponentTreeUI(frame);
+  }
+
+  public static void setAccentLight(Color color, JFrame frame) {
+    ACCENT_LIGHT = color;
+    applyAll();
+    SwingUtilities.updateComponentTreeUI(frame);
+  }
+
+  public static void resetToDefaults(JFrame frame) {
+    ACCENT       = new Color(0xFC, 0x27, 0x39);
+    ACCENT_DARK  = new Color(0xD9, 0x1B, 0x2C);
+    ACCENT_LIGHT = new Color(0xFD, 0xE3, 0xE5);
+    applyAll();
+    SwingUtilities.updateComponentTreeUI(frame);
+  }
 
   private static Color separatorColor() {
     return dark

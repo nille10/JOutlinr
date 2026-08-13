@@ -120,68 +120,15 @@ public class Menubar extends JMenuBar {
         this.add(ansicht);
 
         //Settings
+        JMenuItem einstellungenItem = new JMenuItem("Einstellungen…");
+        einstellungenItem.setAccelerator(
+            KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+        einstellungenItem.addActionListener(e ->
+            new SettingsWindow(mainJFrame, outlineController).setVisible(true));
+
         JMenu einstellungen = new JMenu("Einstellungen");
-
-        //Darkmode
-        JCheckBoxMenuItem darkMode = new JCheckBoxMenuItem("DarkMode");
-        // Laden
-        boolean isDarkModeActive = AppPreferences.isDarkMode();
-
-        darkMode.setSelected(isDarkModeActive);
-        einstellungen.add(darkMode);
-
-        darkMode.addActionListener(e -> {
-                AppTheme.toggleDark(darkMode.isSelected(), mainJFrame);
-                AppPreferences.setDarkMode(darkMode.isSelected());
-            }
-        );
-
-        //Fullscreen
-        JCheckBoxMenuItem fullscreen = new JCheckBoxMenuItem("Vollbild");
-        // Laden
-        boolean isFullscreen = AppPreferences.isFullscreen();
-        fullscreen.setSelected(isFullscreen);
-        einstellungen.add(fullscreen);
-        fullscreen.setAccelerator(
-            KeyStroke.getKeyStroke(KeyEvent.VK_F10, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
-        );
-
-        fullscreen.addActionListener(e -> {
-            if (fullscreen.isSelected()) {
-                mainJFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            }else{
-                mainJFrame.setExtendedState(JFrame.NORMAL);
-            }
-                AppPreferences.setFullScreen(fullscreen.isSelected());
-            }
-        );
-
-        //Select Last Entry after deletion?
-        JCheckBoxMenuItem selectAfterDelete = new JCheckBoxMenuItem("Letzten Eintrag nach Löschvorgang auswählen");
-        // Laden
-        boolean isSelectAfterDeletionOn = AppPreferences.isSelectAfterDeleteOn();
-        selectAfterDelete.setSelected(isSelectAfterDeletionOn);
-        einstellungen.add(selectAfterDelete);
-
-        selectAfterDelete.addActionListener(e -> {
-                    outlineController.setBoolean(selectAfterDelete.isSelected());
-                    AppPreferences.setSelectAfterDelete(selectAfterDelete.isSelected());
-                }
-        );
-
-        JCheckBoxMenuItem showIconItem = new JCheckBoxMenuItem("Icon anzeigen, wenn mit Text gefüllt");
-        //Laden
-        boolean isShowIconOn = AppPreferences.isShowIcon();
-        showIconItem.setSelected(isShowIconOn);
-        einstellungen.add(showIconItem);
-
-        showIconItem.addActionListener(e -> {
-                    AppPreferences.setShowIcon(showIconItem.isSelected());
-                    outlineController.getTreeModel().nodeStructureChanged(outlineController.getRootNode());
-                    outlineController.getTree().repaint();
-                }
-        );
-
+        einstellungen.add(einstellungenItem);
         this.add(einstellungen);
 
         // Hilfe-Menü TODO: muss noch gemacht werden
