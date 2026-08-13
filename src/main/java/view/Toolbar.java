@@ -28,7 +28,7 @@ public class Toolbar extends JToolBar {
         add(toolButton(outlineActions.addColumnAction,   "column", "Neue Spalte"));
     }
 
-    /**
+    /** KI generiert
      * Erstellt einen Toolbar-Button mit Icon links und Text rechts.
      *
      * @param action     die zugehörige Action
@@ -53,10 +53,6 @@ public class Toolbar extends JToolBar {
         return btn;
     }
 
-    /**
-     * Lädt ein Icon aus den Ressourcen und skaliert es auf ICON_SIZE × ICON_SIZE.
-     * Gibt null zurück wenn die Datei nicht gefunden wird – Button zeigt dann nur Text.
-     */
     private Icon loadIcon(String resourcePath) {
         try {
             var stream = getClass().getResourceAsStream(resourcePath);

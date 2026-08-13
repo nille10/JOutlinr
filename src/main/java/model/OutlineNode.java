@@ -7,6 +7,7 @@ public class OutlineNode extends DefaultMutableTreeNode {
   private String title;
   private String content;
 
+  //Node im Tree
   public OutlineNode(String title) {
     super(title);
     this.title = title;

@@ -76,11 +76,7 @@ public class OutlinePanel extends JPanel {
 
         setLayout(new BorderLayout());
 
-
-        // --------------------------------
         // Tree erstellen
-        // --------------------------------
-
         rootNode  = new OutlineNode("Outliner");
         treeModel = new DefaultTreeModel(rootNode) {
             @Override
@@ -121,10 +117,11 @@ public class OutlinePanel extends JPanel {
         HoverTreeCellRenderer renderer = new HoverTreeCellRenderer(hoverManager);
         tree.setCellRenderer(renderer);
 
-        //dann editor bauen
+        //dann editor bauen - KI generiert
         tree.setCellEditor(
                 new DefaultTreeCellEditor(tree, renderer) {
 
+                    //umbenennen passiert hier
                     @Override
                     public boolean isCellEditable(EventObject e) {
                         if (e == null) {
@@ -172,8 +169,9 @@ public class OutlinePanel extends JPanel {
             }
         });
 
-// Zusätzlich weiterhin für Menüs (MenuSelectionManager reagiert
-// oft schneller/zuverlässiger als der reine Fokus-Wechsel bei Menüs)
+        //KI Vorschlag
+        // Zusätzlich weiterhin für Menüs (MenuSelectionManager reagiert
+        // oft schneller/zuverlässiger als der reine Fokus-Wechsel bei Menüs)
         javax.swing.MenuSelectionManager.defaultManager().addChangeListener(e -> {
             if (tree.isEditing()) {
                 tree.getCellEditor().stopCellEditing();
@@ -182,7 +180,7 @@ public class OutlinePanel extends JPanel {
 
 
         // --------------------------------
-        // Panels
+        // Panels - KI generiert
         // --------------------------------
 
         headerPanel = new HeaderPanel();
@@ -198,7 +196,7 @@ public class OutlinePanel extends JPanel {
 
 
         // --------------------------------
-        // Hover-System initialisieren
+        // Hover-System initialisieren - KI generiert
         // --------------------------------
 
         // Hover-Manager an ColumnPanel weitergeben (gilt für alle Spalten)
@@ -207,10 +205,6 @@ public class OutlinePanel extends JPanel {
         // Maus-Bewegungen im Tree an den Manager melden
         installTreeHoverListener();
 
-
-        // --------------------------------
-        // Weitere Listener
-        // --------------------------------
 
         // HeaderPanel delegiert "Spalte entfernen" nach oben
         headerPanel.setOnColumnRemove(this::removeColumn);
@@ -221,7 +215,7 @@ public class OutlinePanel extends JPanel {
 
 
     // -------------------------------------------------------
-    // Listener
+    // Listener - KI generiert
     // -------------------------------------------------------
 
     /**
@@ -253,6 +247,7 @@ public class OutlinePanel extends JPanel {
         hoverManager.addChangeListener(tree::repaint);
     }
 
+    //KI generiert:
 
     /**
      * Reagiert auf Baum-Änderungen (Knoten hinzufügen/entfernen/klappen)

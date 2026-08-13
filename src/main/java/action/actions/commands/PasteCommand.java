@@ -1,3 +1,6 @@
+/*
+  KI generiert
+*/
 package action.actions.commands;
 
 import action.manager.UndoableAction;

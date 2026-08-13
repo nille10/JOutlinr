@@ -1,3 +1,6 @@
+/*
+  KI generiert
+*/
 package view;
 
 import view.columns.ColumnPanel;
