@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<outline>
+    <head title="Aufbau Documentation"/>
+    <node title="Outliner">
+        <content/>
+        <node title="Inhaltsverzeichnis">
+            <content/>
+        </node>
+        <node title="1. Einleitung">
+            <content/>
+            <node title="Motivation und Problemstellung">
+                <content/>
+            </node>
+            <node title="Zielsetzung">
+                <content/>
+            </node>
+            <node title="(Aufbau der Arbeit)">
+                <content/>
+            </node>
+        </node>
+        <node title="2. Anforderungsanalyse und Konzeption">
+            <content/>
+            <node title="Funktionale Anforderung (Use Cases)">
+                <content/>
+            </node>
+            <node title="Nicht funktionale Anforderungen">
+                <content>Erweiterbarkeit, ...
+</content>
+            </node>
+            <node title="Technologische Grundlagen">
+                <content/>
+            </node>
+            <node title="Das Framework Java Swing">
+                <content/>
+            </node>
+            <node title="Dateiformate zur Speicherung">
+                <content/>
+            </node>
+        </node>
+        <node title="3. Architektur und Systementwurf">
+            <content/>
+            <node title="Entwurfsmuster">
+                <content>Model-View-Controller MVC</content>
+            </node>
+        </node>
+        <node title="4. Implementierung">
+            <content/>
+            <node title="Umsetzung der Benutzeroberfläche mit Swing">
+                <content/>
+            </node>
+            <node title="Darstellung von Baumstrukturen">
+                <content/>
+            </node>
+            <node title="Event-Handling und Tastenkombinationen">
+                <content/>
+            </node>
+            <node title="Umstrukturieren von Knoten">
+                <content/>
+                <node title="Einrücken, Ausrücken von Knoten">
+                    <content/>
+                </node>
+                <node title="Drag and Drop">
+                    <content/>
+                </node>
+                <node title="Multi Select">
+                    <content/>
+                </node>
+            </node>
+            <node title="Laden und Speichern von Dokumenten">
+                <content/>
+            </node>
+            <node title="Export als Latex">
+                <content/>
+            </node>
+        </node>
+        <node title="Qualitätssicherung und Testing">
+            <content>haben wir geskipped, ich weiß nicht ob wir dazu was schreiben sollten</content>
+        </node>
+        <node title="5. Fazit">
+            <content/>
+            <node title="Zusammenfassung der Ergebnisse">
+                <content/>
+            </node>
+            <node title="Mögliche Erweiterungen">
+                <content/>
+            </node>
+        </node>
+        <node title="Literaturverzeichnis">
+            <content/>
+        </node>
+        <node title="Eidenstattliche Erklärung">
+            <content/>
+        </node>
+    </node>
+</outline>
