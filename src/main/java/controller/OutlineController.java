@@ -14,7 +14,12 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Controller für die Interaktion mit der Datenstruktur des Outliners
+ * <p>
+ *     Ist zuständig für die manipulation des JTrees.
+ * </p>
+ */
 public class OutlineController {
 
     private final TextWindow textWindow;
@@ -32,14 +37,20 @@ public class OutlineController {
 
     private final List<Runnable> updateListeners = new ArrayList<>();
 
-    public OutlineController(OutlinePanel view, TextWindow textWindow, JFrame mainWindow) {
+    /**
+     * Erstellt einen neuen {@code OutlineController}
+     * @param outlinePanel Das Panel in dem die Nodes dargestellt werden
+     * @param textWindow Das Text Window des der Nodes
+     * @param mainWindow Das Main window um neue Elemente an der richtigen position anzuzeigen
+     */
+    public OutlineController(OutlinePanel outlinePanel, TextWindow textWindow, JFrame mainWindow) {
 
         this.textWindow = textWindow;
-        this.outlinePanel = view;
+        this.outlinePanel = outlinePanel;
 
-        this.tree = view.getTree();
-        this.treeModel = view.getTreeModel();
-        this.rootNode = view.getRootNode();
+        this.tree = outlinePanel.getTree();
+        this.treeModel = outlinePanel.getTreeModel();
+        this.rootNode = outlinePanel.getRootNode();
         this.mainWindow = mainWindow;
 
         //createExampleData();
@@ -47,6 +58,9 @@ public class OutlineController {
         expandAll();
     }
 
+    /**
+     *
+     */
     private void registerListeners() {
 
         tree.addTreeSelectionListener(e -> {
@@ -97,6 +111,9 @@ public class OutlineController {
                 });
     }
 
+    /**
+     * Erstellt beispiel Daten.
+     */
     private void createExampleData() {
 
         OutlineNode k1 = new OutlineNode("Kapitel 1");
@@ -114,6 +131,13 @@ public class OutlineController {
         treeModel.reload();
     }
 
+    /**
+     * Erzeugt einen neuen Eintrag im Baum auf der gleichen Ebene wie der ausgewählte Eintrag.
+     * <p>
+     *     Ermittelt den ausgewählten Eintrag und seine Position. Der neue Eintrag wird unter ihm hinzugefügt.
+     *     Ruft {@link #markDirty()} auf true um ungespeicherte Elemente zu markieren.
+     * </p>
+     */
     public void addSibling() {
 
         commitEditing();
