@@ -1,7 +1,6 @@
 package action.outline;
 
 import action.actions.commands.NewRootEntryCommand;
-import action.actions.commands.PromoteEntryCommand;
 import action.manager.UndoManager;
 import controller.OutlineController;
 
@@ -25,7 +24,6 @@ public class NewRootEntryAction extends AbstractAction {
 
   @Override
   public void actionPerformed(ActionEvent e) {
-    undoManager.execute(
-            new NewRootEntryCommand(outlineController));
+    undoManager.execute(new NewRootEntryCommand(outlineController));
   }
 }
