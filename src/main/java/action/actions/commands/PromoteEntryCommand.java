@@ -9,6 +9,9 @@ import model.OutlineNode;
 
 import javax.swing.tree.DefaultTreeModel;
 
+/**
+ * Der Command ist für das Ausrücken con Knoten im Outliner zuständig.
+ */
 public class PromoteEntryCommand implements UndoableAction {
 
     private final OutlineController controller;
@@ -23,9 +26,6 @@ public class PromoteEntryCommand implements UndoableAction {
 
     /**
      * Erstellt einen neuen PromoteEntryCommand mit UndoManager
-     * <p>
-     *   PromoteEntry schiebt einen Knoten im Baum eine Ebene nach oben (Links).
-     * </p>
      * @param controller der OutlineController vom Outliner
      */
     public PromoteEntryCommand(OutlineController controller) {

@@ -9,6 +9,9 @@ import model.OutlineNode;
 
 import javax.swing.tree.DefaultTreeModel;
 
+/**
+ * Der Command ist für das Einfügen ausgewählter Knoten zuständig.
+ */
 public class PasteCommand implements UndoableAction {
 
     private final OutlineController controller;
@@ -20,9 +23,6 @@ public class PasteCommand implements UndoableAction {
 
     /**
      * Erstellt einen neuen PasteCommand mit UndoManager
-     * <p>
-     *   Paste fügt ausgewählte Knoten wieder ein.
-     * </p>
      * @param controller der OutlineController vom Outliner
      */
     public PasteCommand(OutlineController controller, OutlineNode nodeToPaste) {

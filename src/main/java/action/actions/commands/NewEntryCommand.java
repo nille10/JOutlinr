@@ -7,6 +7,9 @@ import action.manager.UndoableAction;
 import controller.OutlineController;
 import model.OutlineNode;
 
+/**
+ * Der Command ist für das Erstellen neuer Knoten im Outliner zuständig.
+ */
 public class NewEntryCommand implements UndoableAction {
 
     private final OutlineController controller;
@@ -17,9 +20,6 @@ public class NewEntryCommand implements UndoableAction {
 
     /**
      * Erstellt einen neuen NewEntryCommand mit UndoManager
-     * <p>
-     *   NewEntry erstellt einen neuen Knoten im Outliner
-     * </p>
      * @param controller der OutlineController vom Outliner
      */
     public NewEntryCommand(OutlineController controller) {

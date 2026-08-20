@@ -7,6 +7,9 @@ import action.manager.UndoableAction;
 import controller.OutlineController;
 import model.OutlineNode;
 
+/**
+ * Der Command ist für das Erstellen neuer Wurzelknoten im Outliner zuständig.
+ */
 public class NewRootEntryCommand implements UndoableAction {
 
     private final OutlineController controller;
@@ -16,9 +19,6 @@ public class NewRootEntryCommand implements UndoableAction {
 
     /**
      * Erstellt einen neuen NewRootEntryCommand mit UndoManager
-     * <p>
-     *   NewRootEntry erstellt einen neuen Wurzelknoten im Outliner
-     * </p>
      * @param controller der OutlineController vom Outliner
      */
     public NewRootEntryCommand(OutlineController controller) {
