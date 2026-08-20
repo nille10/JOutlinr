@@ -129,6 +129,10 @@ public class HoverTreeCellRenderer extends DefaultTreeCellRenderer {
     wrapper.setBackground(bg);
     wrapper.setOpaque(opaque);
 
+    //test
+    wrapper.setPreferredSize(null); // Layout frei berechnen lassen, nicht gecacht
+    wrapper.revalidate();
+
     return wrapper;
   }
 

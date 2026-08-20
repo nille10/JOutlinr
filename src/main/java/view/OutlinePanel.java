@@ -98,9 +98,20 @@ public class OutlinePanel extends JPanel {
         tree.setDropMode(DropMode.ON_OR_INSERT);
         tree.setTransferHandler(new OutlineTransferHandler(mainFrame));
 
-        //tree.setBackground(new Color(248, 248, 252));
-        tree.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        //FONT
+        Font treeFont = new Font("Segoe UI", Font.PLAIN, 13);
+        if (treeFont.getFamily().equals("Dialog")) {
+            // Segoe UI nicht gefunden — Linux-Fallback
+            treeFont = new Font("DejaVu Sans", Font.PLAIN, 13);
+        }
+        tree.setFont(treeFont);
         tree.setRowHeight(24);
+
+        //test
+        // Explizit setzen — Linux-L&F hat andere Defaults
+        ((javax.swing.plaf.basic.BasicTreeUI) tree.getUI()).setLeftChildIndent(8);
+        ((javax.swing.plaf.basic.BasicTreeUI) tree.getUI()).setRightChildIndent(12);
+
         tree.setBorder(new EmptyBorder(4, 4, 4, 4));
         //Nur wenn Looks und Feel aus ist
         tree.putClientProperty("JTree.lineStyle", "None");

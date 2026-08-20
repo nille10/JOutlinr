@@ -6,6 +6,12 @@ public class Main {
 
   public static void main(String[] args) {
 
+    // Auf Linux GTK-L&F verhindern — FlatLaf soll komplett übernehmen
+    if (System.getProperty("os.name").toLowerCase().contains("linux")) {
+      System.setProperty("awt.useSystemAAFontSettings", "on");
+      System.setProperty("swing.defaultlaf", "javax.swing.plaf.metal.MetalLookAndFeel");
+    }
+
     //FlatLaf UI
     AppTheme.apply();
 
