@@ -20,10 +20,20 @@ public class DemoteEntryCommand implements UndoableAction {
 
     private boolean wasExecuted;
 
+    /**
+     * Erstellt einen neuen DemoteEntryCommand mit UndoManager
+     * <p>
+     *   DemoteEntry schiebt einen Knoten im Baum eine Ebene nach unten (Rechts).
+     * </p>
+     * @param controller der OutlineController vom Outliner
+     */
     public DemoteEntryCommand(OutlineController controller) {
         this.controller = controller;
     }
 
+    /**
+     * Schiebt einen Knoten eine Ebene nach unten (Rechts).
+     */
     @Override
     public void execute() {
 
@@ -56,6 +66,9 @@ public class DemoteEntryCommand implements UndoableAction {
         wasExecuted = true;
     }
 
+    /**
+     * Macht das Einrücken des Knotens rückgängig.
+     */
     @Override
     public void undo() {
         if (!wasExecuted) return;
@@ -70,12 +83,18 @@ public class DemoteEntryCommand implements UndoableAction {
         controller.markDirty();
     }
 
+    /**
+     * Macht das Ausführen con {@link #undo()} rückgängig.
+     */
     @Override
     public void redo() {
         if (!wasExecuted) return;
         doDemote();
     }
 
+    /**
+     * Entfernt den ausgewählten Knoten aus dem Tree und fügt ihn eine Ebene tiefer wieder ein.
+     */
     private void doDemote() {
         DefaultTreeModel model = controller.getTreeModel();
 

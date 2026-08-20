@@ -21,10 +21,20 @@ public class PromoteEntryCommand implements UndoableAction {
 
     private boolean wasExecuted;
 
+    /**
+     * Erstellt einen neuen PromoteEntryCommand mit UndoManager
+     * <p>
+     *   PromoteEntry schiebt einen Knoten im Baum eine Ebene nach oben (Links).
+     * </p>
+     * @param controller der OutlineController vom Outliner
+     */
     public PromoteEntryCommand(OutlineController controller) {
         this.controller = controller;
     }
 
+    /**
+     * Schiebt einen Knoten eine Ebene nach oben (Links).
+     */
     @Override
     public void execute() {
 
@@ -57,6 +67,9 @@ public class PromoteEntryCommand implements UndoableAction {
         wasExecuted = true;
     }
 
+    /**
+     * Macht das Ausrücken des Knotens rückgängig.
+     */
     @Override
     public void undo() {
         if (!wasExecuted) return;
@@ -69,12 +82,18 @@ public class PromoteEntryCommand implements UndoableAction {
         controller.markDirty();
     }
 
+    /**
+     * Macht das Ausführen con {@link #undo()} rückgängig.
+     */
     @Override
     public void redo() {
         if (!wasExecuted) return;
         doPromote();
     }
 
+    /**
+     * Entfernt den ausgewählten Knoten aus dem Tree und fügt ihn eine Ebene höher wieder ein.
+     */
     private void doPromote() {
         DefaultTreeModel model = controller.getTreeModel();
 

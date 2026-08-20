@@ -1,7 +1,5 @@
 package controller;
 
-import action.actions.commands.NewRootEntryCommand;
-import action.manager.UndoManager;
 import model.OutlineNode;
 import view.TextWindow;
 import view.OutlinePanel;
@@ -33,7 +31,7 @@ public class OutlineController {
     private final JFrame mainWindow;
     private boolean dirty;
 
-    private boolean isSelected = true;
+    private boolean selectLastEntryOption = true;
 
     public static final int MAX_LEVEL = 3; //Root = 0
 
@@ -582,13 +580,12 @@ public class OutlineController {
         }
     }
 
-    // TODO sollte das nicht eig. setIsSelected und get... heißen?
-    public void setBoolean(boolean isSelected){
-        this.isSelected = isSelected;
+    public void setSelectLastEntryOption(boolean isSelected){
+        this.selectLastEntryOption = isSelected;
     }
 
-    public boolean getBoolean(){
-        return this.isSelected;
+    public boolean getSelectLastEntryOption(){
+        return this.selectLastEntryOption;
     }
 
     /**

@@ -4,7 +4,6 @@ import action.actions.EditActions;
 import action.actions.FileActions;
 import action.actions.OutlineActions;
 import controller.OutlineController;
-import view.columns.ColumnType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -164,7 +163,7 @@ public class Menubar extends JMenuBar {
         einstellungen.add(selectAfterDelete);
 
         selectAfterDelete.addActionListener(e -> {
-                    outlineController.setBoolean(selectAfterDelete.isSelected());
+                    outlineController.setSelectLastEntryOption(selectAfterDelete.isSelected());
                     AppPreferences.setSelectAfterDelete(selectAfterDelete.isSelected());
                 }
         );

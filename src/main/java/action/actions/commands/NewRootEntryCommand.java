@@ -14,10 +14,20 @@ public class NewRootEntryCommand implements UndoableAction {
     private OutlineNode createdNode;
     private int index;
 
+    /**
+     * Erstellt einen neuen NewRootEntryCommand mit UndoManager
+     * <p>
+     *   NewRootEntry erstellt einen neuen Wurzelknoten im Outliner
+     * </p>
+     * @param controller der OutlineController vom Outliner
+     */
     public NewRootEntryCommand(OutlineController controller) {
         this.controller = controller;
     }
 
+    /**
+     * Erstellt einen neuen Wurzelknoten im Outliner.
+     */
     @Override
     public void execute() {
 
@@ -30,6 +40,9 @@ public class NewRootEntryCommand implements UndoableAction {
         controller.startEditing(createdNode);
     }
 
+    /**
+     * Macht das Erstellen eines neuen Wurzelknotens rückgängig.
+     */
     @Override
     public void undo() {
 
@@ -40,6 +53,9 @@ public class NewRootEntryCommand implements UndoableAction {
         controller.deleteNode(createdNode);
     }
 
+    /**
+     * Macht das Ausführen con {@link #undo()} rückgängig.
+     */
     @Override
     public void redo() {
 

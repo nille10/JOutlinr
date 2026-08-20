@@ -15,10 +15,20 @@ public class NewChildEntryCommand implements UndoableAction {
     private OutlineNode createdNode;
     private int index;
 
+    /**
+     * Erstellt einen neuen NewChildEntryCommand mit UndoManager
+     * <p>
+     *   NewChildEntry erstellt einen neuen Unterknoten im Outliner.
+     * </p>
+     * @param controller der OutlineController vom Outliner
+     */
     public NewChildEntryCommand(OutlineController controller) {
         this.controller = controller;
     }
 
+    /**
+     * Erstellt einen neuen Unterknoten unter dem ausgewähltem Knoten
+     */
     @Override
     public void execute() {
 
@@ -40,6 +50,9 @@ public class NewChildEntryCommand implements UndoableAction {
         controller.startEditing(createdNode);
     }
 
+    /**
+     * Macht die Erstellung eines neuen Unterknotens rückgängig.
+     */
     @Override
     public void undo() {
 
@@ -50,6 +63,9 @@ public class NewChildEntryCommand implements UndoableAction {
         controller.deleteNode(createdNode);
     }
 
+    /**
+     * Macht das Ausführen con {@link #undo()} rückgängig.
+     */
     @Override
     public void redo() {
 
