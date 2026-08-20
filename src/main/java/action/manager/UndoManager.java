@@ -15,7 +15,7 @@ public class UndoManager {
    * <p>
    *   Der Redo Stack wird bei jedem aufruf {@code execute(UndoableAction)} geleert.
    * </p>
-   * @param action die auszuführende Action ({@link action.actions.commands},<br> {@link action.actions.edit},<br> {@link action.actions.file})
+   * @param action die auszuführende Action ({@link action.actions.commands})
    */
   public void execute(UndoableAction action) {
     action.execute();
