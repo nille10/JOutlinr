@@ -12,6 +12,9 @@ import model.OutlineNode;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Der Command ist für das Löschen von Knoten aus dem Outliner zuständig.
+ */
 public class DeleteEntryCommand implements UndoableAction {
 
   private final OutlineController controller;
@@ -23,9 +26,6 @@ public class DeleteEntryCommand implements UndoableAction {
 
   /**
    * Erstellt einen neuen DeleteEntryCommand mit UndoManager.
-   * <p>
-   * Ist für das Löschen von Knoten aus dem Outliner zuständig.
-   * </p>
    * @param controller der OutlineController von Outliner
    */
   public DeleteEntryCommand(OutlineController controller) {

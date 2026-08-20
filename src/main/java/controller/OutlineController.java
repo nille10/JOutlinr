@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Controller für die Interaktion mit der Datenstruktur des Outliners
+ * Controller für die Interaktion mit der Datenstruktur des Outliners zuständig.
  * <p>
- *     Ist zuständig für die manipulation des JTrees.
+ *     Ist zuständig für die manipulation des JTrees. Operationen welche eine Undo funktion benötigen werden direkt über die {@link action.actions.commands} gesteuert.
  * </p>
  */
 public class OutlineController {
