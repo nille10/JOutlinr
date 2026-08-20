@@ -1,14 +1,13 @@
 package action.actions;
 
 import action.manager.UndoManager;
-import action.outline.*;
-import controller.FileController;
+import action.actions.outline.*;
 import controller.OutlineController;
 
 import javax.swing.*;
 
 /**
- * Fasst alle Outline Actions (siehe {@link action.actions.commands}) zusammen.
+ * Fasst alle Outline Actions (siehe {@link action.actions.outline}) zusammen.
  */
 public class OutlineActions {
     public final Action newEntryAction;

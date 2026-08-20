@@ -1,10 +1,9 @@
-package action.outline;
+package action.actions.outline;
 
 import controller.OutlineController;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 
 public class CollapseAllAction extends AbstractAction {
 

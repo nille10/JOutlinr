@@ -1,4 +1,4 @@
-package action.outline;
+package action.actions.outline;
 
 import action.actions.commands.DeleteEntryCommand;
 import action.manager.UndoManager;

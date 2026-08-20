@@ -7,7 +7,7 @@ import action.actions.edit.CopyAction;
 import action.actions.edit.CutAction;
 import action.actions.edit.InsertAction;
 import action.manager.UndoManager;
-import action.outline.*;
+import action.actions.outline.*;
 import controller.*;
 import controller.SaveStatus;
 import model.OutlineNode;
