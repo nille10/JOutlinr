@@ -6,23 +6,47 @@ import view.CFileChooser;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+/**
+ * Der {@code XMLParser} ist für das Exportieren von Outlines im Latex-Format zuständig.
+ *
+ * <p>
+ *   Der Grundaufbau des Dokuments ist \section \subsection \subsubsection für die drei möglichen Ebenen im Outliner.
+ * </p>
+ */
 public class LATEXParser {
 
     private final OutlineController outlineController;
     private final JFrame mainWindow;
     private final TreeModel treeModel;
 
+    /**
+     * Erstellt einen neunen {@code LATEXParser}.
+     * @param outlineController der Controller für den Zugriff auf die Outline-Daten
+     * @param mainWindow das Hauptfenster der Anwendung
+     * @param treeModel das TreeModel des JTrees
+     */
     public LATEXParser(OutlineController outlineController, JFrame mainWindow, TreeModel treeModel) {
         this.outlineController = outlineController;
         this.mainWindow = mainWindow;
         this.treeModel = treeModel;
     }
 
+    /**
+     * Exportiert den Inhalt des {@link OutlineController} in LATEX-Format
+     *
+     * <p>
+     *   Öffnet einen Dialog um zu ermitteln in welchem Modus das LATEX-Dokument generiert werden soll (siehe {@link LatexExportDialog}.
+     *   Abhängig vom gewählten Modus wird das generierte LATEX-Dokument an dem ausgewählten Ort (siehe {@link #exportAsLatexDialog()}) gespeichert.
+     * </p>
+     *
+     * @throws IOException wenn beim Schreiben auf der Festplatte ein fehler auftrit
+     */
     public void exportAsLatex() throws IOException {
 
         LatexExportDialog.Mode mode = LatexExportDialog.askMode(mainWindow);
@@ -51,6 +75,12 @@ public class LATEXParser {
         Files.writeString(saveLocation.toPath(), fullDocument);
     }
 
+    /**
+     * Erstellt einen String bestehend aus den Knoten des Outliners (siehe {@link #getNodes(OutlineNode)}).
+     *
+     * @param node der Wurzelknoten der zu parsenden Elemente
+     * @return einen String nach dem oben beschriebenen Muster
+     */
     private String toLatexString(OutlineNode node) {
         StringBuilder latexStr = new StringBuilder();
         for (int i = 0; i < node.getChildCount(); i++) {
@@ -59,6 +89,16 @@ public class LATEXParser {
         return latexStr.toString();
     }
 
+    /**
+     * Erstellt aus einem Knoten einen String im LATEX-Format.
+     * <p>
+     * Je nach Ebene des Knotens wird dieser als \section, \subsection oder \subsubsection dargestellt.
+     * Der Titel des Knotens bildet dabei den Titel der Section und der Inhalt des Textfeldes bildet den Inhalt der Section.
+     * </p>
+     *
+     * @param node Knoten der geparst werden soll
+     * @return Knoten als LATEX-String im oben beschriebenen Format
+     */
     private String getNodes(OutlineNode node) {
         StringBuilder sb = new StringBuilder();
         if (node.getLevel() == 1)
@@ -78,6 +118,11 @@ public class LATEXParser {
         return sb.toString();
     }
 
+    /**
+     * Öffnet einen Dialog, bei dem der Pfad zum Speichern des LATEX-Dokuments ermittelt wird.
+     *
+     * @return Ort an dem das Dokument gespeichert werden soll
+     */
     private File exportAsLatexDialog() {
         CFileChooser fileChooser = new CFileChooser("Export als Latex",
                 new FileNameExtensionFilter("Latex_Dateien (*.tex", "tex")
@@ -91,6 +136,15 @@ public class LATEXParser {
         return null;
     }
 
+    /**
+     * Erstellt das komplette LATEX-Dokument, abhängig von der Wahl des Benutzers
+     * (siehe {@link #buildStandardLatexDocument(String)} und {@link #buildExpertLatexDocument(LatexExportDialog.LatexMetadata, String)}).
+     *
+     * @param metadata metadata aus dem {@link #exportAsLatexDialog()}, wenn metadata {@code null} ist, wird das Dokument im Standard Modus erzeugt.
+     * @param body die Knoten im LATEX-Format
+     *
+     * @return den fertigen String im gewählten Modus
+     */
     private String buildFullLatexDocument(LatexExportDialog.LatexMetadata metadata, String body) {
 
         if (metadata == null) {
@@ -100,6 +154,12 @@ public class LATEXParser {
         return buildExpertLatexDocument(metadata, body);
     }
 
+    /**
+     * Bau eines Standard-LATEX-Dokuments
+     *
+     * @param body Knoten als LATEX-String
+     * @return String des fertigen Standard-Dokuments
+     */
     private String buildStandardLatexDocument(String body) {
 
         String rootTitle = outlineController.getRootNode().getTitle();
@@ -124,6 +184,13 @@ public class LATEXParser {
         return tex.toString();
     }
 
+    /**
+     * Erzeugt ein komplettes LATEX-Dokument mit Informationen wie Fachbereich, Abteilung, Autor, ... (siehe {@link LatexExportDialog}
+     *
+     * @param metadata allgemeine Informationen für das LATEX-Dokument
+     * @param body die Knoten in LATEX-Form (siehe {@link #getNodes(OutlineNode)}
+     * @return einen String mit einem kompletten LATEX-Dokument
+     */
     private String buildExpertLatexDocument(LatexExportDialog.LatexMetadata metadata, String body) {
 
         StringBuilder tex = new StringBuilder();
@@ -283,7 +350,12 @@ public class LATEXParser {
         return tex.toString();
     }
 
-    private String buildTitlePage(LatexExportDialog.LatexMetadata m) {
+    /**
+     * Erzeugt die Titelseite eines LATEX-Dokuments
+     * @param metadata metadaten für das LATEX-Dokument
+     * @return fertige Titelseite
+     */
+    private String buildTitlePage(LatexExportDialog.LatexMetadata metadata) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -293,8 +365,8 @@ public class LATEXParser {
         sb.append("\\begin{tabular}{p{8.0cm} p{8.0cm}}\n");
         sb.append("  \\includegraphics[width = 6.0cm]{img/hsel-allgemein} &\n");
         sb.append("   \\parbox[b]{8.0cm}{\n");
-        sb.append("     {\\large \t").append(escapeLatex(m.fachbereich())).append(" }\\\\\n");
-        sb.append("     {\\large \t").append(escapeLatex(m.abteilung())).append(" }     \n");
+        sb.append("     {\\large \t").append(escapeLatex(metadata.fachbereich())).append(" }\\\\\n");
+        sb.append("     {\\large \t").append(escapeLatex(metadata.abteilung())).append(" }     \n");
         sb.append("    } \\\\\n");
         sb.append("   \\\\\n");
         sb.append("   \\hline\n");
@@ -303,27 +375,27 @@ public class LATEXParser {
         sb.append("\\begin{center}\n");
         sb.append("\\vspace{2.5cm}%\n");
         sb.append("\\LARGE{\\textsc{ %\n");
-        sb.append(escapeLatex(m.titel())).append("}}\\\\\n");
+        sb.append(escapeLatex(metadata.titel())).append("}}\\\\\n");
         sb.append("\\vspace{2.5cm}%\n");
         sb.append("\\LARGE{\\textsc{%\n");
-        sb.append("{").append(escapeLatex(m.artDerArbeit())).append("} % ODER: Projektarbeit\n");
+        sb.append("{").append(escapeLatex(metadata.artDerArbeit())).append("} % ODER: Projektarbeit\n");
         sb.append("}}\\\\\n");
         sb.append("\\vspace{2cm}%\n");
         sb.append("\\large\n");
         sb.append("Vorgelegt von\\\\\n");
 
-        for (String autor : m.autoren()) {
+        for (String autor : metadata.autoren()) {
             sb.append(escapeLatex(autor)).append(" \\\\\n");
         }
 
         sb.append("\\vspace{1cm} \n");
-        sb.append(escapeLatex(m.ort())).append(", \\today \\\\\n");
+        sb.append(escapeLatex(metadata.ort())).append(", \\today \\\\\n");
         sb.append("\\vspace{2.5cm}%\n");
         sb.append("Betreut von\\\\ ");
 
-        for (int i = 0; i < m.betreuer().size(); i++) {
-            sb.append(escapeLatex(m.betreuer().get(i)));
-            if (i < m.betreuer().size() - 1) {
+        for (int i = 0; i < metadata.betreuer().size(); i++) {
+            sb.append(escapeLatex(metadata.betreuer().get(i)));
+            if (i < metadata.betreuer().size() - 1) {
                 sb.append(" \\\\ ");
             }
         }
@@ -335,6 +407,12 @@ public class LATEXParser {
         return sb.toString();
     }
 
+    /**
+     * Ersetzt Textelemente die im LATEX-Dokument anders dargestellt werden müssen.
+     *
+     * @param input Text der in LATEX Form angepasst werden soll
+     * @return angepasster Text
+     */
     private String escapeLatex(String input) {
         if (input == null) return "";
         return input
