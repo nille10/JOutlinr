@@ -146,12 +146,12 @@ public class JSONParser {
      */
 
     /**
-     * Importiert eine JSON Datei.
+     * Liest die JSON Datei den dem angegebenen
      * <p>
      *   Arbeitet sich durch die JSON Datei und fügt den Inhalt zu einer neuen {@link OutlineNode} hinzu, der Inhalt der Überschriften wird direkt eingefügt.
      *   Wenn die {@link OutlineNode} ungleich {@code null} ist wird der Inhalt des Outliners durch den Inhalt der neuen {@link OutlineNode} ersetzt.
      * </p>
-     * @param saveLocation {@code File} welche den Pfad zur JSON Datei beinhaltet
+     * @param saveLocation die JSON-Datei die importiert werden soll
      * @throws Exception wenn die {@code saveLocation} nicht gelesen werden kann.
      */
     public void importJson(File saveLocation) throws Exception {

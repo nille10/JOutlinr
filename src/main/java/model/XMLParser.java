@@ -18,14 +18,38 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.StringWriter;
 
+/**
+ * Der {@code XMLParser} ist für das Importieren und Exportieren von Outlines im XML-Format zuständig.
+ *
+ * <p>
+ *   Die Klasse nutzt die W3C-DOM-API, um XML-Dateien einzulesen oder eine Baumstruktur
+ * ({@link DefaultTreeModel}) inklusive Metadaten und Spaltenkonfigurationen in ein XML-Dokument
+ * zu serialisieren.
+ * </p>
+ */
 public class XMLParser {
 
     private final OutlineController outlineController;
 
+    /**
+     * Erstellt einen neuen {@code XMLParser} mit dem angegebenen Controller.
+     *
+     * @param outlineController der Controller für den Zugriff auf die Outline-Daten
+     */
     public XMLParser(OutlineController outlineController) {
         this.outlineController = outlineController;
     }
 
+    /**
+     * Liest die XML-Datei von dem angegebenen Dateipfad und stellt die Outline Struktur wider her.
+     *
+     * <p>
+     * Laufende Editiervorgänge werden gestoppt und die struktur aus der XML-Datei wird im {@link OutlineController} wieder hergestellt.
+     * </p>
+     *
+     * @param saveLocation die XML-Datei die importiert werden soll
+     * @throws Exception wenn beim Parsen der Datei ein fehler auftritt
+     */
     public void importXML(File saveLocation) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -48,29 +72,19 @@ public class XMLParser {
         }
 
         OutlineNode parsedRoot = parseNode(rootNodeElement);
-        replaceRootContents(parsedRoot);
+        outlineController.replaceRootContents(parsedRoot);
     }
 
-    private void rebuildColumns(Element headElement) {
-
-        outlineController.setHeaderTitle(headElement.getAttribute("title"));
-
-        NodeList columnHeaders = headElement.getElementsByTagName("ColumnHeader");
-
-        for (int i = 0; i < columnHeaders.getLength(); i++) {
-            Element headerElement = (Element) columnHeaders.item(i);
-
-            String title = headerElement.getTextContent();
-            String typeAttr = headerElement.getAttribute("type");
-
-            ColumnType type = typeAttr.isEmpty()
-                    ? ColumnType.TEXTFIELD
-                    : ColumnType.valueOf(typeAttr);
-
-            outlineController.addColumn(title, type);
-        }
-    }
-
+    /**
+     * Wandelt den Inhalt des {@link OutlineController} in einen String in XML-Format um.
+     * <p>
+     * Erzeugt mit hilfe der W3C-DOM-API einen {@code String} im XML-Format,
+     * aufgeteilt in Header (siehe {@link #appendHeader(Document, Element)}) und Nodes (siehe {@link #appendNode(Document, Element, OutlineNode)}.
+     * </p>
+     * @param treeModel TreeModel mit dem Inhalt des Outliners
+     * @return {@code String} im XML-Format
+     * @throws Exception wenn es beim Erstellen des {@code DocumentBuilder} oder {@code Transformer} einen fehler gab
+     */
     public String toXMLString(DefaultTreeModel treeModel) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -93,6 +107,40 @@ public class XMLParser {
         return writer.toString();
     }
 
+    /**
+     * Baut die Spalten im {@link OutlineController} aus dem Importiertem header Element wieder auf.
+     *
+     * <p>
+     * Stellt den Titel des Outliners wieder her und für die Spaltennamen mit dem richtigen Typen wieder her.
+     * </p>
+     *
+     * @param headElement das Headelement aus der XML-Datei
+     */
+    private void rebuildColumns(Element headElement) {
+
+        outlineController.setHeaderTitle(headElement.getAttribute("title"));
+
+        NodeList columnHeaders = headElement.getElementsByTagName("ColumnHeader");
+
+        for (int i = 0; i < columnHeaders.getLength(); i++) {
+            Element headerElement = (Element) columnHeaders.item(i);
+
+            String title = headerElement.getTextContent();
+            String typeAttr = headerElement.getAttribute("type");
+
+            ColumnType type = typeAttr.isEmpty()
+                    ? ColumnType.TEXTFIELD
+                    : ColumnType.valueOf(typeAttr);
+
+            outlineController.addColumn(title, type);
+        }
+    }
+
+    /**
+     * Erzeugt aus dem Inhalt des {@link OutlineController} den Header der XML-Datei mit den Informationen zur Überschrift und den Spaltennamen.
+     * @param doc das {@code Document} das Ziel XML-Dokument
+     * @param rootElement das RootElement des Outliners
+     */
     private void appendHeader(Document doc, Element rootElement) {
         Element header = doc.createElement("head");
         header.setAttribute("title", outlineController.getHeaderTitle());
@@ -107,6 +155,13 @@ public class XMLParser {
         rootElement.appendChild(header);
     }
 
+    /**
+     * Fügt die {@link OutlineNode} sowie alle Kindknoten aus dem {@link OutlineController} zum XML-Dokument hinzu.
+     *
+     * @param doc das {@code Document} das Ziel XML-Dokument
+     * @param parentElement der Elternknoten des zu erfassenden Knoten
+     * @param node der zu erfassende Knoten
+     */
     private void appendNode(Document doc, Element parentElement, OutlineNode node) {
         Element nodeElement = doc.createElement("node");
         nodeElement.setAttribute("title", node.getTitle());
@@ -131,21 +186,12 @@ public class XMLParser {
         }
     }
 
-    private void replaceRootContents(OutlineNode parsedRoot) {
-        OutlineNode actualRoot = outlineController.getRootNode();
-
-        actualRoot.removeAllChildren();
-        actualRoot.setTitle(parsedRoot.getTitle());
-        actualRoot.setContent(parsedRoot.getContent());
-
-        while (parsedRoot.getChildCount() > 0) {
-            OutlineNode child = (OutlineNode) parsedRoot.getChildAt(0);
-            actualRoot.add(child);
-        }
-
-        outlineController.getTreeModel().reload();
-    }
-
+    /**
+     * Parst ein XML-Element rekursiv in eine {@link OutlineNode} um.
+     *
+     * @param nodeElement das zu parsende XML-Dokument
+     * @return die vollständig geparste {@link OutlineNode}
+     */
     private OutlineNode parseNode(Element nodeElement) {
          String title = nodeElement.getAttribute("title");
 
