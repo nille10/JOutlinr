@@ -466,21 +466,6 @@ public class OutlineController {
     }
 
     /**
-     * Entfernt einen Knoten aus dem Outliner und ruft {@link #markDirty()} auf um einen ungespeicherten Zustand zu markieren.
-     * @param node Knoten der entfernt werden soll
-     */
-    public void deleteNode(OutlineNode node) {
-
-        commitEditing();
-
-        treeModel.removeNodeFromParent(node);
-
-        textWindow.loadNode(null);
-
-        markDirty();
-    }
-
-    /**
      * Ermittelt alle markieren Knoten im Outliner.
      * @return {@code java.util.List<OutlineNode>} mit allen markieren Knoten
      */
@@ -499,6 +484,21 @@ public class OutlineController {
         }
 
         return nodes;
+    }
+
+    /**
+     * Entfernt einen Knoten aus dem Outliner und ruft {@link #markDirty()} auf um einen ungespeicherten Zustand zu markieren.
+     * @param node Knoten der entfernt werden soll
+     */
+    public void deleteNode(OutlineNode node) {
+
+        commitEditing();
+
+        treeModel.removeNodeFromParent(node);
+
+        textWindow.loadNode(null);
+
+        markDirty();
     }
 
     /**
@@ -537,6 +537,29 @@ public class OutlineController {
         selectNode(node);
 
         markDirty();
+    }
+
+    /**
+     * Ersetzt die RootNode im JTree mit einer neuen.
+     * <p>
+     *   Entfernt alle Kindknoten des aktuellen Wurzelknoten. Passt den Titel und Content des Wurzelknoten an und fügt alle neuen Kindknoten hinzu.
+     *   Lädt danach einmal das TreeModel neu, damit alles angezeigt wird
+     * </p>
+     * @param parsedRoot der neue Wurzelknoten
+     */
+    public void replaceRootContents(OutlineNode parsedRoot) {
+        OutlineNode actualRoot = getRootNode();
+
+        actualRoot.removeAllChildren();
+        actualRoot.setTitle(parsedRoot.getTitle());
+        actualRoot.setContent(parsedRoot.getContent());
+
+        while (parsedRoot.getChildCount() > 0) {
+            OutlineNode child = (OutlineNode) parsedRoot.getChildAt(0);
+            actualRoot.add(child);
+        }
+
+        getTreeModel().reload();
     }
 
     /**
