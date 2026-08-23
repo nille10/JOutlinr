@@ -13,9 +13,12 @@ import java.util.List;
 
 public class OutlineTransferHandler extends TransferHandler {
     private final MainWindow mainFrame;
-    private DefaultMutableTreeNode draggedNode;
     private List<OutlineNode> draggedNodes;
 
+    /**
+     * Transfer Handler für die Drag-and-Drop funktion
+     * @param mainFrame das Main window
+     */
     public OutlineTransferHandler(MainWindow mainFrame) {
         this.mainFrame = mainFrame;
     }
@@ -40,8 +43,15 @@ public class OutlineTransferHandler extends TransferHandler {
         return dl.getPath() != null;
     }
 
-    /*
-    * Teils KI generiert
+
+    /**
+     * Löscht die ausgewählten Knoten und fügt sie an der richtigen Stelle wieder ein.
+     * <p>
+     *   Prüft ob die Position an der die Knoten eingefügt werden sollen zulässig ist. Löscht die Knoten an der alten Stelle und fügt sie an der neuen ein.
+     * </p>
+     * @param support the object containing the details of
+     *        the transfer, not <code>null</code>.
+     * @return {@code true} wenn der Knoten an der gewählten Stelle eingefügt werden kann, ansonsten {@code false}
      */
     @Override
     public boolean importData(TransferSupport support) {
@@ -69,7 +79,7 @@ public class OutlineTransferHandler extends TransferHandler {
             dropIndex = target.getChildCount();
         }
 
-        if (getSubTreeHight() + target.getLevel() > 2) {
+        if (getSubTreeHeight() + target.getLevel() > 2) {
             mainFrame.getStatusBar().setText("Zu viele Ebenen (maximal 3 zugelassen)");
             return false;
         }
@@ -100,7 +110,11 @@ public class OutlineTransferHandler extends TransferHandler {
         return true;
     }
 
-    private int getSubTreeHight() {
+    /**
+     * Ermittelt die tiefe des SubBaums, die per Drag-and-Drop bewegt werden sollen.
+     * @return die maximale tiefe des SubBaums
+     */
+    private int getSubTreeHeight() {
         OutlineController outlineController = mainFrame.getOutlineController();
 
         int maxSubtreeHeight = 0;

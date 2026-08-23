@@ -12,6 +12,9 @@ import model.OutlineNode;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Der Command ist für das Löschen von Knoten aus dem Outliner zuständig.
+ */
 public class DeleteEntryCommand implements UndoableAction {
 
   private final OutlineController controller;
@@ -21,10 +24,21 @@ public class DeleteEntryCommand implements UndoableAction {
   private final List<DeletedEntry> deleted = new ArrayList<>();
   private final List<OutlineNode> originallySelected = new ArrayList<>();
 
+  /**
+   * Erstellt einen neuen DeleteEntryCommand mit UndoManager.
+   * @param controller der OutlineController von Outliner
+   */
   public DeleteEntryCommand(OutlineController controller) {
     this.controller = controller;
   }
 
+  /**
+   * Löscht die ausgewählten Knoten im Outliner.
+   * <p>
+   *   Nach dem Löschen wird der nächste Knoten ausgewählt, falls {@code outliner.getSelectLastEntryOption()} true ist.
+   *   Das löschen wird auf einem Undo Stack abgelegt.
+   * </p>
+   */
   @Override
   public void execute() {
 
@@ -64,9 +78,9 @@ public class DeleteEntryCommand implements UndoableAction {
 
     controller.deleteNodes(nodesToRemove);
 
-    if(controller.getBoolean()){
+    if(controller.getSelectLastEntryOption()){
       // Nach dem Löschen den Knoten vor dem ersten gelöschten auswählen
-      DeletedEntry first = deleteOrder.get(deleteOrder.size() - 1); // kleinster Index
+      DeletedEntry first = deleteOrder.getLast(); // kleinster Index
       OutlineNode parent = first.parent();
       int prevIndex = first.index() - 1;
 
@@ -83,6 +97,9 @@ public class DeleteEntryCommand implements UndoableAction {
     }
   }
 
+  /**
+   * Das Löschen eines Knotens wird wieder rückgängig gemacht.
+   */
   @Override
   public void undo() {
 
@@ -99,6 +116,12 @@ public class DeleteEntryCommand implements UndoableAction {
     controller.selectNodes(originallySelected);
   }
 
+  /**
+   * Überprüft ob der Knoten ausgewählte Elternknoten hat.
+   * @param node der zu prüfende Knoten
+   * @param selected die ausgewählten Knoten
+   * @return {@code true} wenn die Node einen ausgewählten Elternknoten hat, ansonsten {@code false}
+   */
   private boolean hasSelectedAncestor(OutlineNode node, List<OutlineNode> selected) {
 
     OutlineNode parent = (OutlineNode) node.getParent();

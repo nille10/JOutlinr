@@ -9,6 +9,9 @@ import model.OutlineNode;
 
 import javax.swing.tree.DefaultTreeModel;
 
+/**
+ * Der Command ist für das Einfügen ausgewählter Knoten zuständig.
+ */
 public class PasteCommand implements UndoableAction {
 
     private final OutlineController controller;
@@ -18,11 +21,18 @@ public class PasteCommand implements UndoableAction {
     private int pasteIndex;
     private boolean wasExecuted;
 
+    /**
+     * Erstellt einen neuen PasteCommand mit UndoManager
+     * @param controller der OutlineController vom Outliner
+     */
     public PasteCommand(OutlineController controller, OutlineNode nodeToPaste) {
         this.controller = controller;
         this.nodeToPaste = nodeToPaste;
     }
 
+    /**
+     * Fügt die ausgewählten Knoten an dem ausgewählten Platz im Outliner wieder ein.
+     */
     @Override
     public void execute() {
         wasExecuted = false;
@@ -55,6 +65,9 @@ public class PasteCommand implements UndoableAction {
         wasExecuted = true;
     }
 
+    /**
+     * Macht das Einfügen von Knoten wieder rückgängig.
+     */
     @Override
     public void undo() {
         if (!wasExecuted) return;
@@ -64,12 +77,18 @@ public class PasteCommand implements UndoableAction {
         controller.markDirty();
     }
 
+    /**
+     * Macht das Ausführen con {@link #undo()} rückgängig.
+     */
     @Override
     public void redo() {
         if (!wasExecuted) return;
         doInsert();
     }
 
+    /**
+     * Fügt die Knoten an der richtigen Stelle ein.
+     */
     private void doInsert() {
         DefaultTreeModel model = controller.getTreeModel();
         model.insertNodeInto(nodeToPaste, pasteParent, pasteIndex);

@@ -14,7 +14,12 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Controller für die Interaktion mit der Datenstruktur des Outliners zuständig.
+ * <p>
+ *     Ist zuständig für die manipulation des JTrees. Operationen welche eine Undo funktion benötigen werden direkt über die {@link action.actions.commands} gesteuert.
+ * </p>
+ */
 public class OutlineController {
 
     private final TextWindow textWindow;
@@ -26,20 +31,26 @@ public class OutlineController {
     private final JFrame mainWindow;
     private boolean dirty;
 
-    private boolean isSelected = true;
+    private boolean selectLastEntryOption = true;
 
     public static final int MAX_LEVEL = 3; //Root = 0
 
     private final List<Runnable> updateListeners = new ArrayList<>();
 
-    public OutlineController(OutlinePanel view, TextWindow textWindow, JFrame mainWindow) {
+    /**
+     * Erstellt einen neuen {@code OutlineController}
+     * @param outlinePanel Das Panel in dem die Nodes dargestellt werden
+     * @param textWindow Das TextWindow der Nodes
+     * @param mainWindow Das Main window um neue Fenster an der richtigen position anzuzeigen
+     */
+    public OutlineController(OutlinePanel outlinePanel, TextWindow textWindow, JFrame mainWindow) {
 
         this.textWindow = textWindow;
-        this.outlinePanel = view;
+        this.outlinePanel = outlinePanel;
 
-        this.tree = view.getTree();
-        this.treeModel = view.getTreeModel();
-        this.rootNode = view.getRootNode();
+        this.tree = outlinePanel.getTree();
+        this.treeModel = outlinePanel.getTreeModel();
+        this.rootNode = outlinePanel.getRootNode();
         this.mainWindow = mainWindow;
 
         //createExampleData();
@@ -47,6 +58,9 @@ public class OutlineController {
         expandAll();
     }
 
+    /**
+     *
+     */
     private void registerListeners() {
 
         tree.addTreeSelectionListener(e -> {
@@ -97,82 +111,12 @@ public class OutlineController {
                 });
     }
 
-    private void createExampleData() {
-
-        OutlineNode k1 = new OutlineNode("Kapitel 1");
-        OutlineNode k2 = new OutlineNode("Kapitel 2");
-
-        OutlineNode k1a = new OutlineNode("Abschnitt 1.1");
-        OutlineNode k1b = new OutlineNode("Abschnitt 1.2");
-
-        k1.add(k1a);
-        k1.add(k1b);
-
-        rootNode.add(k1);
-        rootNode.add(k2);
-
-        treeModel.reload();
-    }
-
-    public void addSibling() {
-
-        commitEditing();
-
-        OutlineNode selected = getSelectedNode();
-
-        OutlineNode parent = selected != null ?(OutlineNode) selected.getParent() : rootNode;
-
-        if (parent == null) {
-            parent = rootNode;
-        }
-
-        OutlineNode node = new OutlineNode("Neuer Eintrag");
-
-        int index = selected == null ? parent.getChildCount() : parent.getIndex(selected) + 1;
-
-        treeModel.insertNodeInto(node, parent, index);
-
-        startEditing(node);
-
-        markDirty();
-    }
-
-    public void addRootEntry() {
-
-        commitEditing();
-
-        OutlineNode node = new OutlineNode("Neuer Eintrag");
-
-        treeModel.insertNodeInto(node, rootNode, rootNode.getChildCount());
-
-        startEditing(node);
-
-        markDirty();
-    }
-
-    public void addChild() {
-
-        commitEditing();
-
-        OutlineNode selected = getSelectedNode();
-        OutlineNode parent = selected != null ? selected : rootNode;
-
-        if (!canAddChildTo(parent)) {
-            return;
-        }
-
-        OutlineNode node = new OutlineNode("Neuer Unterknoten");
-
-        treeModel.insertNodeInto(
-            node,
-            parent,
-            parent.getChildCount());
-
-        startEditing(node);
-
-        markDirty();
-    }
-
+    /**
+     * Überprüft, ob eine weitere Outlinenode hinzugefügt werden kann, ohne die maximale tiefe {@link #MAX_LEVEL} des Baums zu überschreiten.
+     * @param parent die Parent node der node die hinzugefügt werden soll
+     * @return {@code true} wenn die neue Node das maximale Level nicht überschreitet, ansonsten
+     *         {@code false}
+     */
     public boolean canAddChildTo(OutlineNode parent) {
         if (parent == null) {
             return true;
@@ -180,12 +124,21 @@ public class OutlineController {
         return parent.getLevel() < MAX_LEVEL;
     }
 
+    /**
+     * Überprüft, ob eine weitere Outline Node unter der ausgewählten Node hinzugefügt werden kann (siehe {@link #canAddChildTo(OutlineNode)}).
+     * @return {@code true} wenn die neue Node das maximale Level nicht überschreitet, ansonsten
+     *         {@code false}
+     */
     public boolean canAddChildToSelected() {
         OutlineNode selected = getSelectedNode();
         OutlineNode parent = selected != null ? selected : rootNode;
         return canAddChildTo(parent);
     }
 
+    /**
+     *
+     * @param listener
+     */
     public void addUpdateListener(Runnable listener) {
         updateListeners.add(listener);
         listener.run(); // initialer Zustand direkt setzen
@@ -197,6 +150,13 @@ public class OutlineController {
         }
     }
 
+    /**
+     * Erstellt eine neue Spalte im Outliner
+     * <p>
+     *   Öffnet ein Fenster um zu ermitteln welche art von Spalte hinzugefügt werden soll und fügt diese dann hinzu.
+     *   Ruft {@link #markDirty()} auf um einen ungespeicherten Zustand zu markieren.
+     * </p>
+     */
     public void addColumn() {
 
         commitEditing();
@@ -232,62 +192,28 @@ public class OutlineController {
         markDirty();
     }
 
+    /**
+     * Fügt eine neue Spalte hinzu.
+     * <p>
+     *   Wird genutzt um beim importieren von Dateien die Spalten, des Outliners wieder aufzubauen.
+     * </p>
+     * @param title Titel der Spalte
+     * @param type Typ der Spalte
+     */
     public void addColumn(String title, ColumnType type) {
 
         commitEditing();
 
         outlinePanel.addColumn(title, type);
-        // kein markDirty() da die Methode nur in den Parsern benutzt wird
+
+        saved();
     }
 
-    public void deleteSelected() {
-
-        OutlineNode selected = getSelectedNode();
-
-        if (selected == null) {
-            return;
-        }
-
-        treeModel.removeNodeFromParent(selected);
-
-        textWindow.loadNode(null);
-
-        markDirty();
-    }
-
-    public void promoteSelected() {
-
-        commitEditing();
-
-        OutlineNode selected = getSelectedNode();
-
-        if (selected == null) {
-            return;
-        }
-
-        OutlineNode parent = (OutlineNode) selected.getParent();
-
-        if (parent == null || parent == rootNode) {
-            return;
-        }
-
-        OutlineNode grandParent = (OutlineNode) parent.getParent();
-
-        int index = grandParent.getIndex(parent) + 1;
-
-        treeModel.removeNodeFromParent(selected);
-
-        treeModel.insertNodeInto(
-            selected,
-            grandParent,
-            index);
-
-        selectNode(selected);
-
-        markDirty();
-    }
-
-    public boolean canPromoteSelected() {
+    /**
+     * Prüft, ob eine Outline Node im Baum ausgerückt werden kann.
+     * @return {@code true} wenn die Node nicht die RootNode ist und ungleich null ist, ansonsten {@code false}
+     */
+    public boolean canPromoteSelected() { // Ausrücken / Outdent
 
         commitEditing();
 
@@ -302,40 +228,14 @@ public class OutlineController {
         return parent != null && parent != rootNode;
     }
 
-    public void demoteSelected() {
-
-        commitEditing();
-
-        OutlineNode selected = getSelectedNode();
-
-        if (selected == null) {
-            return;
-        }
-
-        OutlineNode parent =
-            (OutlineNode) selected.getParent();
-
-        int index = parent.getIndex(selected);
-
-        if (index == 0) {
-            return;
-        }
-
-        OutlineNode previous = (OutlineNode) parent.getChildAt(index - 1);
-
-        treeModel.removeNodeFromParent(selected);
-
-        treeModel.insertNodeInto(
-            selected,
-            previous,
-            previous.getChildCount());
-
-        selectNode(selected);
-
-        markDirty();
-    }
-
-    public boolean canDemoteSelected() {
+    /**
+     * Prüft, ob eine Outline Node im Baum eingerückt werden kann.
+     * <p>
+     *   Überprüft ob die Node selber die RootNode ist, ob eine Node zum unterordnen existiert und ob die maximale Tiefe überschritten wird.
+     * </p>
+     * @return {@code true} wenn die Node eingerückt werden kann, ansonsten {@code false}
+     */
+    public boolean canDemoteSelected() { // Einrücken / Indent
 
         OutlineNode selected = getSelectedNode();
 
@@ -363,10 +263,10 @@ public class OutlineController {
     }
 
     /**
-     * KI generiert
      * Ermittelt die tiefste Verschachtelungsebene innerhalb eines Teilbaums
      * (inklusive des Knotens selbst).
      */
+    // KI generiert
     private int getMaxLevelInSubtree(OutlineNode node) {
 
         int max = node.getLevel();
@@ -382,7 +282,13 @@ public class OutlineController {
         return max;
     }
 
-    //KI
+    /**
+     * Überprüft, ob bein einfügen eines Teilbaums die maximale Tiefe {@link #MAX_LEVEL} überschritten wird.
+     * @param parent Der Eltern Knoten von {@code nodeToPaste}
+     * @param nodeToPaste Der Knoten der eingefügt werden soll
+     * @return {@code true} wenn möglich, ansonsten {@code false}
+     */
+    // KI generiert
     public boolean canPasteInto(OutlineNode parent, OutlineNode nodeToPaste) {
 
         if (parent == null || nodeToPaste == null) {
@@ -400,10 +306,10 @@ public class OutlineController {
     }
 
     /**
-     * KI generiert
      * Ermittelt die relative Tiefe eines (noch nicht eingehängten) Teilbaums,
      * unabhängig von seinem aktuellen Level im Baum (der bei einer Kopie z.B. 0 sein kann).
      */
+    // Ki generiert
     public int getRelativeDepth(OutlineNode node) {
 
         int max = 0;
@@ -419,6 +325,9 @@ public class OutlineController {
         return max;
     }
 
+    /**
+     * Klappt alle Knoten im Outliner auf.
+     */
     public void expandAll() {
 
         commitEditing();
@@ -428,6 +337,41 @@ public class OutlineController {
         }
     }
 
+    /**
+     * Klappt den ausgewählten Knoten auf.
+     */
+    public void expandNode() {
+
+        commitEditing();
+
+        OutlineNode node = getSelectedNode();
+        if (node == null) return;
+
+        TreePath path = new TreePath(treeModel.getPathToRoot(node));
+        tree.expandPath(path);
+    }
+
+    /**
+     * Klappt einen Knoten und seine Kinder auf
+     * @param node Knoten dessen Kinder aufgeklappt werden sollen
+     */
+    public void expandSubtree(OutlineNode node) {
+
+        if (node == null) {
+            return;
+        }
+
+        TreePath path = new TreePath(treeModel.getPathToRoot(node));
+        tree.expandPath(path);
+
+        for (int i = 0; i < node.getChildCount(); i++) {
+            expandSubtree((OutlineNode) node.getChildAt(i));
+        }
+    }
+
+    /**
+     * Klappt alle Knoten im Outliner zu.
+     */
     public void collapseAll() {
 
         commitEditing();
@@ -437,6 +381,24 @@ public class OutlineController {
         }
     }
 
+    /**
+     * Klappt den ausgewählten Knoten ein.
+     */
+    public void collapseNode() {
+
+        commitEditing();
+
+        OutlineNode selected = getSelectedNode();
+        if (selected == null) return;
+
+        TreePath path = new TreePath(treeModel.getPathToRoot(selected));
+        tree.collapsePath(path);
+    }
+
+    /**
+     * Ermittelt die ausgewählten Knoten
+     * @return {@code selectedNode} wenn ein Knoten ausgewählt wurde, ansonsten {@code null}
+     */
     public OutlineNode getSelectedNode() {
 
         TreePath path = tree.getSelectionPath();
@@ -448,6 +410,10 @@ public class OutlineController {
         return (OutlineNode) path.getLastPathComponent();
     }
 
+    /**
+     * Wählt einen Knoten aus.
+     * @param node Der Knoten der ausgewählt werden soll
+     */
     public void selectNode(OutlineNode node) {
 
         commitEditing();
@@ -458,61 +424,10 @@ public class OutlineController {
         tree.scrollPathToVisible(path);
     }
 
-    public void startEditing(OutlineNode node) {
-
-        if (tree.isEditing()) {
-            tree.getCellEditor().cancelCellEditing();
-        }
-
-        TreePath path = new TreePath(treeModel.getPathToRoot(node));
-
-        tree.setSelectionPath(path);
-
-        SwingUtilities.invokeLater(() -> tree.startEditingAtPath(path));
-    }
-
-    public void deleteNode(OutlineNode node) {
-
-        commitEditing();
-
-        treeModel.removeNodeFromParent(node);
-
-        textWindow.loadNode(null);
-
-        markDirty();
-    }
-
-    public java.util.List<OutlineNode> getSelectedNodes() {
-
-        TreePath[] paths = tree.getSelectionPaths();
-
-        if (paths == null) {
-            return java.util.Collections.emptyList();
-        }
-
-        java.util.List<OutlineNode> nodes = new ArrayList<>();
-
-        for (TreePath path : paths) {
-            nodes.add((OutlineNode) path.getLastPathComponent());
-        }
-
-        return nodes;
-    }
-
-    public void deleteNodes(java.util.List<OutlineNode> nodesToDelete) {
-
-        if (nodesToDelete.isEmpty()) {
-            return;
-        }
-
-        for (OutlineNode node : nodesToDelete) {
-            treeModel.removeNodeFromParent(node);
-        }
-
-        textWindow.loadNode(null);
-
-        markDirty();
-    }
+    /**
+     * Wählt mehrere Knoten aus.
+     * @param nodes Liste der Knoten die ausgewählt werden sollen
+     */
     public void selectNodes(List<OutlineNode> nodes) {
 
         commitEditing();
@@ -533,7 +448,84 @@ public class OutlineController {
         tree.scrollPathToVisible(paths[paths.length - 1]);
     }
 
+    /**
+     *
+     * @param node
+     */
+    public void startEditing(OutlineNode node) {
 
+        if (tree.isEditing()) {
+            tree.getCellEditor().cancelCellEditing();
+        }
+
+        TreePath path = new TreePath(treeModel.getPathToRoot(node));
+
+        tree.setSelectionPath(path);
+
+        SwingUtilities.invokeLater(() -> tree.startEditingAtPath(path));
+    }
+
+    /**
+     * Ermittelt alle markieren Knoten im Outliner.
+     * @return {@code java.util.List<OutlineNode>} mit allen markieren Knoten
+     */
+    public java.util.List<OutlineNode> getSelectedNodes() {
+
+        TreePath[] paths = tree.getSelectionPaths();
+
+        if (paths == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        java.util.List<OutlineNode> nodes = new ArrayList<>();
+
+        for (TreePath path : paths) {
+            nodes.add((OutlineNode) path.getLastPathComponent());
+        }
+
+        return nodes;
+    }
+
+    /**
+     * Entfernt einen Knoten aus dem Outliner und ruft {@link #markDirty()} auf um einen ungespeicherten Zustand zu markieren.
+     * @param node Knoten der entfernt werden soll
+     */
+    public void deleteNode(OutlineNode node) {
+
+        commitEditing();
+
+        treeModel.removeNodeFromParent(node);
+
+        textWindow.loadNode(null);
+
+        markDirty();
+    }
+
+    /**
+     * Entfernt mehrere Knoten aus dem Outliner und ruft {@link #markDirty()} auf um einen ungespeicherten Zustand zu markieren.
+     * @param nodesToDelete Knoten die aus dem Outliner entfernt werden sollen.
+     */
+    public void deleteNodes(java.util.List<OutlineNode> nodesToDelete) {
+
+        if (nodesToDelete.isEmpty()) {
+            return;
+        }
+
+        for (OutlineNode node : nodesToDelete) {
+            treeModel.removeNodeFromParent(node);
+        }
+
+        textWindow.loadNode(null);
+
+        markDirty();
+    }
+
+    /**
+     * Fügt einen neuen Knoten im Outliner hinzu.
+     * @param parent Eltern Knoten unter dem der neue Knoten eingefügt werden soll.
+     * @param node Knoten der eingefügt werden soll.
+     * @param index Index an dem der neue Knoten eingefügt werden soll.
+     */
     public void insertNode(OutlineNode parent,
                            OutlineNode node,
                            int index) {
@@ -547,81 +539,89 @@ public class OutlineController {
         markDirty();
     }
 
-    public void collapseNode() {
+    /**
+     * Ersetzt die RootNode im JTree mit einer neuen.
+     * <p>
+     *   Entfernt alle Kindknoten des aktuellen Wurzelknoten. Passt den Titel und Content des Wurzelknoten an und fügt alle neuen Kindknoten hinzu.
+     *   Lädt danach einmal das TreeModel neu, damit alles angezeigt wird
+     * </p>
+     * @param parsedRoot der neue Wurzelknoten
+     */
+    public void replaceRootContents(OutlineNode parsedRoot) {
+        OutlineNode actualRoot = getRootNode();
 
-        commitEditing();
+        actualRoot.removeAllChildren();
+        actualRoot.setTitle(parsedRoot.getTitle());
+        actualRoot.setContent(parsedRoot.getContent());
 
-        OutlineNode selected = getSelectedNode();
-        if (selected == null) return;
-
-        TreePath path = new TreePath(treeModel.getPathToRoot(selected));
-        tree.collapsePath(path);
-    }
-
-    public void expandNode() {
-
-        commitEditing();
-
-        OutlineNode node = getSelectedNode();
-        if (node == null) return;
-
-        TreePath path = new TreePath(treeModel.getPathToRoot(node));
-        tree.expandPath(path);
-    }
-
-    //Hilfsmethode: expanded einen Knoten und nur deren Kinder
-    public void expandSubtree(OutlineNode node) {
-
-        if (node == null) {
-            return;
+        while (parsedRoot.getChildCount() > 0) {
+            OutlineNode child = (OutlineNode) parsedRoot.getChildAt(0);
+            actualRoot.add(child);
         }
 
-        TreePath path = new TreePath(treeModel.getPathToRoot(node));
-        tree.expandPath(path);
-
-        for (int i = 0; i < node.getChildCount(); i++) {
-            expandSubtree((OutlineNode) node.getChildAt(i));
-        }
+        getTreeModel().reload();
     }
 
+    /**
+     * Setzt die {@link #dirty} flag auf True um einen ungespeicherten Zustand zu markieren.
+     * Fügt vorm Titel des Outliners ein * ein, um diesen Zustand zu markieren (siehe {@link #updateTitle()}).
+     */
     public void markDirty() {
         dirty = true;
         updateTitle();
         fireUpdate();
     }
 
+    /**
+     * @return {@code true} wenn es ungespeicherte Elemente gibt, ansonsten {@code false}
+     */
     public boolean isDirty() {
         return dirty;
     }
 
+    /**
+     * Setzt die {@link #dirty} flag auf false und aktualisiert den Titel des Outliners (siehe {@link #updateTitle()}).
+     */
     public void saved() {
         dirty = false;
         updateTitle();
     }
 
+    /**
+     * Fügt dem Titel ein * hinzu, wenn {@link #dirty} true ist, ansonsten wird der * entfernt.
+     */
     private void updateTitle() {
         mainWindow.setTitle((dirty ? "* " : "") + "JOutlinr");
     }
 
+    /**
+     *
+     */
     public void cancelActiveEditing() {
         if (tree.isEditing()) {
             tree.getCellEditor().cancelCellEditing();
         }
     }
 
-    public void setBoolean(boolean isSelected){
-        this.isSelected = isSelected;
+    public void setSelectLastEntryOption(boolean isSelected){
+        this.selectLastEntryOption = isSelected;
     }
 
-    public boolean getBoolean(){
-        return this.isSelected;
+    public boolean getSelectLastEntryOption(){
+        return this.selectLastEntryOption;
     }
 
-    //GETTER - Columns
+    /**
+     * @return
+     */
     public ColumnHeader getTreeHeader(){
         return outlinePanel.getHeaderPanel().getTreeHeader();
     }
 
+    /**
+     *
+     * @return
+     */
     public List<ColumnHeader> getHeaderList(){
         return outlinePanel.getHeaderPanel().getHeaders();
     }
@@ -634,6 +634,9 @@ public class OutlineController {
         outlinePanel.getColumnPanel().syncWithTree(nodes, rowHeight);
     }
 
+    /**
+     * Entfernt alle einträge aus dem Outliner.
+     */
     public void deleteAllColumns() {
         List<OutlineColumn> columns = getColumns();
         int columnSize = columns.size();
@@ -643,6 +646,9 @@ public class OutlineController {
         outlinePanel.getHeaderPanel().clearColumnHeaders();
     }
 
+    /**
+     *
+     */
     public void commitEditing() {
         JTree tree = outlinePanel.getTree();
 
@@ -651,6 +657,10 @@ public class OutlineController {
         }
     }
 
+    /**
+     * Setzt die Überschrift des Dokuments.
+     * @param title Überschrift des Dokuments
+     */
     public void setHeaderTitle(String title) {outlinePanel.getHeaderPanel().getTreeHeader().setTitle(title); }
 
     public OutlineNode getRootNode() {

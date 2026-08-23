@@ -15,14 +15,12 @@ public class CopyAction extends AbstractAction {
         super("Kopieren");
         this.editController = editController;
 
-        // TODO
         putValue(SHORT_DESCRIPTION, "");
         putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("copy action");
         editController.copy();
     }
 }

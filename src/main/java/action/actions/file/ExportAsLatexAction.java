@@ -22,10 +22,6 @@ public class ExportAsLatexAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        try {
             fileController.exportAsLatex();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 }

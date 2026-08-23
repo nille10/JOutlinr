@@ -1,7 +1,6 @@
-package action.outline;
+package action.actions.outline;
 
 import action.actions.commands.NewChildEntryCommand;
-import action.actions.commands.NewEntryCommand;
 import action.manager.UndoManager;
 import controller.OutlineController;
 

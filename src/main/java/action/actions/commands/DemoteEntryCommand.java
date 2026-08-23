@@ -9,6 +9,9 @@ import model.OutlineNode;
 
 import javax.swing.tree.DefaultTreeModel;
 
+/**
+ * Der Command ist für das Einrücken von Knoten im Outliner zuständig.
+ */
 public class DemoteEntryCommand implements UndoableAction {
 
     private final OutlineController controller;
@@ -20,10 +23,17 @@ public class DemoteEntryCommand implements UndoableAction {
 
     private boolean wasExecuted;
 
+    /**
+     * Erstellt einen neuen DemoteEntryCommand mit UndoManager
+     * @param controller der OutlineController vom Outliner
+     */
     public DemoteEntryCommand(OutlineController controller) {
         this.controller = controller;
     }
 
+    /**
+     * Schiebt einen Knoten eine Ebene nach unten (Rechts).
+     */
     @Override
     public void execute() {
 
@@ -56,6 +66,9 @@ public class DemoteEntryCommand implements UndoableAction {
         wasExecuted = true;
     }
 
+    /**
+     * Macht das Einrücken des Knotens rückgängig.
+     */
     @Override
     public void undo() {
         if (!wasExecuted) return;
@@ -70,12 +83,18 @@ public class DemoteEntryCommand implements UndoableAction {
         controller.markDirty();
     }
 
+    /**
+     * Macht das Ausführen con {@link #undo()} rückgängig.
+     */
     @Override
     public void redo() {
         if (!wasExecuted) return;
         doDemote();
     }
 
+    /**
+     * Entfernt den ausgewählten Knoten aus dem Tree und fügt ihn eine Ebene tiefer wieder ein.
+     */
     private void doDemote() {
         DefaultTreeModel model = controller.getTreeModel();
 
