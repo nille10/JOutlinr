@@ -31,6 +31,8 @@ public class OutlineController {
     private final JFrame mainWindow;
     private boolean dirty;
 
+    private boolean isSelected = true;
+
     private boolean selectLastEntryOption = true;
 
     public static final int MAX_LEVEL = 3; //Root = 0
@@ -679,5 +681,13 @@ public class OutlineController {
 
     public JTree getTree(){
         return this.tree;
+    }
+
+    public void setBoolean(boolean isSelected){
+        this.isSelected = isSelected;
+    }
+
+    public boolean getBoolean(){
+        return this.isSelected;
     }
 }
