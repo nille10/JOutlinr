@@ -65,7 +65,7 @@ public class SettingsWindow extends JDialog {
     JCheckBox selectAfterDelete = new JCheckBox("Letzten Eintrag nach Löschvorgang auswählen");
     selectAfterDelete.setSelected(AppPreferences.isSelectAfterDeleteOn());
     selectAfterDelete.addActionListener(e -> {
-      outlineController.setBoolean(selectAfterDelete.isSelected());
+      outlineController.setSelectLastEntryOption(selectAfterDelete.isSelected());
       AppPreferences.setSelectAfterDelete(selectAfterDelete.isSelected());
     });
 
