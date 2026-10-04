@@ -6,7 +6,6 @@ import view.CFileChooser;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import java.io.File;
 import java.io.IOException;
