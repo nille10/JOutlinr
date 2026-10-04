@@ -24,6 +24,14 @@ import java.io.IOException;
 /**
  * MainWindow – Hauptfenster des Outliners.
  *
+ * <p>Baut das komplette Fenster zusammen: Menüleiste, Toolbar, das geteilte
+ * Haupt-Layout aus {@link OutlinePanel} (Baum) und {@link TextWindow}
+ * (Notizbereich), sowie die Status-Leiste. Erzeugt dabei alle Controller
+ * ({@link OutlineController}, {@link FileController}, {@link EditController})
+ * und verdrahtet deren Actions mit Menü, Toolbar und den Tastaturkürzeln des
+ * Baums. Enthält selbst keine Geschäftslogik, sondern delegiert jede Aktion an
+ * den zuständigen Controller.</p>
+ *
  * Layout:
  *   ┌──────────────────────────────────────┐
  *   │  Menüleiste (JMenuBar)               │
@@ -37,13 +45,32 @@ import java.io.IOException;
  */
 public class MainWindow extends JFrame {
 
+    /** Das Panel mit dem Baum (JTree) und den Zusatzspalten. */
     private final OutlinePanel outlinePanel;
+
+    /** Der zentrale Controller für Baum-Operationen, Dirty-Status und Spaltenverwaltung. */
     private final OutlineController outlineController;
+
+    /** Der Notizbereich für den aktuell ausgewählten Knoten. */
     private final TextWindow textWindow;
+
+    /** Die Status-Leiste am unteren Fensterrand. */
     private final JLabel statusBar;
+
+    /** Der Basis-Fenstertitel ohne Dirty-Markierung. */
     private static final String BASE_TITLE = "JOutlinr";
 
 
+    /**
+     * Baut das Hauptfenster komplett auf.
+     *
+     * <p>Erstellt in dieser Reihenfolge: {@link OutlinePanel} und
+     * {@link TextWindow}, den globalen {@link UndoManager}, die drei Controller,
+     * die Tastaturkürzel des Baums, die Actions, Menüleiste und Toolbar, das
+     * {@link JSplitPane}-Layout sowie die Status-Leiste. Registriert außerdem den
+     * Window-Closing-Handler, der vor dem Schließen den Speicherstatus prüft, und
+     * versucht abschließend, die zuletzt bearbeitete Datei zu importieren.</p>
+     */
     public MainWindow() {
         super(BASE_TITLE);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -135,6 +162,18 @@ public class MainWindow extends JFrame {
         outlineController.saved();
     }
 
+    /**
+     * Registriert die Tastaturkürzel für Baum-Operationen (ein-/ausrücken,
+     * auf-/zuklappen, ausschneiden/kopieren/einfügen, löschen).
+     *
+     * <p>Bindungen werden direkt am {@code JTree} im {@code WHEN_FOCUSED}-Zustand
+     * registriert, da sonst andere Swing-Elemente dieselben Tastenkombinationen
+     * abfangen würden.</p>
+     *
+     * @param tree           der Baum, an dem die Bindungen registriert werden
+     * @param editController der Controller für Ausschneiden/Kopieren/Einfügen
+     * @param undoManager    der globale Undo-Manager, den die Undo-fähigen Actions benötigen
+     */
     private void registerOutlineKeyBindings(JTree tree, EditController editController, UndoManager undoManager) {
 
         InputMap inputMap = tree.getInputMap(JComponent.WHEN_FOCUSED);
@@ -226,6 +265,12 @@ public class MainWindow extends JFrame {
         actionMap.put("deleteNode", new DeleteEntryAction(outlineController, undoManager));
     }
 
+    /**
+     * Lädt das Anwendungs-Logo für das Fenster-Icon.
+     *
+     * @return das geladene Logo, oder {@code null}, wenn die Ressource nicht
+     *         gefunden wurde oder beim Laden ein Fehler auftrat
+     */
     private Image loadLogo() {
 
         try {
@@ -239,6 +284,18 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Liefert die Status-Leiste am unteren Fensterrand.
+     *
+     * @return die Status-Leiste
+     */
     public JLabel getStatusBar() {return statusBar; }
+
+    /**
+     * Liefert den zentralen Controller für Baum-Operationen, Dirty-Status und
+     * Spaltenverwaltung.
+     *
+     * @return der {@link OutlineController} dieses Fensters
+     */
     public OutlineController getOutlineController() {return outlineController; }
 }

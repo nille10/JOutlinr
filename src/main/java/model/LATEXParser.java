@@ -49,15 +49,15 @@ public class LATEXParser {
      */
     public void exportAsLatex() throws IOException {
 
-        LatexExportDialog.Mode mode = LatexExportDialog.askMode(mainWindow);
+        LatexExportMode mode = LatexExportDialog.askMode(mainWindow);
 
-        if (mode == LatexExportDialog.Mode.CANCELLED) {
+        if (mode == LatexExportMode.CANCELLED) {
             return;
         }
 
-        LatexExportDialog.LatexMetadata metadata = null;
+        LatexMetadata metadata = null;
 
-        if (mode == LatexExportDialog.Mode.EXPERT) {
+        if (mode == LatexExportMode.EXPERT) {
             metadata = LatexExportDialog.askMetadata(mainWindow);
             if (metadata == null) {
                 return; // Nutzer hat abgebrochen
@@ -138,14 +138,14 @@ public class LATEXParser {
 
     /**
      * Erstellt das komplette LATEX-Dokument, abhängig von der Wahl des Benutzers
-     * (siehe {@link #buildStandardLatexDocument(String)} und {@link #buildExpertLatexDocument(LatexExportDialog.LatexMetadata, String)}).
+     * (siehe {@link #buildStandardLatexDocument(String)} und {@link #buildExpertLatexDocument(LatexMetadata, String)}).
      *
      * @param metadata metadata aus dem {@link #exportAsLatexDialog()}, wenn metadata {@code null} ist, wird das Dokument im Standard Modus erzeugt.
      * @param body die Knoten im LATEX-Format
      *
      * @return den fertigen String im gewählten Modus
      */
-    private String buildFullLatexDocument(LatexExportDialog.LatexMetadata metadata, String body) {
+    private String buildFullLatexDocument(LatexMetadata metadata, String body) {
 
         if (metadata == null) {
             return buildStandardLatexDocument(body);
@@ -191,7 +191,7 @@ public class LATEXParser {
      * @param body die Knoten in LATEX-Form (siehe {@link #getNodes(OutlineNode)}
      * @return einen String mit einem kompletten LATEX-Dokument
      */
-    private String buildExpertLatexDocument(LatexExportDialog.LatexMetadata metadata, String body) {
+    private String buildExpertLatexDocument(LatexMetadata metadata, String body) {
 
         StringBuilder tex = new StringBuilder();
 
@@ -355,7 +355,7 @@ public class LATEXParser {
      * @param metadata metadaten für das LATEX-Dokument
      * @return fertige Titelseite
      */
-    private String buildTitlePage(LatexExportDialog.LatexMetadata metadata) {
+    private String buildTitlePage(LatexMetadata metadata) {
 
         StringBuilder sb = new StringBuilder();
 

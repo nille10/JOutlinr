@@ -1,14 +1,29 @@
 package view;
 
 import controller.OutlineController;
+import model.preferences.AppPreferences;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 
+/**
+ * Modaler Einstellungs-Dialog der Anwendung.
+ *
+ * <p>Zeigt zwei Tabs: "Allgemein" (Dark Mode, Vollbild, Verhaltens-Optionen) und
+ * "Farben" (Akzentfarb-Palette von {@link AppTheme}). Änderungen werden sofort
+ * angewendet (kein "Übernehmen"-Button) und über {@link AppPreferences}
+ * persistiert, sodass sie über Programmstarts hinweg erhalten bleiben.</p>
+ */
 public class SettingsWindow extends JDialog {
 
+  /**
+   * Baut den Einstellungs-Dialog auf.
+   *
+   * @param parent            das Elternfenster, über dem der Dialog modal angezeigt wird
+   * @param outlineController der Controller, über den verhaltensbezogene Einstellungen
+   *                          (Auswahl nach Löschen, Icon-Anzeige) direkt auf den Baum wirken
+   */
   public SettingsWindow(JFrame parent, OutlineController outlineController) {
     super(parent, "Einstellungen", true); // modal
     setSize(480, 520);
@@ -39,6 +54,19 @@ public class SettingsWindow extends JDialog {
 
   // ── Tab 1: Allgemein ─────────────────────────────────────────────────
 
+  /**
+   * Baut den "Allgemein"-Tab auf: Darstellungs-Optionen (Dark Mode, Vollbild)
+   * und Verhaltens-Optionen (Auswahl nach Löschen, Icon-Anzeige).
+   *
+   * <p>Jede Checkbox wird mit dem aktuell in {@link AppPreferences} gespeicherten
+   * Wert vorbelegt; jede Änderung wendet die Einstellung sofort an (auf
+   * {@link AppTheme}, {@code parent} bzw. {@code outlineController}) und
+   * persistiert sie anschließend über {@link AppPreferences}.</p>
+   *
+   * @param outlineController der Controller für verhaltensbezogene Einstellungen
+   * @param parent            das Hauptfenster, auf das Dark Mode und Vollbild angewendet werden
+   * @return das fertig aufgebaute Tab-Panel
+   */
   private JPanel buildGeneralPanel(OutlineController outlineController, JFrame parent) {
     JPanel panel = new JPanel();
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -57,7 +85,7 @@ public class SettingsWindow extends JDialog {
     fullscreen.setSelected(AppPreferences.isFullscreen());
     fullscreen.addActionListener(e -> {
       parent.setExtendedState(fullscreen.isSelected()
-          ? JFrame.MAXIMIZED_BOTH : JFrame.NORMAL);
+              ? JFrame.MAXIMIZED_BOTH : JFrame.NORMAL);
       AppPreferences.setFullScreen(fullscreen.isSelected());
     });
 
@@ -93,6 +121,16 @@ public class SettingsWindow extends JDialog {
 
   // ── Tab 2: Farben ────────────────────────────────────────────────────
 
+  /**
+   * Baut den "Farben"-Tab auf: eine Zeile pro Akzentfarbe
+   * ({@link AppTheme#ACCENT}, {@link AppTheme#ACCENT_DARK},
+   * {@link AppTheme#ACCENT_LIGHT}) mit Name, Farbvorschau-Button (öffnet den
+   * {@link JColorChooser}) und Hex-Code, sowie einem Button zum Zurücksetzen
+   * auf die Standardfarben.
+   *
+   * @param parent das Hauptfenster, auf das Farbänderungen angewendet werden
+   * @return das fertig aufgebaute Tab-Panel
+   */
   private JPanel buildColorPanel(JFrame parent) {
     JPanel panel = new JPanel();
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -100,9 +138,9 @@ public class SettingsWindow extends JDialog {
 
     // Aktuell gewählte Farben aus AppTheme
     Color[] current = {
-        AppTheme.ACCENT,
-        AppTheme.ACCENT_DARK,
-        AppTheme.ACCENT_LIGHT
+            AppTheme.ACCENT,
+            AppTheme.ACCENT_DARK,
+            AppTheme.ACCENT_LIGHT
     };
     String[] labels = { "Akzentfarbe", "Akzent (dunkel)", "Akzent (hell)" };
 
@@ -128,9 +166,9 @@ public class SettingsWindow extends JDialog {
 
       preview.addActionListener(e -> {
         Color chosen = JColorChooser.showDialog(
-            this,
-            "Farbe wählen – " + labels[idx],
-            preview.getBackground()
+                this,
+                "Farbe wählen – " + labels[idx],
+                preview.getBackground()
         );
         if (chosen != null) {
           preview.setBackground(chosen);
@@ -167,6 +205,15 @@ public class SettingsWindow extends JDialog {
 
   // ── Hilfsmethoden ────────────────────────────────────────────────────
 
+  /**
+   * Wendet die am Farb-Chooser gewählte Farbe auf die passende Akzentfarbe von
+   * {@link AppTheme} an.
+   *
+   * @param colorIndex 0 für {@link AppTheme#ACCENT}, 1 für {@link AppTheme#ACCENT_DARK},
+   *                   2 für {@link AppTheme#ACCENT_LIGHT}; andere Werte bewirken nichts
+   * @param chosen     die neu gewählte Farbe
+   * @param parent     das Fenster, das nach der Änderung neu gezeichnet wird
+   */
   private void applyColorChange(int colorIndex, Color chosen, JFrame parent) {
     switch (colorIndex) {
       case 0 -> AppTheme.setAccent(chosen, parent);
@@ -175,10 +222,23 @@ public class SettingsWindow extends JDialog {
     }
   }
 
+  /**
+   * Formatiert eine Farbe als Hex-Code im Format {@code #RRGGBB}.
+   *
+   * @param c die zu formatierende Farbe
+   * @return der Hex-Code, z. B. {@code "#FA6D7B"}
+   */
   private String toHex(Color c) {
     return String.format("#%02X%02X%02X", c.getRed(), c.getGreen(), c.getBlue());
   }
 
+  /**
+   * Erstellt eine fett gedruckte, dezent eingefärbte Abschnittsüberschrift für
+   * die Tab-Panels.
+   *
+   * @param title der Überschriftentext
+   * @return das fertig formatierte Label
+   */
   private JLabel section(String title) {
     JLabel label = new JLabel(title);
     label.setFont(new Font("Segoe UI", Font.BOLD, 11));

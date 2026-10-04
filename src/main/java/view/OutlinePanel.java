@@ -58,29 +58,48 @@ import java.io.IOException;
 public class OutlinePanel extends JPanel {
 
 
+    /** Der Baum, der die Knoten-Hierarchie des Outliners darstellt. */
     private final JTree tree;
 
+    /** Das {@link DefaultTreeModel} hinter {@link #tree}. */
     private final DefaultTreeModel treeModel;
 
+    /** Der (unsichtbare) Wurzelknoten des Baums. */
     private final OutlineNode rootNode;
 
 
+    /** Der nicht scrollende Kopfbereich mit Baum- und Spalten-Überschriften. */
     private final HeaderPanel headerPanel;
 
+    /** Der Container für die Zell-Views aller Zusatzspalten. */
     private final ColumnPanel columnPanel;
 
+    /** Besitzt das Spalten-Model und erzeugt/entfernt die zugehörigen Views. */
     private final ColumnController columnController;
 
+    /** Der scrollbare Inhaltsbereich mit Baum (WEST) und Spalten (CENTER). */
     private final BodyPanel bodyPanel;
 
 
+    /** Die Scroll-Umgebung um {@link #bodyPanel}. */
     private final JScrollPane scrollPane;
 
+    /** Synchronisiert die Zeilen-Hervorhebung zwischen Baum und allen Spalten. */
     private final RowHoverManager hoverManager;
 
+    /** Das Hauptfenster der Anwendung, u. a. für den Zugriff auf den {@code OutlineController}. */
     private final MainWindow mainFrame;
 
 
+    /**
+     * Baut das komplette Outliner-Panel auf: Baum mit Renderer, Editor und
+     * Tastaturkürzeln, Header- und Body-Bereich, den {@link ColumnController}
+     * samt seiner beiden Listener-Views ({@link ColumnPanel}, {@link HeaderPanel}),
+     * das Hover-System sowie die Listener, die den Baum mit den Spalten
+     * synchron halten.
+     *
+     * @param mainFrame das Hauptfenster, dem dieses Panel gehört
+     */
     public OutlinePanel(MainWindow mainFrame) {
         this.mainFrame = mainFrame;
 
@@ -324,6 +343,15 @@ public class OutlinePanel extends JPanel {
     }
 
 
+    /**
+     * Stößt {@link #syncColumns()} asynchron über
+     * {@link SwingUtilities#invokeLater(Runnable)} an.
+     *
+     * <p>Wird von den Baum- und Expansion-Listenern verwendet, damit die
+     * Spalten-Synchronisierung erst nach Abschluss der aktuellen
+     * Swing-Ereignisverarbeitung läuft, wenn der Baum seinen neuen Zustand
+     * (Zeilenanzahl, Auf-/Zugeklappt-Status) bereits vollständig übernommen hat.</p>
+     */
     private void scheduleSyncColumns() {
         SwingUtilities.invokeLater(this::syncColumns);
     }
@@ -334,6 +362,18 @@ public class OutlinePanel extends JPanel {
     // Öffentliche API
     // -------------------------------------------------------
 
+    /**
+     * Fügt eine neue Spalte hinzu.
+     *
+     * <p>Legt die Spalte über den {@link ColumnController} an, blendet den
+     * Spaltenbereich im {@link BodyPanel} ein (falls er noch nicht sichtbar
+     * war) und synchronisiert anschließend die Zeilen, damit die neue Spalte
+     * sofort die aktuellen Knoten zeigt.</p>
+     *
+     * @param title der Titel der neuen Spalte
+     * @param type  der Typ der neuen Spalte
+     * @return die neu erstellte Spalte
+     */
     public Column addColumn(String title, ColumnType type) {
 
         Column column = columnController.addColumn(title, type);
@@ -346,6 +386,15 @@ public class OutlinePanel extends JPanel {
     }
 
 
+    /**
+     * Entfernt eine Spalte.
+     *
+     * <p>Entfernt die Spalte über den {@link ColumnController} und blendet den
+     * Spaltenbereich im {@link BodyPanel} aus, sobald keine Spalte mehr
+     * übrig ist.</p>
+     *
+     * @param column die zu entfernende Spalte
+     */
     public void removeColumn(Column column) {
 
         columnController.removeColumn(column);
@@ -388,30 +437,70 @@ public class OutlinePanel extends JPanel {
     // Getter
     // -------------------------------------------------------
 
+    /**
+     * Liefert den Baum des Outliners.
+     *
+     * @return der {@link JTree}
+     */
     public JTree getTree() {
         return tree;
     }
 
+    /**
+     * Liefert das Tree-Model hinter dem Baum.
+     *
+     * @return das {@link DefaultTreeModel}
+     */
     public DefaultTreeModel getTreeModel() {
         return treeModel;
     }
 
+    /**
+     * Liefert den (unsichtbaren) Wurzelknoten des Baums.
+     *
+     * @return der Wurzelknoten
+     */
     public OutlineNode getRootNode() {
         return rootNode;
     }
 
+    /**
+     * Liefert den Kopfbereich mit Baum- und Spalten-Überschriften.
+     *
+     * @return das {@link HeaderPanel}
+     */
     public HeaderPanel getHeaderPanel() {
         return headerPanel;
     }
 
+    /**
+     * Liefert den Container für die Zell-Views aller Zusatzspalten.
+     *
+     * @return das {@link ColumnPanel}
+     */
     public ColumnPanel getColumnPanel() {
         return columnPanel;
     }
 
+    /**
+     * Liefert den Controller, der das Spalten-Model besitzt und die
+     * zugehörigen Views erzeugt bzw. entfernt.
+     *
+     * @return der {@link ColumnController}
+     */
     public ColumnController getColumnController() {
         return columnController;
     }
 
+    /**
+     * Lädt ein Icon aus den Classpath-Ressourcen und skaliert es auf die
+     * angegebene Kantenlänge (quadratisch).
+     *
+     * @param path Pfad zur Ressource, relativ zum Classpath (z. B. {@code "/icons/right.png"})
+     * @param size Kantenlänge in Pixeln, auf die das Icon skaliert wird
+     * @return das skalierte Icon, oder {@code null}, wenn die Ressource nicht
+     *         gefunden wurde oder beim Laden ein Fehler auftrat
+     */
     private Icon loadIcon(String path, int size) {
         try {
             var stream = getClass().getResourceAsStream(path);

@@ -5,7 +5,7 @@ import model.OutlineNode;
 import model.XMLParser;
 import model.LATEXParser;
 
-import view.AppPreferences;
+import model.preferences.AppPreferences;
 import view.MainWindow;
 import view.CFileChooser;
 
