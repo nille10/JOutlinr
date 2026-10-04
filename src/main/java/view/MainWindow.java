@@ -94,7 +94,14 @@ public class MainWindow extends JFrame {
         getContentPane().add(toolbar, BorderLayout.NORTH);
         getContentPane().add(splitPane, BorderLayout.CENTER);
 
-        outlinePanel.getColumnPanel().setOnDataChanged(outlineController::markDirty);
+        // Hinweis MVC-Umbau: Die Zeile
+        //   outlinePanel.getColumnPanel().setOnDataChanged(outlineController::markDirty);
+        // entfällt. ColumnPanel kennt Spaltendaten nicht mehr und bietet daher kein
+        // setOnDataChanged mehr an. Das Verdrahten mit markDirty() übernimmt jetzt
+        // OutlinePanel selbst über columnController.setOnChange(...) in seinem
+        // Konstruktor - und deckt dort konsistent alle Änderungsarten ab (Spalte
+        // hinzugefügt, entfernt, umbenannt, Zellenwert geändert), nicht nur
+        // Zelländerungen wie bisher.
 
         // Status-Leiste
         statusBar = new JLabel(" Bereit");
@@ -134,14 +141,14 @@ public class MainWindow extends JFrame {
         ActionMap actionMap = tree.getActionMap();
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
-            "promoteNode");
+                KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
+                "promoteNode");
 
         actionMap.put("promoteNode", new PromoteEntryAction(outlineController, undoManager));
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
-            "demoteNode");
+                KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
+                "demoteNode");
 
         actionMap.put("demoteNode", new DemoteEntryAction(outlineController, undoManager));
 
@@ -195,26 +202,26 @@ public class MainWindow extends JFrame {
         });
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
-            "cutNode");
+                KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
+                "cutNode");
 
         actionMap.put("cutNode", new CutAction(editController));
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
-            "copyNode");
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
+                "copyNode");
 
         actionMap.put("copyNode", new CopyAction(editController));
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
-            "pasteNode");
+                KeyStroke.getKeyStroke(KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
+                "pasteNode");
 
         actionMap.put("pasteNode", new InsertAction(editController));
 
         inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0),
-            "deleteNode");
+                KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0),
+                "deleteNode");
 
         actionMap.put("deleteNode", new DeleteEntryAction(outlineController, undoManager));
     }
@@ -223,7 +230,7 @@ public class MainWindow extends JFrame {
 
         try {
             return ImageIO.read(
-                getClass().getResource("/images/joutliner_logo.png")
+                    getClass().getResource("/images/joutliner_logo.png")
             );
 
         } catch (IOException | IllegalArgumentException e) {

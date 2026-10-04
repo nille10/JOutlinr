@@ -1,11 +1,11 @@
 package controller;
 
 import model.OutlineNode;
+import model.columns.Column;
+import model.columns.ColumnType;
 import view.TextWindow;
 import view.OutlinePanel;
 import view.columns.ColumnHeader;
-import view.columns.ColumnType;
-import view.columns.OutlineColumn;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
@@ -174,10 +174,10 @@ public class OutlineController {
         panel.add(typeBox);
 
         int result = JOptionPane.showConfirmDialog(
-            mainWindow,           // <-- statt "this"
-            panel,
-            "Neue Spalte",
-            JOptionPane.OK_CANCEL_OPTION);
+                mainWindow,           // <-- statt "this"
+                panel,
+                "Neue Spalte",
+                JOptionPane.OK_CANCEL_OPTION);
 
         if (result == JOptionPane.OK_OPTION) {
 
@@ -628,24 +628,26 @@ public class OutlineController {
         return outlinePanel.getHeaderPanel().getHeaders();
     }
 
-    public List<OutlineColumn> getColumns(){
-        return outlinePanel.getColumnPanel().getColumns();
+    public List<Column> getColumns(){
+        return outlinePanel.getColumnController().getColumns();
     }
 
     public void syncColumns(OutlineNode[] nodes, int rowHeight){
-        outlinePanel.getColumnPanel().syncWithTree(nodes, rowHeight);
+        outlinePanel.getColumnController().syncWithTree(nodes, rowHeight);
     }
 
     /**
      * Entfernt alle einträge aus dem Outliner.
      */
     public void deleteAllColumns() {
-        List<OutlineColumn> columns = getColumns();
+        List<Column> columns = getColumns();
         int columnSize = columns.size();
         for (int i = columnSize - 1; i >= 0; i--) {
             outlinePanel.removeColumn(columns.get(i));
         }
-        outlinePanel.getHeaderPanel().clearColumnHeaders();
+        // clearColumnHeaders() entfällt: jede Spalte entfernt beim Löschen über
+        // removeColumn() bereits ihren eigenen Header (HeaderPanel.columnViewRemoved
+        // reagiert direkt auf ColumnController.removeColumn())
     }
 
     /**
@@ -677,7 +679,7 @@ public class OutlineController {
 
     public List<ColumnHeader> getSpaltenNamen() {return outlinePanel.getHeaderPanel().getHeaders(); }
 
-    public List<OutlineColumn> getSpalten() {return outlinePanel.getColumnPanel().getColumns();}
+    public List<Column> getSpalten() {return outlinePanel.getColumnController().getColumns();}
 
     public JTree getTree(){
         return this.tree;

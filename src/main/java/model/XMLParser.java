@@ -5,7 +5,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import view.columns.ColumnType;
+import model.columns.ColumnType;
 
 import javax.swing.tree.DefaultTreeModel;
 import javax.xml.parsers.DocumentBuilder;

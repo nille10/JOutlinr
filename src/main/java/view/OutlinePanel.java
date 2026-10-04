@@ -1,10 +1,11 @@
 package view;
 
 import controller.OutlineTransferHandler;
+import controller.columns.ColumnController;
 import model.OutlineNode;
+import model.columns.Column;
+import model.columns.ColumnType;
 import view.columns.ColumnPanel;
-import view.columns.ColumnType;
-import view.columns.OutlineColumn;
 import view.columns.RowHoverManager;
 
 import javax.swing.*;
@@ -46,6 +47,13 @@ import java.io.IOException;
  * - TreeExpansionListener → auf- / zugeklappt (ändert sichtbare Rows)
  * - ComponentListener     → treeContainer-Breite geändert
  *                           → HeaderPanel anpassen
+ *
+ * MVC-Umbau: Die Spalten-Verwaltung (bisher direkt über ColumnPanel/
+ * OutlineColumn) läuft jetzt über den {@link ColumnController}, der ein
+ * {@link model.columns.ColumnModel} besitzt und sowohl {@link ColumnPanel}
+ * als auch {@link HeaderPanel} als Listener bedient. OutlinePanel kennt
+ * dadurch keine Spalten-internen Details mehr, sondern nur noch den
+ * Controller.
  */
 public class OutlinePanel extends JPanel {
 
@@ -60,6 +68,8 @@ public class OutlinePanel extends JPanel {
     private final HeaderPanel headerPanel;
 
     private final ColumnPanel columnPanel;
+
+    private final ColumnController columnController;
 
     private final BodyPanel bodyPanel;
 
@@ -194,8 +204,16 @@ public class OutlinePanel extends JPanel {
         // Panels - KI generiert
         // --------------------------------
 
-        headerPanel = new HeaderPanel();
+        // Spalten-Controller besitzt das Model und erzeugt/entfernt die
+        // Zell-Views; HeaderPanel und ColumnPanel melden sich als Listener an,
+        // um auf dieselben Ereignisse unabhängig voneinander zu reagieren.
+        columnController = new ColumnController(hoverManager);
+
+        headerPanel = new HeaderPanel(columnController);
         columnPanel = new ColumnPanel();
+        columnController.addViewListener(columnPanel);
+        columnController.addViewListener(headerPanel);
+
         bodyPanel   = new BodyPanel(tree, columnPanel);
 
         scrollPane = new JScrollPane(bodyPanel);
@@ -210,15 +228,14 @@ public class OutlinePanel extends JPanel {
         // Hover-System initialisieren - KI generiert
         // --------------------------------
 
-        // Hover-Manager an ColumnPanel weitergeben (gilt für alle Spalten)
-        columnPanel.setHoverManager(hoverManager);
-
         // Maus-Bewegungen im Tree an den Manager melden
         installTreeHoverListener();
 
-
-        // HeaderPanel delegiert "Spalte entfernen" nach oben
-        headerPanel.setOnColumnRemove(this::removeColumn);
+        // markDirty bei jeder Änderung an den Spalten (hinzufügen, entfernen,
+        // umbenennen, Zellenwert geändert) - vorher wurde markDirty() nur
+        // manuell in removeColumn() aufgerufen, jetzt einheitlich für alle
+        // Änderungsarten über den Controller
+        columnController.setOnChange(() -> mainFrame.getOutlineController().markDirty());
 
         installTreeListeners();
     }
@@ -280,6 +297,9 @@ public class OutlinePanel extends JPanel {
 
             @Override
             public void treeNodesRemoved(TreeModelEvent e) {
+                // Werte gelöschter Knoten aus allen Spalten entfernen, damit
+                // die Werte-Map jeder Column nicht mit toten Knoten wächst
+                columnController.handleNodesRemoved(e.getChildren());
                 scheduleSyncColumns();
             }
 
@@ -314,13 +334,9 @@ public class OutlinePanel extends JPanel {
     // Öffentliche API
     // -------------------------------------------------------
 
-    public OutlineColumn addColumn(String title, ColumnType type) {
+    public Column addColumn(String title, ColumnType type) {
 
-        OutlineColumn column = columnPanel.addColumn(title, type);
-
-        // Column mitgeben damit Header und Column beim Entfernen
-        // koordiniert abgebaut werden können
-        headerPanel.addColumnHeader(title, column);
+        Column column = columnController.addColumn(title, type);
 
         bodyPanel.showColumns();
 
@@ -330,16 +346,13 @@ public class OutlinePanel extends JPanel {
     }
 
 
-    public void removeColumn(OutlineColumn column) {
+    public void removeColumn(Column column) {
 
-        columnPanel.removeColumn(column);
+        columnController.removeColumn(column);
 
-        if (!columnPanel.hasColumns()) {
+        if (!columnController.hasColumns()) {
             bodyPanel.hideColumns();
-            headerPanel.clearColumnHeaders();
         }
-
-        mainFrame.getOutlineController().markDirty();
     }
 
 
@@ -356,15 +369,15 @@ public class OutlinePanel extends JPanel {
         for (int i = 0; i < count; i++) {
 
             Object obj =
-                tree.getPathForRow(i)
-                    .getLastPathComponent();
+                    tree.getPathForRow(i)
+                            .getLastPathComponent();
 
             if (obj instanceof OutlineNode node) {
                 nodes[i] = node;
             }
         }
 
-        columnPanel.syncWithTree(nodes, tree.getRowHeight());
+        columnController.syncWithTree(nodes, tree.getRowHeight());
 
         bodyPanel.updatePreferredHeight(count, tree.getRowHeight());
     }
@@ -393,6 +406,10 @@ public class OutlinePanel extends JPanel {
 
     public ColumnPanel getColumnPanel() {
         return columnPanel;
+    }
+
+    public ColumnController getColumnController() {
+        return columnController;
     }
 
     private Icon loadIcon(String path, int size) {

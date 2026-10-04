@@ -1,7 +1,7 @@
 package model;
 
 import controller.OutlineController;
-import view.columns.ColumnType;
+import model.columns.ColumnType;
 
 import javax.swing.tree.DefaultTreeModel;
 import java.io.File;
