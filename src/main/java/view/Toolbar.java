@@ -8,10 +8,25 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
+/**
+ * Die Werkzeugleiste des Hauptfensters.
+ *
+ * <p>Baut für jede Gliederungs-Aktion aus {@link OutlineActions} einen Button
+ * mit Icon und Beschriftung auf (neuer Wurzel-/Normal-/Untereintrag, Löschen,
+ * Ein-/Ausrücken, Auf-/Zuklappen, neue Spalte). Hält selbst keinen Zustand und
+ * keine Geschäftslogik — jede Schaltfläche delegiert direkt an die übergebene
+ * {@link Action}.</p>
+ */
 public class Toolbar extends JToolBar {
 
+    /** Kantenlänge, auf die alle Icons skaliert werden, in Pixeln. */
     private static final int ICON_SIZE = 30;
 
+    /**
+     * Baut die Werkzeugleiste mit allen Buttons auf.
+     *
+     * @param outlineActions die vorgefertigten Gliederungs-Actions, aus denen die Buttons erzeugt werden
+     */
     public Toolbar(OutlineActions outlineActions) {
         setFloatable(false);
         //setBackground(new Color(245, 245, 248));
@@ -53,6 +68,14 @@ public class Toolbar extends JToolBar {
         return btn;
     }
 
+    /**
+     * Lädt ein Icon aus den Classpath-Ressourcen und skaliert es auf
+     * {@link #ICON_SIZE}×{@link #ICON_SIZE} Pixel.
+     *
+     * @param resourcePath Pfad zur Ressource, relativ zum Classpath (z. B. {@code "/icons/del.png"})
+     * @return das skalierte Icon, oder {@code null}, wenn die Ressource nicht
+     *         gefunden wurde oder beim Laden ein Fehler auftrat
+     */
     private Icon loadIcon(String resourcePath) {
         try {
             var stream = getClass().getResourceAsStream(resourcePath);
