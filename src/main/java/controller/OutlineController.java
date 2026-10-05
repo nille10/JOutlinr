@@ -1,11 +1,11 @@
 package controller;
 
 import model.OutlineNode;
+import model.columns.Column;
+import model.columns.ColumnType;
 import view.TextWindow;
 import view.OutlinePanel;
 import view.columns.ColumnHeader;
-import view.columns.ColumnType;
-import view.columns.OutlineColumn;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
@@ -174,10 +174,10 @@ public class OutlineController {
         panel.add(typeBox);
 
         int result = JOptionPane.showConfirmDialog(
-            mainWindow,           // <-- statt "this"
-            panel,
-            "Neue Spalte",
-            JOptionPane.OK_CANCEL_OPTION);
+                mainWindow,           // <-- statt "this"
+                panel,
+                "Neue Spalte",
+                JOptionPane.OK_CANCEL_OPTION);
 
         if (result == JOptionPane.OK_OPTION) {
 
@@ -597,7 +597,9 @@ public class OutlineController {
     }
 
     /**
-     *
+     * Bricht die Bearbeitung des Namens einer Zeile ab, falls gerade eine läuft
+     * — die bisher eingegebene Änderung wird dabei verworfen, nicht übernommen.
+     * Gegenstück zu {@link #commitEditing()}, das die Änderung speichert.
      */
     public void cancelActiveEditing() {
         if (tree.isEditing()) {
@@ -605,51 +607,89 @@ public class OutlineController {
         }
     }
 
+    /**
+     * Setzt, ob nach dem Löschen eines Knotens automatisch ein anderer Knoten
+     * ausgewählt werden soll.
+     *
+     * @param isSelected {@code true}, um die automatische Auswahl zu aktivieren
+     */
     public void setSelectLastEntryOption(boolean isSelected){
         this.selectLastEntryOption = isSelected;
     }
 
+    /**
+     * Liefert, ob nach dem Löschen eines Knotens automatisch ein anderer Knoten
+     * ausgewählt werden soll.
+     *
+     * @return {@code true}, wenn die automatische Auswahl aktiv ist
+     */
     public boolean getSelectLastEntryOption(){
         return this.selectLastEntryOption;
     }
 
     /**
-     * @return
+     * Liefert den Header des Baums (nicht der Zusatzspalten).
+     *
+     * @return der {@link ColumnHeader} des Baums
      */
     public ColumnHeader getTreeHeader(){
         return outlinePanel.getHeaderPanel().getTreeHeader();
     }
 
     /**
+     * Liefert die Header-Komponenten aller aktuell vorhandenen Zusatzspalten.
      *
-     * @return
+     * <p>Identisch mit {@link #getSpaltenNamen()} — beide Methoden rufen
+     * denselben Code auf und geben dieselbe Liste zurück.</p>
+     *
+     * @return die Liste der Spalten-Header in Anzeigereihenfolge
      */
     public List<ColumnHeader> getHeaderList(){
         return outlinePanel.getHeaderPanel().getHeaders();
     }
 
-    public List<OutlineColumn> getColumns(){
-        return outlinePanel.getColumnPanel().getColumns();
-    }
-
-    public void syncColumns(OutlineNode[] nodes, int rowHeight){
-        outlinePanel.getColumnPanel().syncWithTree(nodes, rowHeight);
+    /**
+     * Liefert alle aktuell vorhandenen Zusatzspalten.
+     *
+     * <p>Identisch mit {@link #getSpalten()} — beide Methoden rufen denselben
+     * Code auf und geben dieselbe Liste zurück.</p>
+     *
+     * @return die Liste der Spalten in Anzeigereihenfolge
+     */
+    public List<Column> getColumns(){
+        return outlinePanel.getColumnController().getColumns();
     }
 
     /**
-     * Entfernt alle einträge aus dem Outliner.
+     * Synchronisiert die Zeilen aller Zusatzspalten mit den übergebenen Knoten
+     * des Baums.
+     *
+     * @param nodes     die aktuell sichtbaren Knoten des Baums in Zeilenreihenfolge
+     * @param rowHeight die Zeilenhöhe des Baums in Pixeln
+     */
+    public void syncColumns(OutlineNode[] nodes, int rowHeight){
+        outlinePanel.getColumnController().syncWithTree(nodes, rowHeight);
+    }
+
+    /**
+     * Entfernt alle Einträge aus dem Outliner.
      */
     public void deleteAllColumns() {
-        List<OutlineColumn> columns = getColumns();
+        List<Column> columns = getColumns();
         int columnSize = columns.size();
         for (int i = columnSize - 1; i >= 0; i--) {
             outlinePanel.removeColumn(columns.get(i));
         }
-        outlinePanel.getHeaderPanel().clearColumnHeaders();
+        // clearColumnHeaders() entfällt: jede Spalte entfernt beim Löschen über
+        // removeColumn() bereits ihren eigenen Header (HeaderPanel.columnViewRemoved
+        // reagiert direkt auf ColumnController.removeColumn())
     }
 
     /**
-     *
+     * Speichert das Bearbeiten einer Zeile, wie wenn man Enter drückt — eine
+     * eventuell laufende Inline-Bearbeitung im Baum wird beendet und die
+     * Änderung übernommen. Gegenstück zu {@link #cancelActiveEditing()}, das
+     * die Änderung verwirft.
      */
     public void commitEditing() {
         JTree tree = outlinePanel.getTree();
@@ -665,28 +705,80 @@ public class OutlineController {
      */
     public void setHeaderTitle(String title) {outlinePanel.getHeaderPanel().getTreeHeader().setTitle(title); }
 
+    /**
+     * Liefert den (unsichtbaren) Wurzelknoten des Baums.
+     *
+     * @return der Wurzelknoten
+     */
     public OutlineNode getRootNode() {
         return rootNode;
     }
 
+    /**
+     * Liefert das Tree-Model hinter dem Baum.
+     *
+     * @return das {@link DefaultTreeModel}
+     */
     public DefaultTreeModel getTreeModel() {
         return treeModel;
     }
 
+    /**
+     * Liefert den aktuellen Titel des Baum-Headers.
+     *
+     * @return der Titel des Baum-Headers
+     */
     public String getHeaderTitle() {return outlinePanel.getHeaderPanel().getTreeHeader().getTitle(); }
 
+    /**
+     * Liefert die Header-Komponenten aller aktuell vorhandenen Zusatzspalten.
+     *
+     * <p>Identisch mit {@link #getHeaderList()} — beide Methoden rufen
+     * denselben Code auf und geben dieselbe Liste zurück. Der Name legt eine
+     * Liste von reinen Spaltennamen (Strings) nahe, tatsächlich sind es aber
+     * {@link ColumnHeader}-Komponenten.</p>
+     *
+     * @return die Liste der Spalten-Header in Anzeigereihenfolge
+     */
     public List<ColumnHeader> getSpaltenNamen() {return outlinePanel.getHeaderPanel().getHeaders(); }
 
-    public List<OutlineColumn> getSpalten() {return outlinePanel.getColumnPanel().getColumns();}
+    /**
+     * Liefert alle aktuell vorhandenen Zusatzspalten.
+     *
+     * <p>Identisch mit {@link #getColumns()} — beide Methoden rufen denselben
+     * Code auf und geben dieselbe Liste zurück.</p>
+     *
+     * @return die Liste der Spalten in Anzeigereihenfolge
+     */
+    public List<Column> getSpalten() {return outlinePanel.getColumnController().getColumns();}
 
+    /**
+     * Liefert den Baum des Outliners.
+     *
+     * @return der {@link JTree}
+     */
     public JTree getTree(){
         return this.tree;
     }
 
+    /**
+     * Setzt das allgemeine Auswahl-Flag ({@link #isSelected}).
+     *
+     * <p>Name und Zweck des Flags sind aus dem Code allein nicht eindeutig
+     * erkennbar; die Dokumentation beschränkt sich daher auf das, was sich aus
+     * Feldname und Typ ableiten lässt.</p>
+     *
+     * @param isSelected der neue Wert des Flags
+     */
     public void setBoolean(boolean isSelected){
         this.isSelected = isSelected;
     }
 
+    /**
+     * Liefert das allgemeine Auswahl-Flag ({@link #isSelected}).
+     *
+     * @return der aktuelle Wert des Flags
+     */
     public boolean getBoolean(){
         return this.isSelected;
     }

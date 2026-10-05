@@ -1,10 +1,11 @@
 package view;
 
 import controller.OutlineTransferHandler;
+import controller.columns.ColumnController;
 import model.OutlineNode;
+import model.columns.Column;
+import model.columns.ColumnType;
 import view.columns.ColumnPanel;
-import view.columns.ColumnType;
-import view.columns.OutlineColumn;
 import view.columns.RowHoverManager;
 
 import javax.swing.*;
@@ -46,31 +47,59 @@ import java.io.IOException;
  * - TreeExpansionListener → auf- / zugeklappt (ändert sichtbare Rows)
  * - ComponentListener     → treeContainer-Breite geändert
  *                           → HeaderPanel anpassen
+ *
+ * MVC-Umbau: Die Spalten-Verwaltung (bisher direkt über ColumnPanel/
+ * OutlineColumn) läuft jetzt über den {@link ColumnController}, der ein
+ * {@link model.columns.ColumnModel} besitzt und sowohl {@link ColumnPanel}
+ * als auch {@link HeaderPanel} als Listener bedient. OutlinePanel kennt
+ * dadurch keine Spalten-internen Details mehr, sondern nur noch den
+ * Controller.
  */
 public class OutlinePanel extends JPanel {
 
 
+    /** Der Baum, der die Knoten-Hierarchie des Outliners darstellt. */
     private final JTree tree;
 
+    /** Das {@link DefaultTreeModel} hinter {@link #tree}. */
     private final DefaultTreeModel treeModel;
 
+    /** Der (unsichtbare) Wurzelknoten des Baums. */
     private final OutlineNode rootNode;
 
 
+    /** Der nicht scrollende Kopfbereich mit Baum- und Spalten-Überschriften. */
     private final HeaderPanel headerPanel;
 
+    /** Der Container für die Zell-Views aller Zusatzspalten. */
     private final ColumnPanel columnPanel;
 
+    /** Besitzt das Spalten-Model und erzeugt/entfernt die zugehörigen Views. */
+    private final ColumnController columnController;
+
+    /** Der scrollbare Inhaltsbereich mit Baum (WEST) und Spalten (CENTER). */
     private final BodyPanel bodyPanel;
 
 
+    /** Die Scroll-Umgebung um {@link #bodyPanel}. */
     private final JScrollPane scrollPane;
 
+    /** Synchronisiert die Zeilen-Hervorhebung zwischen Baum und allen Spalten. */
     private final RowHoverManager hoverManager;
 
+    /** Das Hauptfenster der Anwendung, u. a. für den Zugriff auf den {@code OutlineController}. */
     private final MainWindow mainFrame;
 
 
+    /**
+     * Baut das komplette Outliner-Panel auf: Baum mit Renderer, Editor und
+     * Tastaturkürzeln, Header- und Body-Bereich, den {@link ColumnController}
+     * samt seiner beiden Listener-Views ({@link ColumnPanel}, {@link HeaderPanel}),
+     * das Hover-System sowie die Listener, die den Baum mit den Spalten
+     * synchron halten.
+     *
+     * @param mainFrame das Hauptfenster, dem dieses Panel gehört
+     */
     public OutlinePanel(MainWindow mainFrame) {
         this.mainFrame = mainFrame;
 
@@ -194,8 +223,16 @@ public class OutlinePanel extends JPanel {
         // Panels - KI generiert
         // --------------------------------
 
-        headerPanel = new HeaderPanel();
+        // Spalten-Controller besitzt das Model und erzeugt/entfernt die
+        // Zell-Views; HeaderPanel und ColumnPanel melden sich als Listener an,
+        // um auf dieselben Ereignisse unabhängig voneinander zu reagieren.
+        columnController = new ColumnController(hoverManager);
+
+        headerPanel = new HeaderPanel(columnController);
         columnPanel = new ColumnPanel();
+        columnController.addViewListener(columnPanel);
+        columnController.addViewListener(headerPanel);
+
         bodyPanel   = new BodyPanel(tree, columnPanel);
 
         scrollPane = new JScrollPane(bodyPanel);
@@ -210,15 +247,14 @@ public class OutlinePanel extends JPanel {
         // Hover-System initialisieren - KI generiert
         // --------------------------------
 
-        // Hover-Manager an ColumnPanel weitergeben (gilt für alle Spalten)
-        columnPanel.setHoverManager(hoverManager);
-
         // Maus-Bewegungen im Tree an den Manager melden
         installTreeHoverListener();
 
-
-        // HeaderPanel delegiert "Spalte entfernen" nach oben
-        headerPanel.setOnColumnRemove(this::removeColumn);
+        // markDirty bei jeder Änderung an den Spalten (hinzufügen, entfernen,
+        // umbenennen, Zellenwert geändert) - vorher wurde markDirty() nur
+        // manuell in removeColumn() aufgerufen, jetzt einheitlich für alle
+        // Änderungsarten über den Controller
+        columnController.setOnChange(() -> mainFrame.getOutlineController().markDirty());
 
         installTreeListeners();
     }
@@ -280,6 +316,9 @@ public class OutlinePanel extends JPanel {
 
             @Override
             public void treeNodesRemoved(TreeModelEvent e) {
+                // Werte gelöschter Knoten aus allen Spalten entfernen, damit
+                // die Werte-Map jeder Column nicht mit toten Knoten wächst
+                columnController.handleNodesRemoved(e.getChildren());
                 scheduleSyncColumns();
             }
 
@@ -304,6 +343,15 @@ public class OutlinePanel extends JPanel {
     }
 
 
+    /**
+     * Stößt {@link #syncColumns()} asynchron über
+     * {@link SwingUtilities#invokeLater(Runnable)} an.
+     *
+     * <p>Wird von den Baum- und Expansion-Listenern verwendet, damit die
+     * Spalten-Synchronisierung erst nach Abschluss der aktuellen
+     * Swing-Ereignisverarbeitung läuft, wenn der Baum seinen neuen Zustand
+     * (Zeilenanzahl, Auf-/Zugeklappt-Status) bereits vollständig übernommen hat.</p>
+     */
     private void scheduleSyncColumns() {
         SwingUtilities.invokeLater(this::syncColumns);
     }
@@ -314,13 +362,21 @@ public class OutlinePanel extends JPanel {
     // Öffentliche API
     // -------------------------------------------------------
 
-    public OutlineColumn addColumn(String title, ColumnType type) {
+    /**
+     * Fügt eine neue Spalte hinzu.
+     *
+     * <p>Legt die Spalte über den {@link ColumnController} an, blendet den
+     * Spaltenbereich im {@link BodyPanel} ein (falls er noch nicht sichtbar
+     * war) und synchronisiert anschließend die Zeilen, damit die neue Spalte
+     * sofort die aktuellen Knoten zeigt.</p>
+     *
+     * @param title der Titel der neuen Spalte
+     * @param type  der Typ der neuen Spalte
+     * @return die neu erstellte Spalte
+     */
+    public Column addColumn(String title, ColumnType type) {
 
-        OutlineColumn column = columnPanel.addColumn(title, type);
-
-        // Column mitgeben damit Header und Column beim Entfernen
-        // koordiniert abgebaut werden können
-        headerPanel.addColumnHeader(title, column);
+        Column column = columnController.addColumn(title, type);
 
         bodyPanel.showColumns();
 
@@ -330,16 +386,22 @@ public class OutlinePanel extends JPanel {
     }
 
 
-    public void removeColumn(OutlineColumn column) {
+    /**
+     * Entfernt eine Spalte.
+     *
+     * <p>Entfernt die Spalte über den {@link ColumnController} und blendet den
+     * Spaltenbereich im {@link BodyPanel} aus, sobald keine Spalte mehr
+     * übrig ist.</p>
+     *
+     * @param column die zu entfernende Spalte
+     */
+    public void removeColumn(Column column) {
 
-        columnPanel.removeColumn(column);
+        columnController.removeColumn(column);
 
-        if (!columnPanel.hasColumns()) {
+        if (!columnController.hasColumns()) {
             bodyPanel.hideColumns();
-            headerPanel.clearColumnHeaders();
         }
-
-        mainFrame.getOutlineController().markDirty();
     }
 
 
@@ -356,15 +418,15 @@ public class OutlinePanel extends JPanel {
         for (int i = 0; i < count; i++) {
 
             Object obj =
-                tree.getPathForRow(i)
-                    .getLastPathComponent();
+                    tree.getPathForRow(i)
+                            .getLastPathComponent();
 
             if (obj instanceof OutlineNode node) {
                 nodes[i] = node;
             }
         }
 
-        columnPanel.syncWithTree(nodes, tree.getRowHeight());
+        columnController.syncWithTree(nodes, tree.getRowHeight());
 
         bodyPanel.updatePreferredHeight(count, tree.getRowHeight());
     }
@@ -375,26 +437,70 @@ public class OutlinePanel extends JPanel {
     // Getter
     // -------------------------------------------------------
 
+    /**
+     * Liefert den Baum des Outliners.
+     *
+     * @return der {@link JTree}
+     */
     public JTree getTree() {
         return tree;
     }
 
+    /**
+     * Liefert das Tree-Model hinter dem Baum.
+     *
+     * @return das {@link DefaultTreeModel}
+     */
     public DefaultTreeModel getTreeModel() {
         return treeModel;
     }
 
+    /**
+     * Liefert den (unsichtbaren) Wurzelknoten des Baums.
+     *
+     * @return der Wurzelknoten
+     */
     public OutlineNode getRootNode() {
         return rootNode;
     }
 
+    /**
+     * Liefert den Kopfbereich mit Baum- und Spalten-Überschriften.
+     *
+     * @return das {@link HeaderPanel}
+     */
     public HeaderPanel getHeaderPanel() {
         return headerPanel;
     }
 
+    /**
+     * Liefert den Container für die Zell-Views aller Zusatzspalten.
+     *
+     * @return das {@link ColumnPanel}
+     */
     public ColumnPanel getColumnPanel() {
         return columnPanel;
     }
 
+    /**
+     * Liefert den Controller, der das Spalten-Model besitzt und die
+     * zugehörigen Views erzeugt bzw. entfernt.
+     *
+     * @return der {@link ColumnController}
+     */
+    public ColumnController getColumnController() {
+        return columnController;
+    }
+
+    /**
+     * Lädt ein Icon aus den Classpath-Ressourcen und skaliert es auf die
+     * angegebene Kantenlänge (quadratisch).
+     *
+     * @param path Pfad zur Ressource, relativ zum Classpath (z. B. {@code "/icons/right.png"})
+     * @param size Kantenlänge in Pixeln, auf die das Icon skaliert wird
+     * @return das skalierte Icon, oder {@code null}, wenn die Ressource nicht
+     *         gefunden wurde oder beim Laden ein Fehler auftrat
+     */
     private Icon loadIcon(String path, int size) {
         try {
             var stream = getClass().getResourceAsStream(path);

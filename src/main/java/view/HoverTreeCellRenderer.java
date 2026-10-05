@@ -4,6 +4,7 @@
 package view;
 
 import model.OutlineNode;
+import model.preferences.AppPreferences;
 import view.columns.RowHoverManager;
 
 import javax.imageio.ImageIO;

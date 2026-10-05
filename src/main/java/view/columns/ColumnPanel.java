@@ -3,86 +3,84 @@
 */
 package view.columns;
 
-import model.OutlineNode;
+import controller.columns.ColumnController;
+import model.columns.Column;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Container für alle Zusatzspalten rechts neben dem JTree.
+ *
+ * <p>Die Spalten werden horizontal (X-Achse) nebeneinander angeordnet. Im
+ * Unterschied zum früheren {@code ColumnPanel} führt diese Klasse keine eigene
+ * Liste von Spalten und kennt weder {@link model.OutlineNode} noch Zeilenhöhen:
+ * Sie ist ein reiner {@link ColumnController.ColumnViewListener}, der auf
+ * {@code columnViewAdded}/{@code columnViewRemoved} reagiert, indem er die
+ * jeweilige {@link ColumnCellView} ins Layout einfügt bzw. daraus entfernt und
+ * die Gesamtbreite neu berechnet. Das Anlegen, Entfernen und Befüllen der
+ * Spalten mit Zeilen übernimmt ausschließlich der {@link ColumnController}.</p>
+ *
+ * <p>Damit neu hinzugefügte Spalten ihre Zeilen zeigen, muss nach
+ * {@link ColumnController#addColumn} wie bisher ein
+ * {@link ColumnController#syncWithTree} erfolgen; dieses Panel baut die Zeilen
+ * selbst nicht auf.</p>
  */
-public class ColumnPanel extends JPanel {
+public class ColumnPanel extends JPanel implements ColumnController.ColumnViewListener {
+
+  /** Die aktuell im Layout enthaltenen Views in ihrer Anzeigereihenfolge (von links nach rechts). */
+  private final List<ColumnCellView> views = new ArrayList<>();
 
 
-  private final List<OutlineColumn> columns = new ArrayList<>();
-
-  private OutlineNode[] currentNodes  = new OutlineNode[0];
-  private int currentRowHeight        = 24;
-
-  /** Wird von OutlinePanel gesetzt und an jede neue Spalte weitergegeben. */
-  private RowHoverManager hoverManager;
-
-
-
+  /**
+   * Erstellt ein neues, zunächst leeres Spaltenpanel.
+   *
+   * <p>Verwendet ein {@link BoxLayout} entlang der X-Achse und ist transparent,
+   * sodass der Hintergrund des umgebenden Containers durchscheint.</p>
+   */
   public ColumnPanel() {
-
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
     setOpaque(false);
   }
 
 
-
-  // ── HoverManager ─────────────────────────────────────────────────────────
-
   /**
-   * Setzt den RowHoverManager für alle aktuellen und zukünftigen Spalten.
-   * Wird von OutlinePanel einmalig im Konstruktor aufgerufen.
+   * Fügt die View einer neu hinzugefügten Spalte am rechten Ende des Panels ein.
+   *
+   * <p>Wird vom {@link ColumnController} aufgerufen, nachdem er die
+   * {@link ColumnCellView} für die übergebene {@link Column} erzeugt hat. Die View
+   * zeigt zu diesem Zeitpunkt noch keine Zeilen; dafür ist ein anschließender
+   * Aufruf von {@link ColumnController#syncWithTree} nötig.</p>
+   *
+   * @param column die hinzugefügte Spalte (hier nicht weiter benötigt, da das
+   *               Panel keine spaltenbezogenen Daten hält)
+   * @param view   die für die Spalte erzeugte View
    */
-  public void setHoverManager(RowHoverManager manager) {
-    this.hoverManager = manager;
-    // Bestehende Spalten ebenfalls anschließen
-    for (OutlineColumn col : columns) {
-      col.setHoverManager(manager);
-    }
-  }
-
-
-
-  // ── Spalten verwalten ────────────────────────────────────────────────────
-
-  private Runnable onDataChanged;
-
-  public void setOnDataChanged(Runnable callback) {
-    this.onDataChanged = callback;
-  }
-
-  public OutlineColumn addColumn(String title, ColumnType type) {
-
-    OutlineColumn column = new OutlineColumn(title, type);
-    column.setOnDataChanged(onDataChanged);
-    column.setHoverManager(hoverManager);
-
-    columns.add(column);
-    add(column);
-
-    column.rebuildRows(currentNodes, currentRowHeight, 0);
-
+  @Override
+  public void columnViewAdded(Column column, ColumnCellView view) {
+    views.add(view);
+    add(view);
     updatePreferredWidth();
     revalidate();
     repaint();
-
-    return column;
   }
 
-  public void removeColumn(OutlineColumn column) {
-
-    if (columns.remove(column)) {
-      column.setHoverManager(null);
-      remove(column);
+  /**
+   * Entfernt die View einer gelöschten Spalte aus dem Panel.
+   *
+   * <p>Wird vom {@link ColumnController} aufgerufen, nachdem er die Spalte aus
+   * seinem Model entfernt hat. Ist die View nicht (mehr) im Panel enthalten,
+   * geschieht nichts.</p>
+   *
+   * @param column die entfernte Spalte (hier nicht weiter benötigt)
+   * @param view   die abzubauende View
+   */
+  @Override
+  public void columnViewRemoved(Column column, ColumnCellView view) {
+    if (views.remove(view)) {
+      remove(view);
       updatePreferredWidth();
       revalidate();
       repaint();
@@ -90,41 +88,17 @@ public class ColumnPanel extends JPanel {
   }
 
 
-  /** Setzt preferredSize und maximumSize auf die Summe aller Column-Breiten. */
+  /**
+   * Setzt {@code preferredSize}, {@code minimumSize} und {@code maximumSize} auf die
+   * Summe der Breiten aller aktuell enthaltenen Views.
+   *
+   * <p>Die Höhe bleibt dabei flexibel: Sie ist 0 für die bevorzugte und minimale Größe
+   * und {@link Integer#MAX_VALUE} für die maximale Größe.</p>
+   */
   private void updatePreferredWidth() {
-    int totalW = columns.stream().mapToInt(OutlineColumn::getColumnWidth).sum();
+    int totalW = views.stream().mapToInt(ColumnCellView::getColumnWidth).sum();
     setPreferredSize(new Dimension(totalW, 0));
     setMaximumSize(new Dimension(totalW, Integer.MAX_VALUE));
     setMinimumSize(new Dimension(totalW, 0));
-  }
-
-
-  public void syncWithTree(OutlineNode[] nodes, int rowHeight) {
-
-    currentNodes     = nodes;
-    currentRowHeight = rowHeight;
-
-    for (OutlineColumn col : columns) {
-      col.rebuildRows(nodes, rowHeight, 0);
-    }
-
-    revalidate();
-    repaint();
-  }
-
-
-
-  // ── Getter ────────────────────────────────────────────────────────────────
-
-  public boolean hasColumns() {
-    return !columns.isEmpty();
-  }
-
-  public int getColumnCount() {
-    return columns.size();
-  }
-
-  public List<OutlineColumn> getColumns() {
-    return Collections.unmodifiableList(columns);
   }
 }

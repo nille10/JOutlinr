@@ -6,26 +6,44 @@ KI generiert
 
 package view;
 
+import model.LatexExportMode;
+import model.LatexMetadata;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Dialoge für den LaTeX-Export des Outliners.
+ *
+ * <p>Bietet zwei aufeinanderfolgende Dialogschritte: zuerst die Auswahl des
+ * Export-Modus ({@link #askMode(JFrame)}), danach — falls benutzerdefiniert
+ * gewünscht — die Abfrage der Titelseiten-Angaben ({@link #askMetadata(JFrame)}).
+ * Beide Methoden geben bei Abbruch {@code null} bzw. {@link LatexExportMode#CANCELLED}
+ * zurück, statt eine Exception zu werfen.</p>
+ *
+ * <p>MVC-Umbau: {@code Mode} und {@code LatexMetadata} waren ursprünglich
+ * verschachtelte Typen dieser Klasse. Da beide reine Daten ohne Swing-Bezug sind,
+ * stehen sie jetzt als eigenständige Typen in {@code model}
+ * ({@link LatexExportMode}, {@link LatexMetadata}); diese Klasse enthält nur noch
+ * die Swing-Dialog-Logik, die sie befüllt.</p>
+ */
 public class LatexExportDialog {
 
-    public enum Mode { STANDARD, EXPERT, CANCELLED }
-
-    public record LatexMetadata(
-            String fachbereich,
-            String abteilung,
-            String titel,
-            String artDerArbeit,   // z.B. "Bericht", "Projektarbeit"
-            List<String> autoren,
-            String ort,
-            List<String> betreuer
-    ) {}
-
-    public static Mode askMode(JFrame parent) {
+    /**
+     * Fragt den gewünschten Export-Modus ab.
+     *
+     * <p>Zeigt einen Dialog mit den drei Optionen "Standard", "Benutzerdefiniert"
+     * und "Abbrechen". Wird der Dialog anderweitig geschlossen (z. B. über das
+     * Fenster-Schließen-Symbol), liefert {@link JOptionPane#showOptionDialog} einen
+     * Wert außerhalb von {@code 0}/{@code 1}, was hier ebenfalls als
+     * {@link LatexExportMode#CANCELLED} behandelt wird.</p>
+     *
+     * @param parent das Elternfenster, über dem der Dialog angezeigt wird
+     * @return der gewählte {@link LatexExportMode}
+     */
+    public static LatexExportMode askMode(JFrame parent) {
 
         Object[] options = {"Standard", "Benutzerdefiniert", "Abbrechen"};
 
@@ -41,12 +59,26 @@ public class LatexExportDialog {
         );
 
         return switch (choice) {
-            case 0 -> Mode.STANDARD;
-            case 1 -> Mode.EXPERT;
-            default -> Mode.CANCELLED;
+            case 0 -> LatexExportMode.STANDARD;
+            case 1 -> LatexExportMode.EXPERT;
+            default -> LatexExportMode.CANCELLED;
         };
     }
 
+    /**
+     * Fragt die Titelseiten-Angaben für den benutzerdefinierten Export ab.
+     *
+     * <p>Zeigt ein Formular mit Textfeldern für Fachbereich, Abteilung, Titel, Art
+     * der Arbeit und Ort sowie zwei mehrzeiligen Textbereichen für Autoren und
+     * Betreuer (eine Person pro Zeile, leere Zeilen werden über
+     * {@link #parseLines(String)} herausgefiltert). Die Felder sind mit
+     * sinnvollen Vorgaben vorbelegt (Fachbereich "Technik", Abteilung
+     * "Elektrotechnik und Informatik", Art der Arbeit "Bericht", Ort "Emden").</p>
+     *
+     * @param parent das Elternfenster, über dem der Dialog angezeigt wird
+     * @return die eingegebenen {@link LatexMetadata}, oder {@code null}, wenn der
+     *         Dialog nicht mit "OK" bestätigt wurde
+     */
     public static LatexMetadata askMetadata(JFrame parent) {
 
         JTextField fachbereichField = new JTextField("Technik");
@@ -108,6 +140,16 @@ public class LatexExportDialog {
         );
     }
 
+    /**
+     * Zerlegt mehrzeiligen Text in eine Liste nicht-leerer, getrimmter Zeilen.
+     *
+     * <p>Jede Zeile wird getrimmt; leere Zeilen (auch solche, die nur aus
+     * Leerzeichen bestehen) werden verworfen und tauchen nicht in der
+     * zurückgegebenen Liste auf.</p>
+     *
+     * @param text der zu zerlegende Text, Zeilen getrennt durch {@code \n}
+     * @return die Liste der nicht-leeren, getrimmten Zeilen in ihrer ursprünglichen Reihenfolge
+     */
     private static List<String> parseLines(String text) {
         List<String> lines = new ArrayList<>();
         for (String line : text.split("\n")) {

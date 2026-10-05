@@ -3,13 +3,16 @@
 */
 package view;
 
+import controller.columns.ColumnController;
+import model.columns.Column;
+import view.columns.ColumnCellView;
 import view.columns.ColumnHeader;
-import view.columns.OutlineColumn;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Nicht scrollender Header-Bereich des Outliners.
@@ -25,114 +28,105 @@ import java.util.List;
  *
  * updateTreeHeaderWidth() ist nicht mehr nötig und entfällt –
  * BorderLayout CENTER erledigt das automatisch.
+ *
+ * MVC-Umbau: HeaderPanel wird nicht mehr von außen gefüttert
+ * (addColumnHeader/clearColumnHeaders), sondern ist selbst ein
+ * {@link ColumnController.ColumnViewListener}. Es baut und entfernt seine
+ * Spalten-Header direkt als Reaktion auf die Ereignisse des
+ * {@link ColumnController} und ruft bei Entfernen/Umbenennen auch direkt
+ * dessen Methoden auf – ein Umweg über einen externen Callback
+ * (setOnColumnRemove) ist dafür nicht mehr nötig.
  */
-public class HeaderPanel extends JPanel {
+public class HeaderPanel extends JPanel implements ColumnController.ColumnViewListener {
 
 
-  private final ColumnHeader treeHeader;
+    private final ColumnController controller;
 
-  /** Rechts-angedockter Container für alle Spalten-Header (fix-breit). */
-  private final JPanel columnHeaders;
+    private final ColumnHeader treeHeader;
 
-  private record ColumnEntry(ColumnHeader header, OutlineColumn column) {}
-  private final List<ColumnEntry> entries = new ArrayList<>();
+    /** Rechts-angedockter Container für alle Spalten-Header (fix-breit). */
+    private final JPanel columnHeaders;
 
-  private java.util.function.Consumer<OutlineColumn> onColumnRemove;
-
-
-
-  public HeaderPanel() {
-
-    setLayout(new BorderLayout());
-    //setBackground(new Color(235, 235, 240));
+    /** Ordnet jeder Spalte ihren zugehörigen Header zu. */
+    private final Map<Column, ColumnHeader> headers = new LinkedHashMap<>();
 
 
-    // ── Tree-Header (CENTER – nimmt restlichen Platz) ────────────────────
-    treeHeader = new ColumnHeader("Outliner");
-    // preferredSize Breite irrelevant – BorderLayout CENTER dehnt automatisch
-    treeHeader.setPreferredSize(new Dimension(0, ColumnHeader.HEADER_HEIGHT));
-    add(treeHeader, BorderLayout.CENTER);
+    public HeaderPanel(ColumnController controller) {
+        this.controller = controller;
+
+        setLayout(new BorderLayout());
+        //setBackground(new Color(235, 235, 240));
 
 
-    // ── Spalten-Header-Container (EAST – fix-breite Spalten) ─────────────
-    columnHeaders = new JPanel();
-    columnHeaders.setLayout(new BoxLayout(columnHeaders, BoxLayout.X_AXIS));
-    columnHeaders.setOpaque(false);
-    add(columnHeaders, BorderLayout.EAST);
-  }
+        // ── Tree-Header (CENTER – nimmt restlichen Platz) ────────────────────
+        treeHeader = new ColumnHeader("Outliner");
+        // preferredSize Breite irrelevant – BorderLayout CENTER dehnt automatisch
+        treeHeader.setPreferredSize(new Dimension(0, ColumnHeader.HEADER_HEIGHT));
+        add(treeHeader, BorderLayout.CENTER);
 
 
-
-  // ── Callback ─────────────────────────────────────────────────────────────
-
-  public void setOnColumnRemove(java.util.function.Consumer<OutlineColumn> callback) {
-    this.onColumnRemove = callback;
-  }
+        // ── Spalten-Header-Container (EAST – fix-breite Spalten) ─────────────
+        columnHeaders = new JPanel();
+        columnHeaders.setLayout(new BoxLayout(columnHeaders, BoxLayout.X_AXIS));
+        columnHeaders.setOpaque(false);
+        add(columnHeaders, BorderLayout.EAST);
+    }
 
 
 
-  // ── Spalten-Header verwalten ──────────────────────────────────────────────
+    // ── ColumnController.ColumnViewListener ─────────────────────────────────
 
-  /**
-   * Fügt einen neuen Spalten-Header hinzu.
-   *
-   * Der Header bekommt dieselbe feste Breite wie seine OutlineColumn
-   * (column.getColumnWidth()) – dadurch fluchten Header und Zellen exakt.
-   */
-  public ColumnHeader addColumnHeader(String title, OutlineColumn column) {
+    /**
+     * Baut den Header für eine neu hinzugefügte Spalte auf.
+     *
+     * Der Header bekommt dieselbe feste Breite wie die zugehörige
+     * {@link ColumnCellView} (view.getColumnWidth()) – dadurch fluchten Header
+     * und Zellen exakt, genau wie bisher.
+     */
+    @Override
+    public void columnViewAdded(Column column, ColumnCellView view) {
 
-    ColumnHeader header = new ColumnHeader(title);
+        ColumnHeader header = new ColumnHeader(column.getTitle());
 
-    // Breite des Headers = Breite der Column (beide aus demselben computeWidth())
-    int w = column.getColumnWidth();
-    header.setPreferredSize(new Dimension(w, ColumnHeader.HEADER_HEIGHT));
-    header.setMinimumSize(new Dimension(w, ColumnHeader.HEADER_HEIGHT));
-    header.setMaximumSize(new Dimension(w, ColumnHeader.HEADER_HEIGHT));
+        int w = view.getColumnWidth();
+        header.setPreferredSize(new Dimension(w, ColumnHeader.HEADER_HEIGHT));
+        header.setMinimumSize(new Dimension(w, ColumnHeader.HEADER_HEIGHT));
+        header.setMaximumSize(new Dimension(w, ColumnHeader.HEADER_HEIGHT));
 
-    header.setOnRemove(() -> {
-      removeEntry(header, column);
-      if (onColumnRemove != null) {
-        onColumnRemove.accept(column);
-      }
-    });
+        header.setOnRemove(() -> controller.removeColumn(column));
+        header.setOnRename(newTitle -> controller.renameColumn(column, newTitle));
 
-    header.setOnRename(newTitle -> column.setTitle(newTitle));
+        headers.put(column, header);
+        columnHeaders.add(header);
 
-    entries.add(new ColumnEntry(header, column));
-    columnHeaders.add(header);
+        revalidate();
+        repaint();
+    }
 
-    revalidate();
-    repaint();
+    /**
+     * Entfernt den Header einer gelöschten Spalte wieder.
+     */
+    @Override
+    public void columnViewRemoved(Column column, ColumnCellView view) {
 
-    return header;
-  }
-
-
-  private void removeEntry(ColumnHeader header, OutlineColumn column) {
-    entries.removeIf(e -> e.header() == header);
-    columnHeaders.remove(header);
-    revalidate();
-    repaint();
-  }
-
-
-  public void clearColumnHeaders() {
-    entries.clear();
-    columnHeaders.removeAll();
-    revalidate();
-    repaint();
-  }
+        ColumnHeader header = headers.remove(column);
+        if (header != null) {
+            columnHeaders.remove(header);
+            revalidate();
+            repaint();
+        }
+    }
 
 
-  // updateTreeHeaderWidth() entfällt – BorderLayout CENTER erledigt das
+    // updateTreeHeaderWidth() entfällt – BorderLayout CENTER erledigt das
 
 
 
-  // ── Getter ────────────────────────────────────────────────────────────────
+    // ── Getter ────────────────────────────────────────────────────────────────
 
-  public ColumnHeader getTreeHeader() { return treeHeader; }
+    public ColumnHeader getTreeHeader() { return treeHeader; }
 
-  public List<ColumnHeader> getHeaders() {
-    return entries.stream().map(ColumnEntry::header).toList();
-  }
+    public List<ColumnHeader> getHeaders() {
+        return List.copyOf(headers.values());
+    }
 }

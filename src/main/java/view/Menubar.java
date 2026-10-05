@@ -4,15 +4,35 @@ import action.actions.EditActions;
 import action.actions.FileActions;
 import action.actions.OutlineActions;
 import controller.OutlineController;
-import view.columns.ColumnType;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
+/**
+ * Die Menüleiste des Hauptfensters.
+ *
+ * <p>Baut die Menüs "Datei", "Bearbeiten", "Gliederung", "Ansicht",
+ * "Einstellungen" und "Hilfe" auf und verdrahtet jeden Eintrag entweder mit
+ * einer vorgefertigten {@link Action} aus {@link FileActions},
+ * {@link OutlineActions} bzw. {@link EditActions}, oder — für Einträge ohne
+ * eigene Action-Klasse ("Spalte hinzufügen", "Einstellungen…", "Über…") —
+ * direkt mit einem Lambda, das den passenden Controller bzw. Dialog aufruft.
+ * Hält selbst keinen Zustand.</p>
+ */
 public class Menubar extends JMenuBar {
 
+    /**
+     * Baut die komplette Menüleiste auf.
+     *
+     * @param fileActions       vorgefertigte Actions für das Datei-Menü
+     * @param outlineActions    vorgefertigte Actions für das Gliederung- und Ansicht-Menü
+     * @param editActions       vorgefertigte Actions für das Bearbeiten-Menü
+     * @param mainJFrame        das Hauptfenster, über dem Dialoge (Einstellungen, Über) angezeigt werden
+     * @param outlinePanel      das Outline-Panel (aktuell nur zur Signatur gehörend, im Rumpf nicht verwendet)
+     * @param outlineController der Controller, der z. B. für "Spalte hinzufügen" und die Einstellungen angesprochen wird
+     */
     public Menubar(FileActions fileActions, OutlineActions outlineActions, EditActions editActions, JFrame mainJFrame, OutlinePanel outlinePanel, OutlineController outlineController) {
         // Datei-Menü
         JMenu datei = new JMenu("Datei");
@@ -52,10 +72,10 @@ public class Menubar extends JMenuBar {
         bearbeiten.addSeparator();
 
         JMenuItem addColumnItem =
-            new JMenuItem("Spalte hinzufügen");
+                new JMenuItem("Spalte hinzufügen");
 
         addColumnItem.setAccelerator(
-            KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.SHIFT_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
+                KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.SHIFT_DOWN_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx())
         );
 
 
@@ -122,10 +142,10 @@ public class Menubar extends JMenuBar {
         //Settings
         JMenuItem einstellungenItem = new JMenuItem("Einstellungen…");
         einstellungenItem.setAccelerator(
-            KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
-                Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
+                KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
+                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         einstellungenItem.addActionListener(e ->
-            new SettingsWindow(mainJFrame, outlineController).setVisible(true));
+                new SettingsWindow(mainJFrame, outlineController).setVisible(true));
 
         JMenu einstellungen = new JMenu("Einstellungen");
         einstellungen.add(einstellungenItem);
@@ -138,6 +158,18 @@ public class Menubar extends JMenuBar {
         this.add(hilfe);
     }
 
+    /**
+     * Erstellt einen Menüeintrag mit eigenem Text, optionalem Tastaturkürzel und
+     * einem direkt übergebenen {@link ActionListener}.
+     *
+     * <p>Für Einträge gedacht, die keine eigene {@link Action}-Klasse haben
+     * (z. B. "Über…").</p>
+     *
+     * @param text Beschriftung des Menüeintrags
+     * @param ks   Tastaturkürzel, oder {@code null} für keines
+     * @param al   der auszuführende Listener
+     * @return der fertig konfigurierte Menüeintrag
+     */
     private JMenuItem menuItem(String text, KeyStroke ks, ActionListener al) {
         JMenuItem item = new JMenuItem(text);
         if (ks != null) item.setAccelerator(ks);
@@ -145,11 +177,25 @@ public class Menubar extends JMenuBar {
         return item;
     }
 
+    /**
+     * Erstellt einen Menüeintrag aus einer vorgefertigten {@link Action}.
+     *
+     * <p>Übernimmt Beschriftung, Tastaturkürzel und Enabled-Status automatisch
+     * von der {@link Action}.</p>
+     *
+     * @param action die Action, aus der der Menüeintrag erzeugt wird
+     * @return der fertig konfigurierte Menüeintrag
+     */
     private JMenuItem menuItem(Action action) {
         return new JMenuItem(action);
     }
 
     // TODO:  die Methode muss hier noch raus
+    /**
+     * Zeigt einen einfachen "Über…"-Dialog mit Programmname und verwendeten Klassen.
+     *
+     * @param mainJFrame das Elternfenster, über dem der Dialog angezeigt wird
+     */
     private void showAbout(JFrame mainJFrame) {
         JOptionPane.showMessageDialog(mainJFrame,
                 "Outliner v1.0\nErstellt mit Java Swing\n\nKlasse: MainWindow + OutlinePanel + TextWindow",
