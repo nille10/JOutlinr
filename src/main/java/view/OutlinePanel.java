@@ -316,9 +316,16 @@ public class OutlinePanel extends JPanel {
 
             @Override
             public void treeNodesRemoved(TreeModelEvent e) {
-                // Werte gelöschter Knoten aus allen Spalten entfernen, damit
-                // die Werte-Map jeder Column nicht mit toten Knoten wächst
-                columnController.handleNodesRemoved(e.getChildren());
+                // Bugfix: Das Aufräumen der Spaltenwerte passiert hier bewusst
+                // NICHT mehr. treeNodesRemoved feuert bei jedem Entfernen aus
+                // dem TreeModel - auch beim Verschieben per Drag-and-Drop
+                // (OutlineTransferHandler entfernt den Knoten und hängt ihn
+                // sofort an neuer Stelle wieder ein). Ein Aufräumen hier hätte
+                // die Spaltenwerte eines verschobenen Knotens gelöscht, bevor
+                // er wieder eingehängt wird, obwohl es sich um denselben
+                // Knoten handelt. Das Aufräumen passiert jetzt gezielt dort,
+                // wo ein Knoten tatsächlich endgültig verschwindet: siehe
+                // OutlineController#deleteNode und OutlineController#deleteNodes.
                 scheduleSyncColumns();
             }
 
