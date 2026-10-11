@@ -72,8 +72,7 @@ public class LatexExportDialog {
      * der Arbeit und Ort sowie zwei mehrzeiligen Textbereichen für Autoren und
      * Betreuer (eine Person pro Zeile, leere Zeilen werden über
      * {@link #parseLines(String)} herausgefiltert). Die Felder sind mit
-     * sinnvollen Vorgaben vorbelegt (Fachbereich "Technik", Abteilung
-     * "Elektrotechnik und Informatik", Art der Arbeit "Bericht", Ort "Emden").</p>
+     * sinnvollen Vorgaben vorbelegt</p>
      *
      * @param parent das Elternfenster, über dem der Dialog angezeigt wird
      * @return die eingegebenen {@link LatexMetadata}, oder {@code null}, wenn der
@@ -86,7 +85,7 @@ public class LatexExportDialog {
         JTextField titelField = new JTextField();
         JTextField artField = new JTextField("Bericht");
         JTextArea autorenArea = new JTextArea(4, 20);
-        JTextField ortField = new JTextField("Emden");
+        JTextField ortField = new JTextField("Deine Stadt");
         JTextArea betreuerArea = new JTextArea(3, 20);
 
         JPanel formPanel = new JPanel(new GridLayout(0, 2, 6, 6));
