@@ -61,7 +61,12 @@ public class OutlineController {
     }
 
     /**
-     *
+     * Registriert die Listener für Auswahländerungen im Baum (lädt den
+     * ausgewählten Knoten ins {@link TextWindow} und benachrichtigt
+     * {@link #updateListeners}) sowie für Baum-Änderungen (Knoten umbenannt,
+     * eingefügt, entfernt, Struktur geändert), die jeweils {@link #markDirty()}
+     * auslösen. Beim Umbenennen wird zusätzlich der Titel des geänderten
+     * Knotens aus dem {@code userObject} übernommen und der Baum neu gezeichnet.
      */
     private void registerListeners() {
 
@@ -138,8 +143,11 @@ public class OutlineController {
     }
 
     /**
+     * Registriert einen Listener, der bei jeder Statusänderung (z. B.
+     * Baum-Auswahl) benachrichtigt wird.
      *
-     * @param listener
+     * @param listener der zu registrierende Listener; wird sofort einmal
+     *                  aufgerufen, um den aktuellen Zustand zu übernehmen
      */
     public void addUpdateListener(Runnable listener) {
         updateListeners.add(listener);
@@ -267,6 +275,9 @@ public class OutlineController {
     /**
      * Ermittelt die tiefste Verschachtelungsebene innerhalb eines Teilbaums
      * (inklusive des Knotens selbst).
+     *
+     * @param node der Wurzelknoten des zu durchsuchenden Teilbaums
+     * @return die tiefste gefundene Ebene innerhalb des Teilbaums
      */
     // KI generiert
     private int getMaxLevelInSubtree(OutlineNode node) {
@@ -310,6 +321,9 @@ public class OutlineController {
     /**
      * Ermittelt die relative Tiefe eines (noch nicht eingehängten) Teilbaums,
      * unabhängig von seinem aktuellen Level im Baum (der bei einer Kopie z.B. 0 sein kann).
+     *
+     * @param node der Wurzelknoten des zu vermessenden Teilbaums
+     * @return die relative Tiefe (0, wenn der Knoten keine Kinder hat)
      */
     // Ki generiert
     public int getRelativeDepth(OutlineNode node) {
@@ -451,8 +465,14 @@ public class OutlineController {
     }
 
     /**
+     * Startet die Inline-Bearbeitung des angegebenen Knotens im Baum.
      *
-     * @param node
+     * <p>Eine eventuell laufende Bearbeitung wird zuerst abgebrochen (verworfen,
+     * siehe {@link #cancelActiveEditing()}). Der Knoten wird ausgewählt und die
+     * Bearbeitung über {@link SwingUtilities#invokeLater(Runnable)} gestartet,
+     * damit die Auswahl zuvor vollständig verarbeitet ist.</p>
+     *
+     * @param node der zu bearbeitende Knoten
      */
     public void startEditing(OutlineNode node) {
 
@@ -489,7 +509,58 @@ public class OutlineController {
     }
 
     /**
+     * Sammelt einen Knoten und alle seine Nachkommen (Kinder, Enkel, usw.) in
+     * eine flache Liste ein.
+     *
+     * <p>Wird beim Löschen verwendet, damit beim Entfernen eines Teilbaums
+     * nicht nur der Wurzelknoten des Teilbaums, sondern auch alle
+     * Nachkommen beim Aufräumen der Spaltenwerte berücksichtigt werden (siehe
+     * {@link #deleteNode(OutlineNode)}, {@link #deleteNodes(List)}). Ohne das
+     * blieben Spaltenwerte von Enkelknoten nach dem Löschen eines größeren
+     * Teilbaums als tote Einträge in den Spalten-Werte-Maps zurück.</p>
+     *
+     * @param node der Wurzelknoten des einzusammelnden Teilbaums
+     * @return eine neue Liste mit {@code node} selbst und all seinen Nachkommen,
+     *         in Vorordnung (Knoten vor seinen Kindern)
+     */
+    private List<OutlineNode> collectSubtree(OutlineNode node) {
+        List<OutlineNode> nodes = new ArrayList<>();
+        collectSubtree(node, nodes);
+        return nodes;
+    }
+
+    /**
+     * Rekursiver Helfer für {@link #collectSubtree(OutlineNode)}: fügt
+     * {@code node} und alle seine Nachkommen in {@code collector} ein.
+     *
+     * @param node      der aktuell zu verarbeitende Knoten
+     * @param collector die Liste, in die eingesammelt wird
+     */
+    private void collectSubtree(OutlineNode node, List<OutlineNode> collector) {
+        collector.add(node);
+        for (int i = 0; i < node.getChildCount(); i++) {
+            collectSubtree((OutlineNode) node.getChildAt(i), collector);
+        }
+    }
+
+    /**
      * Entfernt einen Knoten aus dem Outliner und ruft {@link #markDirty()} auf um einen ungespeicherten Zustand zu markieren.
+     *
+     * <p>Bugfix-Historie: Räumt die Spaltenwerte des Knotens hier bewusst
+     * <strong>nicht</strong> auf. Diese Methode wird u. a. von
+     * {@code DeleteEntryCommand} aufgerufen, dessen Löschen über
+     * {@link action.manager.UndoManager} jederzeit rückgängig gemacht werden
+     * kann ({@code undo()} fügt denselben {@link OutlineNode} unverändert
+     * wieder ein). Ein sofortiges Aufräumen hier würde die Spaltenwerte schon
+     * beim Löschen entfernen, bevor feststeht, ob der Knoten per Undo
+     * zurückkommt — nach einem Undo wären die Werte dann unwiederbringlich
+     * weg, obwohl der Knoten selbst wiederhergestellt wurde. Echtes,
+     * endgültiges Löschen von Spaltenwerten für nie wiederhergestellte Knoten
+     * ist aktuell nicht implementiert (möglicher künftiger Ansatz: Aufräumen
+     * erst dann, wenn eine {@code DeleteEntryCommand} endgültig vom
+     * Undo/Redo-Stack verschwindet, siehe {@link #collectSubtree(OutlineNode)}
+     * für das dafür nötige Einsammeln ganzer Teilbäume).</p>
+     *
      * @param node Knoten der entfernt werden soll
      */
     public void deleteNode(OutlineNode node) {
@@ -505,6 +576,12 @@ public class OutlineController {
 
     /**
      * Entfernt mehrere Knoten aus dem Outliner und ruft {@link #markDirty()} auf um einen ungespeicherten Zustand zu markieren.
+     *
+     * <p>Räumt die Spaltenwerte der entfernten Knoten bewusst <strong>nicht</strong>
+     * auf — siehe {@link #deleteNode(OutlineNode)} für die ausführliche
+     * Begründung (Löschen über diese Methode ist über
+     * {@code DeleteEntryCommand} per Undo jederzeit rückgängig machbar).</p>
+     *
      * @param nodesToDelete Knoten die aus dem Outliner entfernt werden sollen.
      */
     public void deleteNodes(java.util.List<OutlineNode> nodesToDelete) {
