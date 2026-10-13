@@ -31,14 +31,14 @@ JOutlinr basiert auf Java und läuft unter **Windows, Linux und macOS**.
 
 ### Windows: direkt starten
 
-Für Windows gibt es zusätzlich eine `.exe` mit mitgelieferter Java-Laufzeitumgebung (JRE) – damit lässt sich JOutlinr starten, ohne Java separat installieren zu müssen.
+Für Windows gibt es zusätzlich eine `.exe` mit mitgelieferter Java-Laufzeitumgebung (JRE) – damit lässt sich JOutlinr starten, ohne Java separat installieren zu müssen. Dafür die .zip unter Releases entpacken.
 
 ### Alle Plattformen: JAR-Datei ausführen
 
 Mit installierter Java-Laufzeitumgebung lässt sich die JAR-Datei direkt starten:
 
 ```bash
-java -jar JOutlinr-1.0-SNAPSHOT.jar
+java -jar JOutlinr-1.0.0.jar
 ```
 
 Der genaue Dateiname hängt vom jeweiligen Build ab.
