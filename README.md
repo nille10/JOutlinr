@@ -2,66 +2,60 @@
 
 ![JOutlinr Logo](src/main/resources/images/joutliner_logo.png)
 
-**JOutlinr** ist eine schlanke, desktopbasierte Outliner-Anwendung, mit der sich Ideen, Notizen und Gliederungen hierarchisch strukturieren lassen. Die Anwendung eignet sich insbesondere zur Planung und Organisation von Texten und Dokumenten, beispielsweise für wissenschaftliche Arbeiten in LaTeX.
+**JOutlinr** ist eine schlanke, desktopbasierte Outliner-Anwendung, mit der sich Ideen, Notizen und Gliederungen hierarchisch strukturieren lassen. Sie eignet sich besonders zur Planung und Organisation von Texten und Dokumenten, etwa für wissenschaftliche Arbeiten in LaTeX.
 
-Das Projekt befindet sich derzeit in der **Beta-Phase** und wird aktiv weiterentwickelt.
+Das Projekt befindet sich aktuell in der **Beta-Phase** und wird aktiv weiterentwickelt.
 
 **Repository:** [github.com/nille10/JOutlinr](https://github.com/nille10/JOutlinr)
 
 ![JOutlinr – Programmübersicht](src/main/resources/images/screenshot_overview.png)
 
-## ✨ Funktionen
+## Funktionen
 
-- **Hierarchische Gliederungen:** Inhalte in einer übersichtlichen Baumstruktur mit bis zu drei Gliederungsebenen organisieren.
+- **Hierarchische Gliederungen** in einer Baumstruktur mit bis zu drei Ebenen.
 - **Flexible Bearbeitung:** Einträge erstellen, umbenennen, löschen und innerhalb der Gliederung verschieben.
-- **Drag-and-drop:** Einträge und ganze Teilbäume intuitiv an eine andere Position verschieben.
-- **Mehrfachauswahl:** Mehrere Einträge per Strg-Klick auswählen und gemeinsam bearbeiten.
-- **Einträge ein- und ausklappen:** Auch umfangreiche Gliederungen übersichtlich halten.
-- **Eigene Spalten:** Zusätzliche Spalten mit Kontrollkästchen oder Textfeldern für individuelle Informationen verwenden.
-- **Speichern und Laden:** Gliederungen im XML- oder JSON-Format speichern und wieder öffnen.
-- **Automatische Wiederherstellung:** Das zuletzt verwendete Dokument wird beim nächsten Start wiederhergestellt.
-- **Rückgängig und Wiederholen:** Unterstützte Änderungen an der Struktur lassen sich rückgängig machen und wiederherstellen.
-- **LaTeX-Export:** Gliederungen in LaTeX-Code umwandeln – mit Standardmodus und Expertenmodus für zusätzliche Einstellungen, etwa zur Titelseite und Dokumentmetadaten.
-- **Anpassbare Oberfläche:** Helles oder dunkles Design sowie verschiedene Akzentfarben auswählen.
-- **Tastenkürzel:** Wichtige Aktionen direkt über die Tastatur ausführen.
+- **Drag-and-drop:** Einträge und ganze Teilbäume per Maus an eine andere Position verschieben.
+- **Mehrfachauswahl:** mehrere Einträge per Strg-Klick auswählen und gemeinsam bearbeiten.
+- **Ein- und ausklappbare Einträge**, damit auch umfangreiche Gliederungen übersichtlich bleiben.
+- **Eigene Spalten** mit Kontrollkästchen oder Textfeldern für zusätzliche Informationen pro Eintrag.
+- **Speichern und Laden** von Gliederungen im XML- und JSON-Format.
+- **Automatische Wiederherstellung** des zuletzt verwendeten Dokuments beim nächsten Start.
+- **Rückgängig/Wiederholen** für Änderungen an der Struktur.
+- **LaTeX-Export** mit Standardmodus für den schnellen Export und Expertenmodus für zusätzliche Einstellungen (z. B. Titelseite, Dokumentmetadaten).
+- **Anpassbare Oberfläche:** helles oder dunkles Design sowie verschiedene Akzentfarben.
+- **Tastenkürzel** für die wichtigsten Aktionen.
 
-## 🖥️ Plattformen und Startmöglichkeiten
+## Plattformen und Start
 
-JOutlinr basiert auf Java und kann daher auf **Windows, Linux und macOS** ausgeführt werden.
+JOutlinr basiert auf Java und läuft unter **Windows, Linux und macOS**.
 
-Es gibt mehrere Möglichkeiten, die Anwendung zu starten:
+### Windows: direkt starten
 
-### Windows: Direkt starten
-
-Für Windows ist zusätzlich eine ausführbare `.exe` mit einer mitgelieferten Java-Laufzeitumgebung (JRE) vorgesehen. Damit lässt sich JOutlinr direkt starten, ohne Java separat installieren zu müssen.
+Für Windows gibt es zusätzlich eine `.exe` mit mitgelieferter Java-Laufzeitumgebung (JRE) – damit lässt sich JOutlinr starten, ohne Java separat installieren zu müssen.
 
 ### Alle Plattformen: JAR-Datei ausführen
 
-Alternativ kann die JAR-Datei mit einer geeigneten Java-Laufzeitumgebung gestartet werden. Dafür muss Java installiert sein.
-
-Beispiel:
+Mit installierter Java-Laufzeitumgebung lässt sich die JAR-Datei direkt starten:
 
 ```bash
 java -jar JOutlinr-1.0-SNAPSHOT.jar
 ```
 
-Der Dateiname hängt vom jeweiligen Build ab.
+Der genaue Dateiname hängt vom jeweiligen Build ab.
 
 ### Selbst kompilieren
 
-Wer lieber den Quellcode verwenden oder das Projekt selbst bauen möchte, kann das Repository klonen und JOutlinr mit Maven kompilieren. Diese Möglichkeit steht unabhängig vom Betriebssystem zur Verfügung.
+Alternativ lässt sich das Repository klonen und JOutlinr mit Maven selbst bauen (siehe unten) – unabhängig vom Betriebssystem.
 
-## 🛠️ Voraussetzungen
-
-Für den eigenständigen Build werden benötigt:
+## Voraussetzungen für den Build
 
 - **JDK 21 oder neuer**
 - **Apache Maven**
 - Git (optional, zum Klonen des Repositorys)
 
-Die Java-Version des Builds ist in der Maven-Konfiguration festgelegt. Für die Ausführung einer fertigen JAR-Datei wird eine dazu kompatible Java-Laufzeitumgebung benötigt.
+Die benötigte Java-Version ist in der Maven-Konfiguration festgelegt. Für die fertige JAR-Datei genügt eine dazu kompatible Java-Laufzeitumgebung.
 
-## 🔧 Selbst bauen
+## Selbst bauen
 
 ### 1. Repository klonen
 
@@ -80,51 +74,34 @@ Maven lädt die benötigten Abhängigkeiten herunter und erstellt das Anwendungs
 
 ### 3. Anwendung starten
 
-Führe die erzeugte JAR-Datei mit Java aus. Je nach Projektkonfiguration und Build-Version kann der genaue Dateiname abweichen.
-
 ```bash
 java -jar target/JOutlinr-1.0-SNAPSHOT.jar
 ```
 
-Alternativ kann das Projekt in einer Java-IDE wie Eclipse oder IntelliJ IDEA importiert und von dort gestartet werden.
+Der genaue Dateiname kann je nach Build-Version abweichen. Alternativ lässt sich das Projekt auch direkt in einer Java-IDE wie Eclipse oder IntelliJ IDEA importieren und starten.
 
-## 📄 LaTeX-Export
+## LaTeX-Export
 
-JOutlinr unterstützt den Export strukturierter Gliederungen nach LaTeX. So können Einträge aus der Planung in die eigentliche Dokumentstruktur übernommen werden.
+JOutlinr unterstützt den Export von Gliederungen nach LaTeX, sodass sich Einträge aus der Planung direkt in die Dokumentstruktur übernehmen lassen. Es stehen zwei Modi zur Verfügung:
 
-Dabei stehen zwei Modi zur Verfügung:
+- **Standardmodus** für einen unkomplizierten Export.
+- **Expertenmodus** mit zusätzlichen Einstellungen, unter anderem zu Titelseite und Dokumentmetadaten.
 
-- **Standardmodus:** Für einen unkomplizierten Export der Gliederung.
-- **Expertenmodus:** Für zusätzliche Konfigurationsmöglichkeiten, unter anderem im Zusammenhang mit Titelseite und Dokumentmetadaten.
+## Projektstatus & Mitwirkung
 
-Der Export soll den Übergang von der Planung zur Ausarbeitung erleichtern und wiederkehrende Strukturarbeit reduzieren.
+JOutlinr befindet sich in der **Beta-Phase**. Die zentralen Funktionen – Gliederungsverwaltung, Speichern/Laden und LaTeX-Export – sind vorhanden, Bedienung und Funktionsumfang können sich im Laufe der Entwicklung aber noch ändern.
 
-## 🚧 Projektstatus
+Fehlerberichte, Verbesserungsvorschläge und Feedback sind willkommen – am liebsten über die [Issues im GitHub-Repository](https://github.com/nille10/JOutlinr/issues).
 
-JOutlinr befindet sich aktuell in der **Beta-Phase**. Die zentralen Funktionen zur Gliederungsverwaltung, Speicherung und zum LaTeX-Export sind vorhanden; dennoch können sich Bedienung und Funktionsumfang im Laufe der Weiterentwicklung ändern.
-
-Fehlerberichte, Verbesserungsvorschläge und konstruktives Feedback sind willkommen. Bitte nutze dafür die [Issues im GitHub-Repository](https://github.com/nille10/JOutlinr/issues).
-
-## 🧰 Verwendete Technologien
+## Verwendete Technologien
 
 - **Java / Java Swing** – plattformübergreifende Desktop-Anwendung
 - **FlatLaf** – modernes Erscheinungsbild für Swing
 - **Apache Maven** – Build- und Abhängigkeitsverwaltung
 - **MVC-Architektur** – Trennung von Modell, Oberfläche und Steuerungslogik
-- **XML und JSON** – Dateiformate für die Speicherung
-- **Maven Shade Plugin** – Erstellung eines gebündelten Anwendungspakets
+- **XML und JSON** – Dateiformat für die Speicherung
+- **Maven Shade Plugin** – Erstellung des gebündelten Anwendungspakets
 
-## 📜 Lizenz
+## Lizenz
 
-JOutlinr wird unter der **MIT-Lizenz** veröffentlicht. Die genauen Lizenzbedingungen findest du in der Datei [`LICENSE`](LICENSE) im Repository.
-
-## 👥 Mitwirkung
-
-JOutlinr ist ein Open-Source-Projekt. Rückmeldungen, Fehlermeldungen und Ideen zur Verbesserung sind willkommen.
-
-- Repository: [https://github.com/nille10/JOutlinr](https://github.com/nille10/JOutlinr)
-- Issues und Fehlermeldungen: [GitHub Issues](https://github.com/nille10/JOutlinr/issues)
-
----
-
-*JOutlinr – Gliederungen erstellen, Gedanken ordnen und den Weg zum fertigen Dokument vereinfachen.*
+JOutlinr steht unter der **MIT-Lizenz**. Die genauen Bedingungen stehen in der Datei [`LICENSE`](LICENSE) im Repository.
