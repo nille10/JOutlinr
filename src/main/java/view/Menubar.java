@@ -198,7 +198,7 @@ public class Menubar extends JMenuBar {
     private void showAbout(JFrame mainJFrame) {
         try {
             URI manualUri = new URI(
-                    "https://github.com/nille10/JOutlinr/blob/main/Ideen.md"
+                    "https://github.com/nille10/JOutlinr/blob/main/JOutlinr_Manual.md"
             );
 
             if (Desktop.isDesktopSupported()
@@ -219,7 +219,7 @@ public class Menubar extends JMenuBar {
                     mainJFrame,
                     "Das Handbuch konnte nicht im Browser geöffnet werden.\n"
                             + "Öffne diesen Link manuell:\n"
-                            + "https://github.com/nille10/JOutlinr/blob/main/Ideen.md",
+                            + "https://github.com/nille10/JOutlinr/blob/main/JOutlinr_Manual.md",
                     "Über JOutlinr",
                     JOptionPane.INFORMATION_MESSAGE
             );
