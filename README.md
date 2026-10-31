@@ -75,7 +75,7 @@ Maven lädt die benötigten Abhängigkeiten herunter und erstellt das Anwendungs
 ### 3. Anwendung starten
 
 ```bash
-java -jar target/JOutlinr-1.0-SNAPSHOT.jar
+java -jar target/JOutlinr-1.0.0.jar
 ```
 
 Der genaue Dateiname kann je nach Build-Version abweichen. Alternativ lässt sich das Projekt auch direkt in einer Java-IDE wie Eclipse oder IntelliJ IDEA importieren und starten.
