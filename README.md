@@ -38,7 +38,7 @@ Für Windows gibt es zusätzlich eine `.exe` mit mitgelieferter Java-Laufzeitumg
 Mit installierter Java-Laufzeitumgebung lässt sich die JAR-Datei direkt starten:
 
 ```bash
-java -jar JOutlinr-1.0.0.jar
+java -jar JOutlinr-1.1.0.jar
 ```
 
 Der genaue Dateiname hängt vom jeweiligen Build ab.
@@ -75,7 +75,7 @@ Maven lädt die benötigten Abhängigkeiten herunter und erstellt das Anwendungs
 ### 3. Anwendung starten
 
 ```bash
-java -jar target/JOutlinr-1.0.0.jar
+java -jar target/JOutlinr-1.1.0.jar
 ```
 
 Der genaue Dateiname kann je nach Build-Version abweichen. Alternativ lässt sich das Projekt auch direkt in einer Java-IDE wie Eclipse oder IntelliJ IDEA importieren und starten.
