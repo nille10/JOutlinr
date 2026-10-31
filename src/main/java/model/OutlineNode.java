@@ -6,7 +6,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
  * Eine {@code OutlineNode} repräsentiert einen Knoten in der Outliner-Baumstruktur.
  *
  * <p>
- *  Die klasse erweitert {@link DefaultMutableTreeNode} um Eigenschaften wie Titel und Inhalt speichern zu können.
+ *  Die Klasse erweitert {@link DefaultMutableTreeNode} um Eigenschaften wie Titel und Inhalt speichern zu können.
  *  Änderungen an der {@code OutlineNode} werden automatisch synchronisiert.
  * </p>
  */
