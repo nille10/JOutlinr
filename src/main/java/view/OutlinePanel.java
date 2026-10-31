@@ -141,7 +141,7 @@ public class OutlinePanel extends JPanel {
         ((javax.swing.plaf.basic.BasicTreeUI) tree.getUI()).setLeftChildIndent(8);
         ((javax.swing.plaf.basic.BasicTreeUI) tree.getUI()).setRightChildIndent(12);
 
-        tree.setBorder(new EmptyBorder(4, 4, 4, 4));
+        tree.setBorder(new EmptyBorder(0, 4, 0, 4));
         //Nur wenn Looks und Feel aus ist
         tree.putClientProperty("JTree.lineStyle", "None");
 
