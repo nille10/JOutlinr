@@ -3,6 +3,7 @@ package controller;
 import model.OutlineNode;
 import model.columns.Column;
 import model.columns.ColumnType;
+import view.MainWindow;
 import view.TextWindow;
 import view.OutlinePanel;
 import view.columns.ColumnHeader;
@@ -29,6 +30,7 @@ public class OutlineController {
     private final DefaultTreeModel treeModel;
     private final OutlineNode rootNode;
     private final JFrame mainWindow;
+    private final MainWindow mainFrame;
     private boolean dirty;
 
     private boolean isSelected = true;
@@ -43,9 +45,9 @@ public class OutlineController {
      * Erstellt einen neuen {@code OutlineController}
      * @param outlinePanel Das Panel in dem die Nodes dargestellt werden
      * @param textWindow Das TextWindow der Nodes
-     * @param mainWindow Das Main window um neue Fenster an der richtigen position anzuzeigen
+     * @param mainFrame Die Klasse MainWindow
      */
-    public OutlineController(OutlinePanel outlinePanel, TextWindow textWindow, JFrame mainWindow) {
+    public OutlineController(OutlinePanel outlinePanel, TextWindow textWindow, MainWindow mainFrame) {
 
         this.textWindow = textWindow;
         this.outlinePanel = outlinePanel;
@@ -53,7 +55,8 @@ public class OutlineController {
         this.tree = outlinePanel.getTree();
         this.treeModel = outlinePanel.getTreeModel();
         this.rootNode = outlinePanel.getRootNode();
-        this.mainWindow = mainWindow;
+        this.mainFrame = mainFrame;
+        this.mainWindow = mainFrame.getJFrame();
 
         //createExampleData();
         registerListeners();
@@ -662,6 +665,15 @@ public class OutlineController {
      */
     private void updateTitle() {
         mainWindow.setTitle((dirty ? "* " : "") + "JOutlinr");
+    }
+
+    /**
+     * Schreibt eine Nachricht in die Status Leiste.
+     *
+     * @param message die zu schreibende Nachricht
+     */
+    public void writeStatusBar(String message){
+        mainFrame.getStatusBar().setText(message);
     }
 
     /**
