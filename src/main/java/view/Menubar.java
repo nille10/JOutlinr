@@ -9,7 +9,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-
+import java.awt.Desktop;
+import java.net.URI;
 /**
  * Die Menüleiste des Hauptfensters.
  *
@@ -151,9 +152,8 @@ public class Menubar extends JMenuBar {
         einstellungen.add(einstellungenItem);
         this.add(einstellungen);
 
-        // Hilfe-Menü TODO: muss noch gemacht werden
         JMenu hilfe = new JMenu("Hilfe");
-        JMenuItem about = menuItem("Über…", null, e -> showAbout(mainJFrame));
+        JMenuItem about = menuItem("Benutzerhandbuch", null, e -> showAbout(mainJFrame));
         hilfe.add(about);
         this.add(hilfe);
     }
@@ -190,15 +190,39 @@ public class Menubar extends JMenuBar {
         return new JMenuItem(action);
     }
 
-    // TODO:  die Methode muss hier noch raus
     /**
-     * Zeigt einen einfachen "Über…"-Dialog mit Programmname und verwendeten Klassen.
+     * Öffnet das User Manual im Browser.
      *
      * @param mainJFrame das Elternfenster, über dem der Dialog angezeigt wird
      */
     private void showAbout(JFrame mainJFrame) {
-        JOptionPane.showMessageDialog(mainJFrame,
-                "Outliner v1.0\nErstellt mit Java Swing\n\nKlasse: MainWindow + OutlinePanel + TextWindow",
-                "Über Outliner", JOptionPane.INFORMATION_MESSAGE);
+        try {
+            URI manualUri = new URI(
+                    "https://github.com/nille10/JOutlinr/blob/main/Ideen.md"
+            );
+
+            if (Desktop.isDesktopSupported()
+                    && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(manualUri);
+            } else {
+                JOptionPane.showMessageDialog(
+                        mainJFrame,
+                        "Der Browser kann nicht automatisch geöffnet werden.\n"
+                                + "Du findest das Handbuch hier:\n"
+                                + manualUri,
+                        "Über JOutlinr",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(
+                    mainJFrame,
+                    "Das Handbuch konnte nicht im Browser geöffnet werden.\n"
+                            + "Öffne diesen Link manuell:\n"
+                            + "https://github.com/nille10/JOutlinr/blob/main/Ideen.md",
+                    "Über JOutlinr",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+        }
     }
 }

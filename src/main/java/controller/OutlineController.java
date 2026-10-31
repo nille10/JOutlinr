@@ -119,27 +119,18 @@ public class OutlineController {
     }
 
     /**
-     * Überprüft, ob eine weitere Outlinenode hinzugefügt werden kann, ohne die maximale tiefe {@link #MAX_LEVEL} des Baums zu überschreiten.
-     * @param parent die Parent node der node die hinzugefügt werden soll
-     * @return {@code true} wenn die neue Node das maximale Level nicht überschreitet, ansonsten
-     *         {@code false}
-     */
-    public boolean canAddChildTo(OutlineNode parent) {
-        if (parent == null) {
-            return true;
-        }
-        return parent.getLevel() < MAX_LEVEL;
-    }
-
-    /**
-     * Überprüft, ob eine weitere Outline Node unter der ausgewählten Node hinzugefügt werden kann (siehe {@link #canAddChildTo(OutlineNode)}).
-     * @return {@code true} wenn die neue Node das maximale Level nicht überschreitet, ansonsten
-     *         {@code false}
+     * Überprüft, ob unter der ausgewählten Outline Node eine weitere Node
+     * hinzugefügt werden kann, ohne das maximale Level zu überschreiten.
+     * Ist keine Node ausgewählt, wird die Root Node als übergeordnete Node verwendet.
+     *
+     * @return {@code true}, wenn eine weitere Node hinzugefügt werden kann,
+     *         andernfalls {@code false}
      */
     public boolean canAddChildToSelected() {
         OutlineNode selected = getSelectedNode();
         OutlineNode parent = selected != null ? selected : rootNode;
-        return canAddChildTo(parent);
+
+        return parent == null || parent.getLevel() < MAX_LEVEL;
     }
 
     /**
@@ -836,19 +827,6 @@ public class OutlineController {
      */
     public JTree getTree(){
         return this.tree;
-    }
-
-    /**
-     * Setzt das allgemeine Auswahl-Flag ({@link #isSelected}).
-     *
-     * <p>Name und Zweck des Flags sind aus dem Code allein nicht eindeutig
-     * erkennbar; die Dokumentation beschränkt sich daher auf das, was sich aus
-     * Feldname und Typ ableiten lässt.</p>
-     *
-     * @param isSelected der neue Wert des Flags
-     */
-    public void setBoolean(boolean isSelected){
-        this.isSelected = isSelected;
     }
 
     /**

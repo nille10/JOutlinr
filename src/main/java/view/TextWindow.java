@@ -100,7 +100,7 @@ public class TextWindow extends JPanel {
       textArea.setEnabled(true);
       textArea.setText(node.getContent());
       textArea.setCaretPosition(0);
-      nodeLabel.setText("✏  " + node.getTitle());
+      nodeLabel.setText(node.getTitle());
     }
   }
 
