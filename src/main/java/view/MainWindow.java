@@ -60,6 +60,9 @@ public class MainWindow extends JFrame {
     /** Der Basis-Fenstertitel ohne Dirty-Markierung. */
     private static final String BASE_TITLE = "JOutlinr";
 
+    /** Der globale Undo-Manager. */
+    private final UndoManager undoManager;
+
 
     /**
      * Baut das Hauptfenster komplett auf.
@@ -81,8 +84,7 @@ public class MainWindow extends JFrame {
 
         outlinePanel = new OutlinePanel(this);
         textWindow = new TextWindow();
-        //Global UndoManager
-        UndoManager undoManager = new UndoManager();
+        undoManager = new UndoManager();
 
         // Controller
         outlineController = new OutlineController(outlinePanel, textWindow, this);
@@ -298,4 +300,18 @@ public class MainWindow extends JFrame {
      * @return der {@link OutlineController} dieses Fensters
      */
     public OutlineController getOutlineController() {return outlineController; }
+
+    /**
+     * Liefert den globalen Undo-Manager.
+     *
+     * @return der {@link UndoManager} dieses Fensters
+     */
+    public UndoManager getUndoManager() { return undoManager; }
+
+    /**
+     * Liefert das Hauptfenster.
+     *
+     * @return {@link JFrame}
+     */
+    public JFrame getJFrame(){ return this;}
 }

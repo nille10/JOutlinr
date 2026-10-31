@@ -1,11 +1,11 @@
 package controller;
 
+import action.actions.commands.MoveEntryCommand;
 import model.OutlineNode;
 import view.MainWindow;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -45,13 +45,17 @@ public class OutlineTransferHandler extends TransferHandler {
 
 
     /**
-     * Löscht die ausgewählten Knoten und fügt sie an der richtigen Stelle wieder ein.
+     * Verschiebt die ausgewählten Knoten an die Stelle, an der sie abgelegt wurden.
      * <p>
-     *   Prüft ob die Position an der die Knoten eingefügt werden sollen zulässig ist. Löscht die Knoten an der alten Stelle und fügt sie an der neuen ein.
+     *   Prüft, ob die Position an der die Knoten eingefügt werden sollen zulässig ist
+     *   (maximale Verschachtelungstiefe). Das eigentliche Verschieben übernimmt ein
+     *   {@link MoveEntryCommand}, der über den {@code UndoManager} ausgeführt wird,
+     *   sodass das Verschieben (auch mehrerer Knoten) per Undo/Redo rückgängig gemacht
+     *   werden kann.
      * </p>
      * @param support the object containing the details of
      *        the transfer, not <code>null</code>.
-     * @return {@code true} wenn der Knoten an der gewählten Stelle eingefügt werden kann, ansonsten {@code false}
+     * @return {@code true} wenn die Knoten an der gewählten Stelle eingefügt werden können, ansonsten {@code false}
      */
     @Override
     public boolean importData(TransferSupport support) {
@@ -63,8 +67,6 @@ public class OutlineTransferHandler extends TransferHandler {
             return false;
         }
 
-        JTree tree = (JTree) support.getComponent();
-        DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
         JTree.DropLocation dl = (JTree.DropLocation) support.getDropLocation();
 
         TreePath path = dl.getPath();
@@ -84,29 +86,14 @@ public class OutlineTransferHandler extends TransferHandler {
             return false;
         }
 
-        for (OutlineNode node : draggedNodes) {
+        MoveEntryCommand command = new MoveEntryCommand(
+                mainFrame.getOutlineController(), draggedNodes, (OutlineNode) target, dropIndex);
 
-            if (target.isNodeAncestor(node)) {
-                continue;
-            }
-
-            DefaultMutableTreeNode oldParent = (DefaultMutableTreeNode) node.getParent();
-            if (oldParent != null) {
-                int oldIndex = oldParent.getIndex(node);
-
-                if (oldParent == target && oldIndex < dropIndex) {
-                    dropIndex--;
-                }
-
-                model.removeNodeFromParent(node);
-            }
-
-            model.insertNodeInto(node, target, dropIndex);
-
-            dropIndex++;
+        if (!command.hasEffect()) {
+            return false;
         }
 
-        mainFrame.getOutlineController().markDirty();
+        mainFrame.getUndoManager().execute(command);
         return true;
     }
 

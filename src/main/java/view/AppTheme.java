@@ -39,6 +39,18 @@ public class AppTheme {
   /** Hellere Variante der Akzentfarbe, u. a. für Fokus-Glow und ausgewählte Tabs. */
   public static Color ACCENT_LIGHT = new Color(0xFD, 0xE3, 0xE5);
 
+  /** Hover-Hintergrund einer Baumzeile im Light-Theme: sehr helles, gedämpftes Rosé. */
+  private static final Color HOVER_BG_LIGHT = new Color(0xFA, 0xEA, 0xEB);
+
+  /** Hover-Textfarbe einer Baumzeile im Light-Theme: warmes Dunkelgrau. */
+  private static final Color HOVER_FG_LIGHT = new Color(0x3A, 0x1A, 0x1C);
+
+  /** Hover-Hintergrund einer Baumzeile im Dark-Theme: dunkles, gedämpftes Rot. */
+  private static final Color HOVER_BG_DARK  = new Color(0x4A, 0x22, 0x25);
+
+  /** Hover-Textfarbe einer Baumzeile im Dark-Theme: helles Rosa. */
+  private static final Color HOVER_FG_DARK  = new Color(0xF5, 0xD5, 0xD7);
+
   /** Gibt an, ob aktuell das Dark-Theme aktiv ist. */
   private static boolean dark = false;
 
@@ -83,6 +95,22 @@ public class AppTheme {
    * @return {@code true}, wenn das Dark-Theme aktiv ist, sonst {@code false}
    */
   public static boolean isDark() { return dark; }
+
+  /**
+   * Liefert die Hintergrundfarbe einer Baumzeile im Hover-Zustand passend zum
+   * aktuellen Theme.
+   *
+   * @return die Hover-Hintergrundfarbe
+   */
+  public static Color hoverBackground() { return dark ? HOVER_BG_DARK : HOVER_BG_LIGHT; }
+
+  /**
+   * Liefert die Textfarbe einer Baumzeile im Hover-Zustand passend zum
+   * aktuellen Theme.
+   *
+   * @return die Hover-Textfarbe
+   */
+  public static Color hoverForeground() { return dark ? HOVER_FG_DARK : HOVER_FG_LIGHT; }
 
 
   // ── Alles auf einmal setzen ───────────────────────────────────────────────

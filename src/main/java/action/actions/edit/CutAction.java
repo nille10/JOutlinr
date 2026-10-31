@@ -15,7 +15,6 @@ public class CutAction extends AbstractAction {
         super("Ausschneiden");
         this.editController = editController;
 
-        // TODO
         putValue(SHORT_DESCRIPTION, "");
         putValue(
             ACCELERATOR_KEY,

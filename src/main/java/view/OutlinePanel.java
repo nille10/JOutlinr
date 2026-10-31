@@ -136,7 +136,6 @@ public class OutlinePanel extends JPanel {
         tree.setFont(treeFont);
         tree.setRowHeight(24);
 
-        //test
         // Explizit setzen — Linux-L&F hat andere Defaults
         ((javax.swing.plaf.basic.BasicTreeUI) tree.getUI()).setLeftChildIndent(8);
         ((javax.swing.plaf.basic.BasicTreeUI) tree.getUI()).setRightChildIndent(12);

@@ -1,10 +1,13 @@
 package model;
 
 import controller.OutlineController;
+import model.columns.Column;
 import model.columns.ColumnType;
 
 import javax.swing.tree.DefaultTreeModel;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -14,6 +17,9 @@ public class JSONParser {
 
     private int pos;
     private final OutlineController outlineController;
+
+    /** Spaltentitel aus dem Header der aktuell importierten Datei. */
+    private final List<String> importedHeaderColumns = new ArrayList<>();
 
     /**
      * Erstellt einen neuen {@code JSONParser}.
@@ -52,14 +58,12 @@ public class JSONParser {
     private StringBuilder jsonHeader() {
         StringBuilder jsonHeader = new StringBuilder();
 
-        jsonHeader.append("  \"header\" : \"").append(outlineController.getHeaderTitle()).append("\",\n");
+        jsonHeader.append("  \"header\" : \"").append(escapeJson(outlineController.getHeaderTitle())).append("\",\n");
         jsonHeader.append("  \"headerColumns\" : [\n");
         var headers = outlineController.getHeaderList();
         for (int i = 0; i < headers.size(); i++) {
-            if (headers.size() == 1 || headers.size() -1 == i)
-                jsonHeader.append("    \"").append(headers.get(i).getTitle()).append("\"\n");
-            else
-                jsonHeader.append("    \"").append(headers.get(i).getTitle()).append("\",\n");
+            jsonHeader.append("    \"").append(escapeJson(headers.get(i).getTitle())).append("\"");
+            jsonHeader.append(i < headers.size() - 1 ? ",\n" : "\n");
         }
         jsonHeader.append("  ],\n");
         return jsonHeader;
@@ -70,10 +74,11 @@ public class JSONParser {
      * <p>
      *   Arbeitet rekursiv alle Knoten im Outliner ab und erstellt einen {@code StringBuilder}-Objekt im JSON format.
      *   Speichert den Titel, Content des Textfensters, die Spalten mit Spaltennamen, Spaltentyp und Spaltenwert.
+     *   Alle Texte werden dabei mit {@link #escapeJson(String)} maskiert.
      * </p>
-     * @param amountParents
-     * @param node
-     * @return
+     * @param amountParents Anzahl der Elternknoten, bestimmt die Einrückung
+     * @param node der Knoten, der (samt Kindern) ausgegeben wird
+     * @return ein {@code StringBuilder} mit dem Knoten im JSON format
      */
     private StringBuilder jsonChild(int amountParents, OutlineNode node) {
         StringBuilder sb = new StringBuilder();
@@ -82,15 +87,15 @@ public class JSONParser {
         StringBuilder spaces = new StringBuilder("  ");
         spaces.repeat("  ", Math.max(0, amountParents));
 
-        sb.append(spaces).append("\"title\" : \"").append(node.getTitle()).append("\",\n");
+        sb.append(spaces).append("\"title\" : \"").append(escapeJson(node.getTitle())).append("\",\n");
         sb.append(spaces).append("\"content\" : \"").append(escapeJson(node.getContent())).append("\",\n");
         sb.append(spaces).append("\"columns\" : [");
         var headers = outlineController.getColumns();
         for (int i = 0; i < headers.size(); i++) {
             sb.append(" {\n");
-            sb.append(spaces).append("  ").append("\"columnTitle\" : \"").append(headers.get(i).getTitle()).append("\",\n");
-            sb.append(spaces).append("  ").append("\"columnType\" : \"").append(headers.get(i).getType()).append("\",\n");
-            sb.append(spaces).append("  ").append("\"columnValue\" : \"").append(headers.get(i).getValue(node)).append("\"\n");
+            sb.append(spaces).append("  ").append("\"columnTitle\" : \"").append(escapeJson(headers.get(i).getTitle())).append("\",\n");
+            sb.append(spaces).append("  ").append("\"columnType\" : \"").append(escapeJson(String.valueOf(headers.get(i).getType()))).append("\",\n");
+            sb.append(spaces).append("  ").append("\"columnValue\" : \"").append(escapeJson(String.valueOf(headers.get(i).getValue(node)))).append("\"\n");
             if (headers.size() == 1 || headers.size() -1 == i) {
                 sb.append(spaces).append("} ");
             } else {
@@ -124,7 +129,8 @@ public class JSONParser {
     }
 
     /**
-     * Ersetzt bestimmte Zeichen wie Zeilenumbrüche, damit diese in der JSON im richtigen Format gespeichert werden. Wird für das Textfeld der Knoten benötigt.
+     * Ersetzt bestimmte Zeichen wie Anführungszeichen, Backslashes und Zeilenumbrüche, damit diese in der JSON im richtigen Format gespeichert werden.
+     * Wird für alle Texte (Titel, Inhalt des Textfelds, Spaltentitel, Spaltenwerte) benötigt.
      * @param input {@code String}
      * @return einen {@code String} der im JSON format ist
      */
@@ -132,17 +138,31 @@ public class JSONParser {
         if (input == null) {
             return "";
         }
-        return input.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
+        StringBuilder sb = new StringBuilder(input.length() + 8);
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            switch (c) {
+                case '\\' -> sb.append("\\\\");
+                case '"' -> sb.append("\\\"");
+                case '\n' -> sb.append("\\n");
+                case '\r' -> sb.append("\\r");
+                case '\t' -> sb.append("\\t");
+                default -> {
+                    if (c < 0x20) {
+                        sb.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        sb.append(c);
+                    }
+                }
+            }
+        }
+        return sb.toString();
     }
 
     // ---------------------------------------------------------------------------------------------------------
 
     /*
-    * Rest der Klasse ist KI generiert
+     * Rest der Klasse ist KI generiert
      */
 
     /**
@@ -157,6 +177,7 @@ public class JSONParser {
     public void importJson(File saveLocation) throws Exception {
         String json = java.nio.file.Files.readString(saveLocation.toPath());
         this.pos = 0;
+        this.importedHeaderColumns.clear();
 
         outlineController.cancelActiveEditing();
 
@@ -188,7 +209,7 @@ public class JSONParser {
                 case "content":
                 case "columns":
                 case "children":
-                    // KORREKTUR: Wir bauen den Root-Knoten direkt im aktuellen Kontext des Hauptobjekts
+                    // Der Root-Knoten steht direkt im Hauptobjekt, der erste Schlüssel ist bereits gelesen
                     rootNode = parseNodeFields(json, key);
                     break label; // Nach dem Einlesen des Root-Knotens sind wir fertig
                 default:
@@ -206,6 +227,13 @@ public class JSONParser {
             throw new IllegalArgumentException("Keine Root-Node gefunden");
         }
 
+        // Spalten, die im Header stehen, aber in keinem Knoten vorkamen, werden nachträglich angelegt
+        for (String columnTitle : importedHeaderColumns) {
+            if (findColumn(columnTitle) == null) {
+                outlineController.addColumn(columnTitle, ColumnType.CHECKBOX);
+            }
+        }
+
         outlineController.replaceRootContents(rootNode);
     }
 
@@ -214,9 +242,10 @@ public class JSONParser {
     // =========================================================================
 
     /**
+     * Liest ein einzelnes JSON-Objekt ab der aktuellen Position und baut daraus ein {@link OutlineNode}-Objekt auf.
      *
-     * @param json
-     * @return
+     * @param json String mit Knoten im JSON Format
+     * @return {@link OutlineNode} abgeleitet aus der JSON Datei
      */
     private OutlineNode parseNode(String json) {
         skipWhitespace(json);
@@ -278,13 +307,13 @@ public class JSONParser {
     }
 
     /**
-     * Parst ein JSON-Array von Spaltenüberschriften und fügt neue Spalten dem Controller hinzu.
+     * Parst ein JSON-Array von Spaltenüberschriften und merkt sich die Titel.
      *
      * <p>
-     * Liest den JSON-String ab der aktuellen Position {@code pos} ein, erwartet ein Array
-     * mit Zeichenketten und prüft für jeden Eintrag, ob eine entsprechende Spalte im
-     * {@link OutlineController} bereits existiert. Fehlt die Spalte, wird sie automatisch als
-     * {@link ColumnType#CHECKBOX} neu angelegt.
+     * Der Header enthält nur Titel, keinen Typ. Die Spalten werden daher hier noch nicht angelegt,
+     * sondern erst beim Einlesen der Spaltenobjekte der Knoten ({@link #parseColumns(String, OutlineNode)}),
+     * da dort der Typ der Spalte gespeichert ist. Titel, für die in keinem Knoten eine Spalte
+     * vorkommt, werden am Ende des Imports als {@link ColumnType#CHECKBOX} angelegt.
      * </p>
      *
      * @param json der zu parsende JSON-String
@@ -300,14 +329,7 @@ public class JSONParser {
                 break;
             }
 
-            String columnTitle = parseString(json);
-
-            // Prüfen, ob die Spalte bereits existiert, bevor sie hinzugefügt wird
-            boolean exists = outlineController.getSpalten().stream()
-                    .anyMatch(col -> col.getTitle().equals(columnTitle));
-            if (!exists) {
-                outlineController.addColumn(columnTitle, ColumnType.CHECKBOX);
-            }
+            importedHeaderColumns.add(parseString(json));
 
             skipWhitespace(json);
             if (pos < json.length() && json.charAt(pos) == ',') {
@@ -321,8 +343,9 @@ public class JSONParser {
      *
      * <p>
      * Die Methode iteriert ab der aktuellen Zeigerposition {@code pos} durch das JSON-Array. Für jedes enthaltene
-     * Objekt liest sie Titel, Typ und Wert der Spalte aus, sucht die passende Spalte im {@link OutlineController}
-     * und wandelt den Wert basierend auf dem Spaltentyp (z. B. Konvertierung nach {@link Boolean} bei {@link ColumnType#CHECKBOX}) um.
+     * Objekt liest sie Titel, Typ und Wert der Spalte aus und sucht die passende Spalte im {@link OutlineController}.
+     * Existiert noch keine Spalte mit diesem Titel, wird sie mit dem gespeicherten Typ neu angelegt.
+     * Der Wert wird anschließend anhand des Spaltentyps umgewandelt (z. B. nach {@link Boolean} bei {@link ColumnType#CHECKBOX}).
      * </p>
      *
      * @param json der zu parsende JSON-String
@@ -370,20 +393,52 @@ public class JSONParser {
                 }
             }
 
-            for (var column : outlineController.getSpalten()) {
-                if (column.getTitle().equals(columnTitle)) {
-                    Object value = column.getType() == ColumnType.CHECKBOX
-                            ? Boolean.parseBoolean(rawValue)
-                            : rawValue;
-                    column.setValue(node, value);
-                    break;
-                }
+            var column = findColumn(columnTitle);
+            if (column == null) {
+                // Spalte existiert im Zieldokument noch nicht: mit dem gespeicherten Typ anlegen
+                outlineController.addColumn(columnTitle, parseColumnType(columnType));
+                column = findColumn(columnTitle);
+            }
+            if (column != null) {
+                Object value = column.getType() == ColumnType.CHECKBOX
+                        ? Boolean.parseBoolean(rawValue)
+                        : rawValue;
+                column.setValue(node, value);
             }
 
             skipWhitespace(json);
             if (pos < json.length() && json.charAt(pos) == ',') {
                 pos++;
             }
+        }
+    }
+
+    /**
+     * Sucht im {@link OutlineController} die Spalte mit dem angegebenen Titel.
+     *
+     * @param title Titel der gesuchten Spalte
+     * @return die erste Spalte mit diesem Titel oder {@code null}, falls keine existiert
+     */
+    private Column findColumn(String title) {
+        for (var column : outlineController.getSpalten()) {
+            if (column.getTitle().equals(title)) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Wandelt den gespeicherten Typnamen in einen {@link ColumnType} um.
+     *
+     * @param name Name des Typs aus der JSON-Datei
+     * @return der passende {@link ColumnType}, bei unbekanntem Namen {@link ColumnType#CHECKBOX}
+     */
+    private ColumnType parseColumnType(String name) {
+        try {
+            return ColumnType.valueOf(name.trim());
+        } catch (IllegalArgumentException e) {
+            return ColumnType.CHECKBOX;
         }
     }
 
@@ -427,7 +482,7 @@ public class JSONParser {
      *   Die Methode überspringt vorab führende Leerzeichen, erwartet ein öffnendes Anführungszeichen
      * ({@code "}) und liest die Zeichenfolge bis zum schließenden Anführungszeichen ein.
      * Dabei werden gängige Escape-Sequenzen (z.&nbsp;B. {@code \"}, {@code \\}, {@code \n},
-     * {@code \r}, {@code \t}) aufgelöst und in die entsprechenden Steuerzeichen umgewandelt.
+     * {@code \r}, {@code \t}, {@code \}{@code uXXXX}) aufgelöst und in die entsprechenden Zeichen umgewandelt.
      * </p>
 
      * @param json der zu parsende JSON-String
@@ -452,6 +507,17 @@ public class JSONParser {
                     case 'n' -> sb.append('\n');
                     case 'r' -> sb.append('\r');
                     case 't' -> sb.append('\t');
+                    case 'u' -> {
+                        if (pos + 4 > json.length()) {
+                            throw new IllegalArgumentException("Ungültige Unicode-Sequenz an Position " + pos);
+                        }
+                        try {
+                            sb.append((char) Integer.parseInt(json.substring(pos, pos + 4), 16));
+                        } catch (NumberFormatException e) {
+                            throw new IllegalArgumentException("Ungültige Unicode-Sequenz an Position " + pos);
+                        }
+                        pos += 4;
+                    }
                     default -> sb.append(escaped);
                 }
             } else {
@@ -468,7 +534,8 @@ public class JSONParser {
      * <ul>
      *   <li><b>Strings ({@code "}):</b> Werden über {@link #parseString(String)} eingelesen und verworfen.</li>
      *   <li><b>Objekte ({@code {}) & Arrays ({@code []}):</b> Werden durch Zählen der Klammerungstiefe
-     *       ({@code depth}) inklusive aller geschachtelten Strukturen übersprungen.</li>
+     *       ({@code depth}) inklusive aller geschachtelten Strukturen übersprungen. Zeichenketten innerhalb
+     *       werden als Ganzes übersprungen, damit Klammern in Texten die Zählung nicht verfälschen.</li>
      *   <li><b>Primitive Werte (Zahlen, Booleans, Null):</b> Werden bis zum nächsten Trennzeichen
      *       (Komma, Schließende Klammer oder Whitespace) durchlaufen.</li>
      * </ul>
@@ -487,8 +554,13 @@ public class JSONParser {
             int depth = 1;
             pos++;
             while (pos < json.length() && depth > 0) {
-                if (json.charAt(pos) == c) depth++;
-                else if (json.charAt(pos) == close) depth--;
+                char ch = json.charAt(pos);
+                if (ch == '"') {
+                    parseString(json);
+                    continue;
+                }
+                if (ch == c) depth++;
+                else if (ch == close) depth--;
                 pos++;
             }
         } else {
