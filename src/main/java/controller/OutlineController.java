@@ -3,6 +3,7 @@ package controller;
 import model.OutlineNode;
 import model.columns.Column;
 import model.columns.ColumnType;
+import view.MainWindow;
 import view.TextWindow;
 import view.OutlinePanel;
 import view.columns.ColumnHeader;
@@ -29,6 +30,7 @@ public class OutlineController {
     private final DefaultTreeModel treeModel;
     private final OutlineNode rootNode;
     private final JFrame mainWindow;
+    private final MainWindow mainFrame;
     private boolean dirty;
 
     private boolean isSelected = true;
@@ -43,9 +45,9 @@ public class OutlineController {
      * Erstellt einen neuen {@code OutlineController}
      * @param outlinePanel Das Panel in dem die Nodes dargestellt werden
      * @param textWindow Das TextWindow der Nodes
-     * @param mainWindow Das Main window um neue Fenster an der richtigen position anzuzeigen
+     * @param mainFrame Die Klasse MainWindow
      */
-    public OutlineController(OutlinePanel outlinePanel, TextWindow textWindow, JFrame mainWindow) {
+    public OutlineController(OutlinePanel outlinePanel, TextWindow textWindow, MainWindow mainFrame) {
 
         this.textWindow = textWindow;
         this.outlinePanel = outlinePanel;
@@ -53,7 +55,8 @@ public class OutlineController {
         this.tree = outlinePanel.getTree();
         this.treeModel = outlinePanel.getTreeModel();
         this.rootNode = outlinePanel.getRootNode();
-        this.mainWindow = mainWindow;
+        this.mainFrame = mainFrame;
+        this.mainWindow = mainFrame.getJFrame();
 
         //createExampleData();
         registerListeners();
@@ -119,27 +122,18 @@ public class OutlineController {
     }
 
     /**
-     * Überprüft, ob eine weitere Outlinenode hinzugefügt werden kann, ohne die maximale tiefe {@link #MAX_LEVEL} des Baums zu überschreiten.
-     * @param parent die Parent node der node die hinzugefügt werden soll
-     * @return {@code true} wenn die neue Node das maximale Level nicht überschreitet, ansonsten
-     *         {@code false}
-     */
-    public boolean canAddChildTo(OutlineNode parent) {
-        if (parent == null) {
-            return true;
-        }
-        return parent.getLevel() < MAX_LEVEL;
-    }
-
-    /**
-     * Überprüft, ob eine weitere Outline Node unter der ausgewählten Node hinzugefügt werden kann (siehe {@link #canAddChildTo(OutlineNode)}).
-     * @return {@code true} wenn die neue Node das maximale Level nicht überschreitet, ansonsten
-     *         {@code false}
+     * Überprüft, ob unter der ausgewählten Outline Node eine weitere Node
+     * hinzugefügt werden kann, ohne das maximale Level zu überschreiten.
+     * Ist keine Node ausgewählt, wird die Root Node als übergeordnete Node verwendet.
+     *
+     * @return {@code true}, wenn eine weitere Node hinzugefügt werden kann,
+     *         andernfalls {@code false}
      */
     public boolean canAddChildToSelected() {
         OutlineNode selected = getSelectedNode();
         OutlineNode parent = selected != null ? selected : rootNode;
-        return canAddChildTo(parent);
+
+        return parent == null || parent.getLevel() < MAX_LEVEL;
     }
 
     /**
@@ -674,6 +668,15 @@ public class OutlineController {
     }
 
     /**
+     * Schreibt eine Nachricht in die Status Leiste.
+     *
+     * @param message die zu schreibende Nachricht
+     */
+    public void writeStatusBar(String message){
+        mainFrame.getStatusBar().setText(message);
+    }
+
+    /**
      * Bricht die Bearbeitung des Namens einer Zeile ab, falls gerade eine läuft
      * — die bisher eingegebene Änderung wird dabei verworfen, nicht übernommen.
      * Gegenstück zu {@link #commitEditing()}, das die Änderung speichert.
@@ -836,19 +839,6 @@ public class OutlineController {
      */
     public JTree getTree(){
         return this.tree;
-    }
-
-    /**
-     * Setzt das allgemeine Auswahl-Flag ({@link #isSelected}).
-     *
-     * <p>Name und Zweck des Flags sind aus dem Code allein nicht eindeutig
-     * erkennbar; die Dokumentation beschränkt sich daher auf das, was sich aus
-     * Feldname und Typ ableiten lässt.</p>
-     *
-     * @param isSelected der neue Wert des Flags
-     */
-    public void setBoolean(boolean isSelected){
-        this.isSelected = isSelected;
     }
 
     /**

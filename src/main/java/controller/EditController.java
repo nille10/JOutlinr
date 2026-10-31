@@ -149,7 +149,7 @@ public class EditController {
                 return (String) contents.getTransferData(DataFlavor.stringFlavor);
             }
         } catch (Exception e) {
-            // Zwischenablage nicht lesbar -> wie leere Zwischenablage behandeln
+            // Zwischenablage nicht lesbar
         }
         return null;
     }

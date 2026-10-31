@@ -36,7 +36,7 @@ public class NewChildEntryCommand implements UndoableAction {
 
         parent = selected != null ? selected : controller.getRootNode();
 
-        if (!controller.canAddChildTo(parent)) {
+        if (!controller.canAddChildToSelected()) {
             createdNode = null;
             return;
         }

@@ -79,24 +79,4 @@ public class OutlineNode extends DefaultMutableTreeNode {
     return title;
   }
 
-  /**
-   * Kopiert einen Knoten mit Kindknoten und liefert den Wurzelknoten zurück.
-   * <p>
-   *   Die Kopien werden für Funktionen wie copy, cut und insert benötigt.
-   * </p>
-   *
-   * @return eine Kopie des Knotens
-   */
-  public OutlineNode deepCopy() {
-
-    OutlineNode copy = new OutlineNode(title);
-    copy.setContent(content);
-
-    for (int i = 0; i < getChildCount(); i++) {
-      OutlineNode child = (OutlineNode) getChildAt(i);
-      copy.add(child.deepCopy());
-    }
-
-    return copy;
-  }
 }
