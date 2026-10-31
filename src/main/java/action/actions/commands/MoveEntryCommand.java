@@ -215,6 +215,6 @@ public class MoveEntryCommand implements UndoableAction {
 
         controller.selectNodes(nodes);
         controller.markDirty();
-        controller.writeStatusBar("Rückgängig gemacht");
+        controller.writeStatusBar("Drag&Drop Rückgängig gemacht");
     }
 }

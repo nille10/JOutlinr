@@ -95,6 +95,7 @@ public class DeleteEntryCommand implements UndoableAction {
         controller.selectNode(parent);
       }
     }
+    controller.writeStatusBar(nodesToRemove.size() + " Einträge gelöscht");
   }
 
   /**
@@ -114,6 +115,7 @@ public class DeleteEntryCommand implements UndoableAction {
     // Die GESAMTE ursprüngliche Auswahl wiederherstellen (inkl. Kinder,
     // die nur implizit mit ihrem Parent zurückkamen)
     controller.selectNodes(originallySelected);
+    controller.writeStatusBar("Löschen rückgängig gemacht");
   }
 
   /**
