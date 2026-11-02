@@ -238,9 +238,8 @@ public class OutlinePanel extends JPanel {
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-        add(headerPanel, BorderLayout.NORTH);
-        add(scrollPane,  BorderLayout.CENTER);
-
+        scrollPane.setColumnHeaderView(headerPanel);
+        add(scrollPane, BorderLayout.CENTER);
 
         // --------------------------------
         // Hover-System initialisieren - KI generiert
