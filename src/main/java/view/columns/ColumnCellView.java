@@ -346,6 +346,20 @@ public class ColumnCellView extends JPanel {
         }
     }
 
+    /**
+     * Füllt die Spalten komplett, damit bei leeren Spalten die Box nicht durchsichtig ist, oder keine Kante hat.
+     *
+     * @param g the <code>Graphics</code> object to protect
+     */
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.setColor(cellDefault());
+        g.fillRect(0, 0, getWidth(), getHeight());
+        g.setColor(borderCol());
+        g.fillRect(0, 0, 1, getHeight()); // linke Trennlinie wie bei den Zellen
+    }
+
 
     /**
      * Setzt den Callback, der bei Datenänderungen in dieser Spalte aufgerufen wird.
