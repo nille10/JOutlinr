@@ -1,3 +1,7 @@
+/*
+KI generiert
+ */
+
 package controller;
 
 import model.OutlineNode;
@@ -17,6 +21,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,6 +69,25 @@ public final class ClipboardXML {
      * @throws RuntimeException wenn die Serialisierung fehlschlägt (z. B. durch eine interne XML-Konfigurationsausnahme)
      */
     public static String serialize(OutlineNode node, List<Column> columns) {
+        return serialize(List.of(node), columns);
+    }
+
+    /**
+     * Serialisiert mehrere Knoten samt Teilbäumen in einem gemeinsamen
+     * {@code <clip>}-Dokument.
+     *
+     * <p>Es wird ein einziger {@code <head>}-Block geschrieben, danach je Knoten
+     * der Liste ein {@code <node>}-Element auf oberster Ebene. Die Reihenfolge
+     * der Liste bleibt beim Einfügen erhalten. Der Aufrufer ist dafür
+     * verantwortlich, nur Knoten ohne ausgewählten Vorfahren zu übergeben,
+     * da sonst Teilbäume doppelt enthalten wären.</p>
+     *
+     * @param nodes   die zu serialisierenden Wurzelknoten der Teilbäume
+     * @param columns alle aktuell im Outliner vorhandenen Spalten
+     * @return der XML-Text
+     * @throws RuntimeException wenn die Serialisierung fehlschlägt
+     */
+    public static String serialize(List<OutlineNode> nodes, List<Column> columns) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -73,7 +97,9 @@ public final class ClipboardXML {
             doc.appendChild(root);
 
             appendHead(doc, root, columns);
-            appendNode(doc, root, node, columns);
+            for (OutlineNode node : nodes) {
+                appendNode(doc, root, node, columns);
+            }
 
             return toXmlString(doc);
         } catch (Exception e) {
@@ -161,8 +187,27 @@ public final class ClipboardXML {
      * @return der aufgebaute Teilbaum, oder {@code null} bei ungültigem Text
      */
     public static OutlineNode deserialize(String xml, OutlineController outlineController) {
+        List<OutlineNode> nodes = deserializeAll(xml, outlineController);
+        return nodes.isEmpty() ? null : nodes.get(0);
+    }
+
+    /**
+     * Wie {@link #deserialize(String, OutlineController)}, liefert aber alle
+     * {@code <node>}-Elemente auf oberster Ebene des {@code <clip>}-Dokuments
+     * in ihrer Reihenfolge.
+     *
+     * <p>Die Spalten werden einmal für das gesamte Dokument aufgelöst, sodass
+     * fehlende Spalten nur einmal angelegt werden, egal wie viele Knoten
+     * eingefügt werden.</p>
+     *
+     * @param xml               der zu parsende XML-Text
+     * @param outlineController der Ziel-Outliner, in den eingefügt werden soll
+     * @return die aufgebauten Teilbäume, oder eine leere Liste bei ungültigem Text
+     */
+    public static List<OutlineNode> deserializeAll(String xml, OutlineController outlineController) {
+        List<OutlineNode> result = new ArrayList<>();
         if (xml == null || !xml.contains("<" + ROOT_TAG)) {
-            return null;
+            return result;
         }
 
         try {
@@ -172,7 +217,7 @@ public final class ClipboardXML {
 
             Element root = doc.getDocumentElement();
             if (root == null || !ROOT_TAG.equals(root.getTagName())) {
-                return null;
+                return result;
             }
 
             Element headElement = firstChildElement(root, "head");
@@ -180,16 +225,15 @@ public final class ClipboardXML {
                     ? resolveColumns(headElement, outlineController)
                     : Collections.emptyMap();
 
-            Element nodeElement = firstChildElement(root, "node");
-            if (nodeElement == null) {
-                return null;
+            for (org.w3c.dom.Node child = root.getFirstChild(); child != null; child = child.getNextSibling()) {
+                if (child instanceof Element element && "node".equals(element.getTagName())) {
+                    result.add(parseNode(element, columnByTitle));
+                }
             }
-
-            return parseNode(nodeElement, columnByTitle);
-
         } catch (Exception e) {
-            return null;
+            result.clear();
         }
+        return result;
     }
 
     /**
