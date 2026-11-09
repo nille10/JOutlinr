@@ -11,6 +11,12 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.swing.tree.TreeNode;
 
 /**
  * Der Controller ist für die Undo/Redo, sowie für die cut, copy, insert Operationen zuständig.
@@ -61,21 +67,21 @@ public class EditController {
     }
 
     /**
-     * Schneidet einen Knoten aus dem JTree aus.
+     * Schneidet die ausgewählten Knoten aus dem JTree aus.
      *
-     * <p>Serialisiert den Knoten zuerst mit seinen aktuellen Spaltenwerten in
-     * die Zwischenablage ({@link #copyToClipboard(OutlineNode)}) und löscht
-     * ihn erst danach über die rückgängig machbare
+     * <p>Serialisiert die Knoten zuerst mit ihren aktuellen Spaltenwerten in
+     * die Zwischenablage ({@link #copyToClipboard(List)}) und löscht
+     * sie erst danach über die rückgängig machbare
      * {@link DeleteEntryCommand}. Die Reihenfolge ist wichtig: Die
      * Spaltenwerte sind in {@code Column} über den Original-Knoten als
      * Schlüssel gespeichert, die Serialisierung muss also erfolgen, solange
-     * der Knoten noch im Baum ist.</p>
+     * die Knoten noch im Baum sind.</p>
      */
     public void cut() {
-        OutlineNode selected = outlineController.getSelectedNode();
-        if (selected == null) return;
+        List<OutlineNode> topLevel = getTopLevelSelection();
+        if (topLevel.isEmpty()) return;
 
-        copyToClipboard(selected);
+        copyToClipboard(topLevel);
 
         undoManager.execute(new DeleteEntryCommand(outlineController));
 
@@ -83,54 +89,91 @@ public class EditController {
     }
 
     /**
-     * Kopiert den ausgewählten Knoten (inklusive Teilbaum und den Werten
+     * Kopiert die ausgewählten Knoten (inklusive Teilbäumen und den Werten
      * aller Zusatzspalten) als XML-Text in die Zwischenablage.
      */
     public void copy() {
-        OutlineNode selected = outlineController.getSelectedNode();
+        List<OutlineNode> topLevel = getTopLevelSelection();
 
-        if (selected != null) {
-            copyToClipboard(selected);
+        if (!topLevel.isEmpty()) {
+            copyToClipboard(topLevel);
         }
     }
 
     /**
-     * Serialisiert {@code node} per {@link ClipboardXML#serialize(OutlineNode, java.util.List)}
+     * Ermittelt die ausgewählten Knoten, die tatsächlich kopiert werden müssen.
+     *
+     * <p>Knoten, deren Vorfahre ebenfalls ausgewählt ist, werden weggelassen,
+     * da der Vorfahre sie als Teil seines Teilbaums ohnehin enthält. Die Wurzel
+     * wird ausgeschlossen. Die Reihenfolge entspricht der Reihenfolge im Baum
+     * und nicht der Reihenfolge, in der geklickt wurde.</p>
+     *
+     * @return die obersten ausgewählten Knoten in Baum-Reihenfolge
+     */
+    private List<OutlineNode> getTopLevelSelection() {
+        Set<OutlineNode> selected = new HashSet<>(outlineController.getSelectedNodes());
+        selected.remove(outlineController.getRootNode());
+
+        List<OutlineNode> result = new ArrayList<>();
+        Enumeration<?> order = outlineController.getRootNode().preorderEnumeration();
+        while (order.hasMoreElements()) {
+            OutlineNode node = (OutlineNode) order.nextElement();
+            if (!selected.contains(node)) continue;
+
+            boolean ancestorSelected = false;
+            for (TreeNode p = node.getParent(); p != null; p = p.getParent()) {
+                if (selected.contains(p)) {
+                    ancestorSelected = true;
+                    break;
+                }
+            }
+            if (!ancestorSelected) {
+                result.add(node);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Serialisiert {@code nodes} per {@link ClipboardXML#serialize(List, List)}
      * und legt das Ergebnis als Text in der System-Zwischenablage ab.
      *
-     * @param node der zu kopierende Knoten (samt Teilbaum)
+     * @param nodes die zu kopierenden Knoten (samt Teilbäumen)
      */
-    private void copyToClipboard(OutlineNode node) {
-        String xml = ClipboardXML.serialize(node, outlineController.getSpalten());
+    private void copyToClipboard(List<OutlineNode> nodes) {
+        String xml = ClipboardXML.serialize(nodes, outlineController.getSpalten());
 
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(new StringSelection(xml), null);
     }
 
     /**
-     * Fügt den Knoten aus der Zwischenablage an der markierten Stelle ein.
+     * Fügt die Knoten aus der Zwischenablage an der markierten Stelle ein.
      *
      * <p>Liest den Textinhalt der System-Zwischenablage aus und übergibt ihn
-     * an {@link ClipboardXML#deserialize(String, OutlineController)}. Daraus
-     * entsteht ein neuer, unabhängiger {@link OutlineNode}-Teilbaum — ein
-     * zusätzliches {@code deepCopy()} wie zuvor ist nicht mehr nötig, da jeder
-     * Aufruf von {@link #insert()} den Text erneut frisch parst und damit
-     * ohnehin neue Knoten-Objekte erzeugt, auch bei mehrfachem Einfügen
-     * desselben Zwischenablage-Inhalts.</p>
+     * an {@link ClipboardXML#deserializeAll(String, OutlineController)}. Daraus
+     * entstehen neue, unabhängige Teilbäume, da jeder Aufruf den Text frisch
+     * parst. Passt auch nur einer der Teilbäume wegen der maximalen
+     * Verschachtelungstiefe weder an die Auswahl noch in die Wurzel, wird
+     * nichts eingefügt und eine Meldung angezeigt (alles oder nichts).</p>
      *
-     * <p>Enthält die Zwischenablage keinen Text, keinen von dieser Anwendung
-     * stammenden XML-Text (z. B. weil zuvor in einem anderen Programm etwas
-     * kopiert wurde), oder konnte er nicht gelesen werden, geschieht nichts.</p>
+     * <p>Enthält die Zwischenablage keinen Text oder keinen von dieser
+     * Anwendung stammenden XML-Text, geschieht nichts.</p>
      */
     public void insert() {
         String xml = readClipboardText();
         if (xml == null) return;
 
-        OutlineNode node = ClipboardXML.deserialize(xml, outlineController);
-        if (node == null) return;
+        List<OutlineNode> nodes = ClipboardXML.deserializeAll(xml, outlineController);
+        if (nodes.isEmpty()) return;
 
-        undoManager.execute(
-                new PasteCommand(outlineController, node));
+        PasteCommand command = new PasteCommand(outlineController, nodes);
+        if (!command.isPossible()) {
+            outlineController.writeStatusBar("Zu viele Ebenen (maximal 3 zugelassen), es wurde nichts eingefügt");
+            return;
+        }
+
+        undoManager.execute(command);
     }
 
     /**
@@ -149,7 +192,7 @@ public class EditController {
                 return (String) contents.getTransferData(DataFlavor.stringFlavor);
             }
         } catch (Exception e) {
-            // Zwischenablage nicht lesbar
+            // Zwischenablage nicht lesbar -> wie leere Zwischenablage behandeln
         }
         return null;
     }
